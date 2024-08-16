@@ -11,42 +11,95 @@ let layouts = {
   HSL: "HSL",
 };
 
-let SIZE = 500;
+let SIZE = 300;
 let chromaPeak = 0.35;
 
 // Todo: generate the hue gamuts at start
 function updateHueCanvas(canvas, ctx, hueInput, layout) {
   canvas.width = SIZE;
   canvas.height = SIZE;
-  // ctx.fillStyle = "#888";
-  // ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  for (let x = 0; x < canvas.width; x++) {
-    for (let y = 0; y < canvas.height; y++) {
-      let rgb = [0, 0, 0];
-      if (layout === layouts.LCH) {
-        const l = x / canvas.width;
-        const c = (1 - y / canvas.height) * chromaPeak;
-        const h = hueInput;
-        rgb = texel.convert([l, c, h], texel.OKLCH, texel.sRGB);
-      } else if (layout === layouts.HSV) {
-        const h = hueInput;
-        const s = x / canvas.width;
-        const v = 1 - y / canvas.height;
-        rgb = texel.convert([h, s, v], texel.OKHSV, texel.sRGB);
-      } else if (layout === layouts.HSL) {
-        const h = hueInput;
-        const s = x / canvas.width;
-        const l = 1 - y / canvas.height;
-        rgb = texel.convert([h, s, l], texel.OKHSL, texel.sRGB);
+  let xMax = canvas.width;
+  let yMax = canvas.height;
+
+  let loop = (f) => {
+    for (let x = 0; x < xMax; x++) {
+      for (let y = 0; y < yMax; y++) {
+        f(x, y);
       }
+    }
+  };
 
+  if (layout === layouts.LCH) {
+    loop((x, y) => {
+      const l = x / xMax;
+      const c = (1 - y / yMax) * chromaPeak;
+      const h = hueInput;
+      const rgb = texel.convert([l, c, h], texel.OKLCH, texel.sRGB);
       const inside = texel.isRGBInGamut(rgb);
       if (inside) {
         ctx.fillStyle = texel.RGBToHex(rgb);
         ctx.fillRect(x, y, 1, 1);
       }
+    });
+  } else if (layout === layouts.HSV) {
+    loop((x, y) => {
+      const h = hueInput;
+      const s = x / xMax;
+      const v = 1 - y / yMax;
+      const rgb = texel.convert([h, s, v], texel.OKHSV, texel.sRGB);
+      ctx.fillStyle = texel.RGBToHex(rgb);
+      ctx.fillRect(x, y, 1, 1);
+    });
+  } else if (layout === layouts.HSL) {
+    loop((x, y) => {
+      const h = hueInput;
+      const s = x / xMax;
+      const l = 1 - y / yMax;
+      const rgb = texel.convert([h, s, l], texel.OKHSL, texel.sRGB);
+      ctx.fillStyle = texel.RGBToHex(rgb);
+      ctx.fillRect(x, y, 1, 1);
+    });
+  }
+}
+
+function updateLightnessCanvas(canvas, ctx, lightnessInput, layout) {
+  canvas.width = SIZE;
+  canvas.height = SIZE;
+
+  let xMax = canvas.width;
+  let yMax = canvas.height;
+
+  let loop = (f) => {
+    for (let x = 0; x < xMax; x++) {
+      for (let y = 0; y < yMax; y++) {
+        f(x, y);
+      }
     }
+  };
+
+  if (layout === layouts.LCH) {
+    loop((x, y) => {
+      const l = lightnessInput;
+      const c = (1 - y / yMax) * chromaPeak;
+      const h = (x / xMax) * 360;
+      const rgb = texel.convert([l, c, h], texel.OKLCH, texel.sRGB);
+      const inside = texel.isRGBInGamut(rgb);
+      if (inside) {
+        ctx.fillStyle = texel.RGBToHex(rgb);
+        ctx.fillRect(x, y, 1, 1);
+      }
+    });
+  } else if (layout === layouts.HSL) {
+    loop((x, y) => {
+      const h = (x / xMax) * 360;
+      const s = y / yMax;
+      const l = lightnessInput;
+      const rgb = texel.convert([h, s, l], texel.OKHSL, texel.sRGB);
+
+      ctx.fillStyle = texel.RGBToHex(rgb);
+      ctx.fillRect(x, y, 1, 1);
+    });
   }
 }
 
@@ -65,7 +118,8 @@ const useCanvas = (draw) => {
 
 export const Gamut = () => {
   let [hue, setHue] = useState(0);
-  let [layout, setLayout] = useState(layouts.LCH);
+  let [lightness, setLightness] = useState(0.8);
+  let [layout, setLayout] = useState(layouts.HSL);
 
   let drawHue = useCallback(
     (canvas, context) => {
@@ -75,6 +129,15 @@ export const Gamut = () => {
   );
 
   let hueCanvas = useCanvas(drawHue);
+
+  let drawLightness = useCallback(
+    (canvas, context) => {
+      updateLightnessCanvas(canvas, context, lightness, layout);
+    },
+    [lightness, layout]
+  );
+
+  let lightnessCanvas = useCanvas(drawLightness);
 
   // useEffect(() => {
   //   updateOklchCanvas(hue, layout);
@@ -140,44 +203,44 @@ export const Gamut = () => {
         max="360"
         step="2"
         value={hue}
-        onChange={(e) => setHue(e.target.value)}
+        onChange={(e) => setHue(parseInt(e.target.value))}
       />
       <div className="flex flex-row gap-2 py-2">
         <div
           style={{
             backgroundColor: s100l25,
           }}
-          className="w-20 h-20 rounded"
+          className="w-10 h-10 rounded"
         />
         <div
           style={{
             backgroundColor: s100l50,
           }}
-          className="w-20 h-20 rounded"
+          className="w-10 h-10 rounded"
         />
         <div
           style={{
             backgroundColor: s100l75,
           }}
-          className="w-20 h-20 rounded"
+          className="w-10 h-10 rounded"
         />
         <div
           style={{
             backgroundColor: s100v100,
           }}
-          className="w-20 h-20 rounded"
+          className="w-10 h-10 rounded"
         />
         <div
           style={{
             backgroundColor: s50v100,
           }}
-          className="w-20 h-20 rounded"
+          className="w-10 h-10 rounded"
         />
         <div
           style={{
             backgroundColor: s100v50,
           }}
-          className="w-20 h-20 rounded"
+          className="w-10 h-10 rounded"
         />
       </div>
 
@@ -188,6 +251,24 @@ export const Gamut = () => {
         className="p-4 w-fit rounded-xl"
       >
         <canvas ref={hueCanvas} />
+      </div>
+      <input
+        type="range"
+        min="0"
+        max="1"
+        step="0.02"
+        value={lightness}
+        onChange={(e) => {
+          setLightness(parseFloat(e.target.value));
+        }}
+      />
+      <div
+        style={{
+          backgroundColor: "#555",
+        }}
+        className="p-4 w-fit rounded-xl"
+      >
+        <canvas ref={lightnessCanvas} />
       </div>
     </div>
   );
