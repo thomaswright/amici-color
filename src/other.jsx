@@ -1,9 +1,9 @@
 import * as texel from "@texel/color";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 
 // # Setup
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+// const canvas = document.getElementById("canvas");
+// const ctx = canvas.getContext("2d");
 
 let layouts = {
   LCH: "LCH",
@@ -15,7 +15,7 @@ let SIZE = 500;
 let chromaPeak = 0.35;
 
 // Todo: generate the hue gamuts at start
-function updateOklchCanvas(hueInput, layout) {
+function updateOklchCanvas(canvas, ctx, hueInput, layout) {
   canvas.width = SIZE;
   canvas.height = SIZE;
   ctx.fillStyle = "#888";
@@ -50,12 +50,35 @@ function updateOklchCanvas(hueInput, layout) {
   }
 }
 
+const useCanvas = (draw) => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+
+    draw(canvas, context);
+  }, [draw]);
+
+  return canvasRef;
+};
+
 export const Gamut = () => {
   let [hue, setHue] = useState(0);
   let [layout, setLayout] = useState(layouts.LCH);
-  useEffect(() => {
-    updateOklchCanvas(hue, layout);
-  }, [hue, layout]);
+
+  let drawMain = useCallback(
+    (canvas, context) => {
+      updateOklchCanvas(canvas, context, hue, layout);
+    },
+    [hue, layout]
+  );
+
+  let canvasMain = useCanvas(drawMain);
+
+  // useEffect(() => {
+  //   updateOklchCanvas(hue, layout);
+  // }, [hue, layout]);
 
   return (
     <div>
@@ -96,6 +119,7 @@ export const Gamut = () => {
         value={hue}
         onChange={(e) => setHue(e.target.value)}
       />
+      <canvas ref={canvasMain} />
     </div>
   );
 };
