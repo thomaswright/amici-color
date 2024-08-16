@@ -15,7 +15,7 @@ let SIZE = 500;
 let chromaPeak = 0.35;
 
 // Todo: generate the hue gamuts at start
-function updateOklchCanvas(canvas, ctx, hueInput, layout) {
+function updateHueCanvas(canvas, ctx, hueInput, layout) {
   canvas.width = SIZE;
   canvas.height = SIZE;
   // ctx.fillStyle = "#888";
@@ -67,14 +67,14 @@ export const Gamut = () => {
   let [hue, setHue] = useState(0);
   let [layout, setLayout] = useState(layouts.LCH);
 
-  let drawMain = useCallback(
+  let drawHue = useCallback(
     (canvas, context) => {
-      updateOklchCanvas(canvas, context, hue, layout);
+      updateHueCanvas(canvas, context, hue, layout);
     },
     [hue, layout]
   );
 
-  let canvasMain = useCanvas(drawMain);
+  let hueCanvas = useCanvas(drawHue);
 
   // useEffect(() => {
   //   updateOklchCanvas(hue, layout);
@@ -187,7 +187,7 @@ export const Gamut = () => {
         }}
         className="p-4 w-fit rounded-xl"
       >
-        <canvas ref={canvasMain} />
+        <canvas ref={hueCanvas} />
       </div>
     </div>
   );
