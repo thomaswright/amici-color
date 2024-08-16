@@ -18,8 +18,8 @@ let chromaPeak = 0.35;
 function updateOklchCanvas(canvas, ctx, hueInput, layout) {
   canvas.width = SIZE;
   canvas.height = SIZE;
-  ctx.fillStyle = "#888";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // ctx.fillStyle = "#888";
+  // ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   for (let x = 0; x < canvas.width; x++) {
     for (let y = 0; y < canvas.height; y++) {
@@ -119,7 +119,16 @@ export const Gamut = () => {
         value={hue}
         onChange={(e) => setHue(e.target.value)}
       />
-      <canvas ref={canvasMain} />
+      <div
+        style={{
+          backgroundColor: texel.RGBToHex(
+            texel.convert([hue, 0.5, 1.0], texel.OKHSV, texel.sRGB)
+          ),
+        }}
+        className="p-4 w-fit rounded"
+      >
+        <canvas ref={canvasMain} />
+      </div>
     </div>
   );
 };
