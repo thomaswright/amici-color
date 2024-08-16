@@ -11,63 +11,13 @@ let layouts = {
   HSL: "HSL",
 };
 
-function makeNullArray(x, y) {
-  const arr = [];
-  for (let i = 0; i < x; i++) {
-    const row = [];
-    for (let j = 0; j < y; j++) {
-      row.push(null);
-    }
-    arr.push(row);
-  }
-  return arr;
-}
-
-function makeHueGamuts() {
-  let arrs = {
-    LCH: makeNullArray(size, size),
-    HSV: makeNullArray(size, size),
-    HSL: makeNullArray(size, size),
-  };
-  for (let hue = 0; hue < 360; hue++) {
-    for (let x = 0; x < canvas.width; x++) {
-      for (let y = 0; y < canvas.height; y++) {
-        {
-          const l = x / canvas.width;
-          const c = (1 - y / canvas.height) * 0.4;
-          const h = hueInput;
-          const rgb = texel.convert([l, c, h], texel.OKLCH, texel.sRGB);
-          const inside = texel.isRGBInGamut(rgb);
-          if (inside) {
-            arrs.LCH[(x, y)] = texel.RGBToHex(rgb);
-          }
-        }
-        {
-          const h = hueInput;
-          const s = x / canvas.width;
-          const v = 1 - y / canvas.height;
-          const rgb = texel.convert([h, s, v], texel.OKHSV, texel.sRGB);
-          arrs.HSV[(x, y)] = texel.RGBToHex(rgb);
-        }
-        {
-          const h = hueInput;
-          const s = x / canvas.width;
-          const l = 1 - y / canvas.height;
-          const rgb = texel.convert([h, s, l], texel.OKHSL, texel.sRGB);
-          arrs.HSL[(x, y)] = texel.RGBToHex(rgb);
-        }
-      }
-    }
-  }
-  return arrs;
-}
-
-let hueGamuts = makeHueGamuts;
+let SIZE = 500;
+let chromaPeak = 0.35;
 
 // Todo: generate the hue gamuts at start
 function updateOklchCanvas(hueInput, layout) {
-  canvas.width = 500;
-  canvas.height = 500;
+  canvas.width = SIZE;
+  canvas.height = SIZE;
   ctx.fillStyle = "#888";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -76,7 +26,7 @@ function updateOklchCanvas(hueInput, layout) {
       let rgb = [0, 0, 0];
       if (layout === layouts.LCH) {
         const l = x / canvas.width;
-        const c = (1 - y / canvas.height) * 0.4;
+        const c = (1 - y / canvas.height) * chromaPeak;
         const h = hueInput;
         rgb = texel.convert([l, c, h], texel.OKLCH, texel.sRGB);
       } else if (layout === layouts.HSV) {
@@ -111,19 +61,28 @@ export const Gamut = () => {
     <div>
       <div>
         <button
-          className="px-4 bg-gray-200 rounded mr-2"
+          className={[
+            "px-4 rounded mr-2",
+            layout === layouts.LCH ? "bg-blue-400" : "bg-gray-200",
+          ].join(" ")}
           onClick={(_) => setLayout(layouts.LCH)}
         >
           LCH
         </button>
         <button
-          className="px-4 bg-gray-200 rounded mr-2"
+          className={[
+            "px-4 rounded mr-2",
+            layout === layouts.HSL ? "bg-blue-400" : "bg-gray-200",
+          ].join(" ")}
           onClick={(_) => setLayout(layouts.HSL)}
         >
           HSL
         </button>
         <button
-          className="px-4 bg-gray-200 rounded mr-2"
+          className={[
+            "px-4 rounded mr-2",
+            layout === layouts.HSV ? "bg-blue-400" : "bg-gray-200",
+          ].join(" ")}
           onClick={(_) => setLayout(layouts.HSV)}
         >
           HSV
