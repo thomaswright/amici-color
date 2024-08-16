@@ -80,6 +80,29 @@ export const Gamut = () => {
   //   updateOklchCanvas(hue, layout);
   // }, [hue, layout]);
 
+  let s100l25 = texel.RGBToHex(
+    texel.convert([hue, 1.0, 0.25], texel.OKHSL, texel.sRGB)
+  );
+
+  let s100l50 = texel.RGBToHex(
+    texel.convert([hue, 1.0, 0.5], texel.OKHSL, texel.sRGB)
+  );
+
+  let s100l75 = texel.RGBToHex(
+    texel.convert([hue, 1.0, 0.75], texel.OKHSL, texel.sRGB)
+  );
+  let s50v100 = texel.RGBToHex(
+    texel.convert([hue, 0.5, 1.0], texel.OKHSV, texel.sRGB)
+  );
+
+  let s100v100 = texel.RGBToHex(
+    texel.convert([hue, 1.0, 1.0], texel.OKHSV, texel.sRGB)
+  );
+
+  let s100v50 = texel.RGBToHex(
+    texel.convert([hue, 1.0, 0.5], texel.OKHSV, texel.sRGB)
+  );
+
   return (
     <div>
       <div>
@@ -115,18 +138,54 @@ export const Gamut = () => {
         type="range"
         min="0"
         max="360"
-        step="1"
+        step="2"
         value={hue}
         onChange={(e) => setHue(e.target.value)}
       />
+      <div className="flex flex-row gap-2 py-2">
+        <div
+          style={{
+            backgroundColor: s100l25,
+          }}
+          className="w-20 h-20 rounded"
+        />
+        <div
+          style={{
+            backgroundColor: s100l50,
+          }}
+          className="w-20 h-20 rounded"
+        />
+        <div
+          style={{
+            backgroundColor: s100l75,
+          }}
+          className="w-20 h-20 rounded"
+        />
+        <div
+          style={{
+            backgroundColor: s100v100,
+          }}
+          className="w-20 h-20 rounded"
+        />
+        <div
+          style={{
+            backgroundColor: s50v100,
+          }}
+          className="w-20 h-20 rounded"
+        />
+        <div
+          style={{
+            backgroundColor: s100v50,
+          }}
+          className="w-20 h-20 rounded"
+        />
+      </div>
+
       <div
         style={{
-          backgroundColor: texel.RGBToHex(
-            // texel.convert([hue, 1.0, 0.5], texel.OKHSL, texel.sRGB)
-            texel.convert([hue, 0.5, 1.0], texel.OKHSV, texel.sRGB)
-          ),
+          backgroundColor: "#555",
         }}
-        className="p-4 w-fit rounded"
+        className="p-4 w-fit rounded-xl"
       >
         <canvas ref={canvasMain} />
       </div>
