@@ -122,6 +122,7 @@ export const Gamut = () => {
       <div
         style={{
           backgroundColor: texel.RGBToHex(
+            // texel.convert([hue, 1.0, 0.5], texel.OKHSL, texel.sRGB)
             texel.convert([hue, 0.5, 1.0], texel.OKHSV, texel.sRGB)
           ),
         }}
