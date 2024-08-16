@@ -62,8 +62,8 @@ export const Gamut = () => {
       <div>
         <button
           className={[
-            "px-4 rounded mr-2",
-            layout === layouts.LCH ? "bg-blue-400" : "bg-gray-200",
+            "px-4 rounded mr-2 font-medium",
+            layout === layouts.LCH ? "bg-blue-600 text-white" : "bg-gray-200",
           ].join(" ")}
           onClick={(_) => setLayout(layouts.LCH)}
         >
@@ -71,8 +71,8 @@ export const Gamut = () => {
         </button>
         <button
           className={[
-            "px-4 rounded mr-2",
-            layout === layouts.HSL ? "bg-blue-400" : "bg-gray-200",
+            "px-4 rounded mr-2 font-medium",
+            layout === layouts.HSL ? "bg-blue-600 text-white" : "bg-gray-200",
           ].join(" ")}
           onClick={(_) => setLayout(layouts.HSL)}
         >
@@ -80,8 +80,8 @@ export const Gamut = () => {
         </button>
         <button
           className={[
-            "px-4 rounded mr-2",
-            layout === layouts.HSV ? "bg-blue-400" : "bg-gray-200",
+            "px-4 rounded mr-2 font-medium",
+            layout === layouts.HSV ? "bg-blue-600 text-white" : "bg-gray-200",
           ].join(" ")}
           onClick={(_) => setLayout(layouts.HSV)}
         >
