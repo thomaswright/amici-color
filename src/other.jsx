@@ -90,11 +90,71 @@ function updateLightnessCanvas(canvas, ctx, lightnessInput, layout) {
         ctx.fillRect(x, y, 1, 1);
       }
     });
+  } else if (layout === layouts.HSV) {
+    loop((x, y) => {
+      const h = (x / xMax) * 360;
+      const s = y / yMax;
+      const v = lightnessInput;
+      const rgb = texel.convert([h, s, v], texel.OKHSV, texel.sRGB);
+
+      ctx.fillStyle = texel.RGBToHex(rgb);
+      ctx.fillRect(x, y, 1, 1);
+    });
   } else if (layout === layouts.HSL) {
     loop((x, y) => {
       const h = (x / xMax) * 360;
       const s = y / yMax;
       const l = lightnessInput;
+      const rgb = texel.convert([h, s, l], texel.OKHSL, texel.sRGB);
+
+      ctx.fillStyle = texel.RGBToHex(rgb);
+      ctx.fillRect(x, y, 1, 1);
+    });
+  }
+}
+
+function updateSaturationCanvas(canvas, ctx, saturationInput, layout) {
+  canvas.width = SIZE;
+  canvas.height = SIZE;
+
+  let xMax = canvas.width;
+  let yMax = canvas.height;
+
+  let loop = (f) => {
+    for (let x = 0; x < xMax; x++) {
+      for (let y = 0; y < yMax; y++) {
+        f(x, y);
+      }
+    }
+  };
+
+  if (layout === layouts.LCH) {
+    loop((x, y) => {
+      const l = y / yMax;
+      const c = saturationInput * chromaPeak;
+      const h = (x / xMax) * 360;
+      const rgb = texel.convert([l, c, h], texel.OKLCH, texel.sRGB);
+      const inside = texel.isRGBInGamut(rgb);
+      if (inside) {
+        ctx.fillStyle = texel.RGBToHex(rgb);
+        ctx.fillRect(x, y, 1, 1);
+      }
+    });
+  } else if (layout === layouts.HSV) {
+    loop((x, y) => {
+      const h = (x / xMax) * 360;
+      const s = saturationInput;
+      const v = y / yMax;
+      const rgb = texel.convert([h, s, v], texel.OKHSV, texel.sRGB);
+
+      ctx.fillStyle = texel.RGBToHex(rgb);
+      ctx.fillRect(x, y, 1, 1);
+    });
+  } else if (layout === layouts.HSL) {
+    loop((x, y) => {
+      const h = (x / xMax) * 360;
+      const s = saturationInput;
+      const l = y / yMax;
       const rgb = texel.convert([h, s, l], texel.OKHSL, texel.sRGB);
 
       ctx.fillStyle = texel.RGBToHex(rgb);
@@ -116,10 +176,14 @@ const useCanvas = (draw) => {
   return canvasRef;
 };
 
+// Todo: Error catching if canvas isn't loaded
+
 export const Gamut = () => {
   let [hue, setHue] = useState(0);
   let [lightness, setLightness] = useState(0.8);
-  let [layout, setLayout] = useState(layouts.HSL);
+  let [saturation, setSaturation] = useState(0.8);
+
+  let [layout, setLayout] = useState(layouts.LCH);
 
   let drawHue = useCallback(
     (canvas, context) => {
@@ -138,6 +202,15 @@ export const Gamut = () => {
   );
 
   let lightnessCanvas = useCanvas(drawLightness);
+
+  let drawSaturation = useCallback(
+    (canvas, context) => {
+      updateSaturationCanvas(canvas, context, saturation, layout);
+    },
+    [saturation, layout]
+  );
+
+  let saturationCanvas = useCanvas(drawSaturation);
 
   // useEffect(() => {
   //   updateOklchCanvas(hue, layout);
@@ -197,7 +270,9 @@ export const Gamut = () => {
           HSV
         </button>
       </div>
+      <label for="hue_input">{"Hue"}</label>
       <input
+        id={"hue_input"}
         type="range"
         min="0"
         max="360"
@@ -205,6 +280,63 @@ export const Gamut = () => {
         value={hue}
         onChange={(e) => setHue(parseInt(e.target.value))}
       />
+
+      <div
+        style={{
+          backgroundColor: "#555",
+        }}
+        className="p-4 w-fit rounded-xl"
+      >
+        <canvas ref={hueCanvas} />
+      </div>
+      <label for="saturation_input">
+        {layout === layouts.HSV || layout === layouts.HSL
+          ? "Saturation"
+          : "Chroma"}
+      </label>
+      <input
+        id={"saturation_input"}
+        type="range"
+        min="0"
+        max="1"
+        step="0.02"
+        value={saturation}
+        onChange={(e) => {
+          setSaturation(parseFloat(e.target.value));
+        }}
+      />
+      <div
+        style={{
+          backgroundColor: "#555",
+        }}
+        className="p-4 w-fit rounded-xl"
+      >
+        <canvas ref={saturationCanvas} />
+      </div>
+      <label for="lightness_input">
+        {layout === layouts.LCH || layout === layouts.HSL
+          ? "Lightness"
+          : "Value"}
+      </label>
+      <input
+        id={"lightness_input"}
+        type="range"
+        min="0"
+        max="1"
+        step="0.02"
+        value={lightness}
+        onChange={(e) => {
+          setLightness(parseFloat(e.target.value));
+        }}
+      />
+      <div
+        style={{
+          backgroundColor: "#555",
+        }}
+        className="p-4 w-fit rounded-xl"
+      >
+        <canvas ref={lightnessCanvas} />
+      </div>
       <div className="flex flex-row gap-2 py-2">
         <div
           style={{
@@ -242,33 +374,6 @@ export const Gamut = () => {
           }}
           className="w-10 h-10 rounded"
         />
-      </div>
-
-      <div
-        style={{
-          backgroundColor: "#555",
-        }}
-        className="p-4 w-fit rounded-xl"
-      >
-        <canvas ref={hueCanvas} />
-      </div>
-      <input
-        type="range"
-        min="0"
-        max="1"
-        step="0.02"
-        value={lightness}
-        onChange={(e) => {
-          setLightness(parseFloat(e.target.value));
-        }}
-      />
-      <div
-        style={{
-          backgroundColor: "#555",
-        }}
-        className="p-4 w-fit rounded-xl"
-      >
-        <canvas ref={lightnessCanvas} />
       </div>
     </div>
   );
