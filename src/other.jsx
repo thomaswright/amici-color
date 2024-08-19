@@ -11,7 +11,7 @@ let layouts = {
   HSL: "HSL",
 };
 
-let SIZE = 300;
+let SIZE = 200;
 let chromaPeak = 0.35;
 
 // Todo: generate the hue gamuts at start
@@ -158,7 +158,7 @@ const updateLines = (canvas, ctx, x, y) => {
   let xMax = canvas.width;
   let yMax = canvas.height;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(-10, -10, canvas.width + 20, canvas.height + 20);
 
   ctx.fillStyle = "#fff";
   ctx.fillRect(x * xMax, 0, 1, yMax);
@@ -172,6 +172,71 @@ const updateLines = (canvas, ctx, x, y) => {
 };
 
 // Todo: Error catching if canvas isn't loaded
+
+const Chart = ({ yInput, xInput, gamut, lines, name, flip = false }) => {
+  return (
+    <div className="w-fit ">
+      <div className="font-black text-lg w-full text-center">{name}</div>
+      <div className="flex flex-row">
+        <input
+          className="my-2"
+          style={{
+            width: 40,
+            writingMode: flip ? "sideways-lr" : "vertical-lr",
+          }}
+          type="range"
+          min={yInput.min}
+          max={yInput.max}
+          step={yInput.step}
+          value={yInput.value}
+          onChange={(e) => {
+            yInput.set(parseFloat(e.target.value));
+          }}
+        />
+
+        <div
+          style={{
+            backgroundColor: "#555",
+          }}
+          className="w-fit p-4 rounded-xl"
+        >
+          <div
+            style={{
+              width: SIZE + "px",
+              height: SIZE + "px",
+            }}
+          >
+            <canvas className="absolute" ref={gamut} />
+            <canvas className="absolute" ref={lines} />
+          </div>
+        </div>
+      </div>
+      <div
+        className=" px-2"
+        style={{
+          marginLeft: 40,
+          width: SIZE + 32,
+          height: 40,
+        }}
+      >
+        <input
+          style={{
+            height: 40,
+          }}
+          type="range"
+          className="w-full"
+          min={xInput.min}
+          max={xInput.max}
+          step={xInput.step}
+          value={xInput.value}
+          onChange={(e) => {
+            xInput.set(parseFloat(e.target.value));
+          }}
+        />
+      </div>
+    </div>
+  );
+};
 
 export const Gamut = () => {
   let [hue, setHue] = useState(0.1);
@@ -217,7 +282,12 @@ export const Gamut = () => {
     const context = canvas.getContext("2d");
     canvas.width = SIZE;
     canvas.height = SIZE;
-    updateLines(canvas, context, lightness, saturation);
+    updateLines(
+      canvas,
+      context,
+      lightness,
+      layout === layouts.LCH ? 1 - saturation : saturation
+    );
   }, [lightness, saturation, layout]);
 
   useEffect(() => {
@@ -225,7 +295,7 @@ export const Gamut = () => {
     const context = canvas.getContext("2d");
     canvas.width = SIZE;
     canvas.height = SIZE;
-    updateLines(canvas, context, hue, saturation);
+    updateLines(canvas, context, hue / 360, saturation);
   }, [hue, saturation, layout]);
 
   useEffect(() => {
@@ -233,7 +303,7 @@ export const Gamut = () => {
     const context = canvas.getContext("2d");
     canvas.width = SIZE;
     canvas.height = SIZE;
-    updateLines(canvas, context, hue, lightness);
+    updateLines(canvas, context, hue / 360, lightness);
   }, [hue, lightness, layout]);
 
   let s100l25 = texel.RGBToHex(
@@ -261,11 +331,6 @@ export const Gamut = () => {
 
   return (
     <div>
-      <label for="saturation_input">
-        {layout === layouts.HSV || layout === layouts.HSL
-          ? "Saturation"
-          : "Chroma"}
-      </label>
       <div>
         <button
           className={[
@@ -295,92 +360,66 @@ export const Gamut = () => {
           HSV
         </button>
       </div>
-      <label for="hue_input">{"Hue"}</label>
-      <input
-        id={"hue_input"}
-        type="range"
-        min="0"
-        max="360"
-        step="2"
-        value={hue}
-        onChange={(e) => setHue(parseInt(e.target.value))}
-      />
-      <div
-        style={{
-          backgroundColor: "#555",
-        }}
-        className="w-fit p-4 rounded-xl"
-      >
-        <div
-          style={{
-            width: SIZE + "px",
-            height: SIZE + "px",
-          }}
-        >
-          <canvas className="absolute" ref={hueCanvas} />
-          <canvas className="absolute" ref={hueLineCanvas} />
-        </div>
-      </div>
 
-      <input
-        id={"saturation_input"}
-        type="range"
-        min="0"
-        max="1"
-        step="0.02"
-        value={saturation}
-        onChange={(e) => {
-          setSaturation(parseFloat(e.target.value));
+      <Chart
+        yInput={{
+          min: "0",
+          max: "1",
+          step: "0.02",
+          value: saturation,
+          set: (v) => setSaturation(v),
         }}
+        xInput={{
+          min: "0",
+          max: "1",
+          step: "0.02",
+          value: lightness,
+          set: (v) => setLightness(v),
+        }}
+        gamut={hueCanvas}
+        lines={hueLineCanvas}
+        flip={layout === layouts.LCH}
+        name={"Hue"}
       />
-      <div
-        style={{
-          backgroundColor: "#555",
+      <Chart
+        yInput={{
+          min: "0",
+          max: "1",
+          step: "0.02",
+          value: lightness,
+          set: (v) => setLightness(v),
         }}
-        className="w-fit p-4 rounded-xl"
-      >
-        <div
-          style={{
-            width: SIZE + "px",
-            height: SIZE + "px",
-          }}
-        >
-          <canvas className="absolute" ref={saturationCanvas} />
-          <canvas className="absolute" ref={saturationLineCanvas} />
-        </div>
-      </div>
-      <label for="lightness_input">
-        {layout === layouts.LCH || layout === layouts.HSL
-          ? "Lightness"
-          : "Value"}
-      </label>
-      <input
-        id={"lightness_input"}
-        type="range"
-        min="0"
-        max="1"
-        step="0.02"
-        value={lightness}
-        onChange={(e) => {
-          setLightness(parseFloat(e.target.value));
+        xInput={{
+          min: "0",
+          max: "360",
+          step: "2",
+          value: hue,
+          set: (v) => setHue(v),
         }}
+        gamut={saturationCanvas}
+        lines={saturationLineCanvas}
+        name={layout === layouts.LCH ? "Chroma" : "Saturation"}
       />
-      <div
-        style={{
-          backgroundColor: "#555",
+      <Chart
+        yInput={{
+          min: "0",
+          max: "1",
+          step: "0.02",
+          value: saturation,
+          set: (v) => setSaturation(v),
         }}
-        className="w-fit p-4 rounded-xl"
-      >
-        <div
-          style={{
-            width: SIZE + "px",
-            height: SIZE + "px",
-          }}
-        >
-          <canvas className="absolute" ref={lightnessCanvas} />
-          <canvas className="absolute" ref={lightnessLineCanvas} />
-        </div>
-      </div>
+        xInput={{
+          min: "0",
+          max: "360",
+          step: "2",
+          value: hue,
+          set: (v) => setHue(v),
+        }}
+        gamut={lightnessCanvas}
+        lines={lightnessLineCanvas}
+        name={layout === layouts.HSV ? "value" : "Lightness"}
+      />
+
       <div className="flex flex-row gap-2 py-2">
         <div
           style={{
@@ -422,3 +461,14 @@ export const Gamut = () => {
     </div>
   );
 };
+
+// <div>
+// {layout === layouts.HSV || layout === layouts.HSL
+//   ? "Saturation"
+//   : "Chroma"}
+// </div>
+// <div>
+//         {layout === layouts.LCH || layout === layouts.HSL
+//           ? "Lightness"
+//           : "Value"}
+//       </div>
