@@ -16,9 +16,6 @@ let chromaPeak = 0.35;
 
 // Todo: generate the hue gamuts at start
 function updateHueCanvas(canvas, ctx, hueInput, layout) {
-  canvas.width = SIZE;
-  canvas.height = SIZE;
-
   let xMax = canvas.width;
   let yMax = canvas.height;
 
@@ -64,9 +61,6 @@ function updateHueCanvas(canvas, ctx, hueInput, layout) {
 }
 
 function updateLightnessCanvas(canvas, ctx, lightnessInput, layout) {
-  canvas.width = SIZE;
-  canvas.height = SIZE;
-
   let xMax = canvas.width;
   let yMax = canvas.height;
 
@@ -114,9 +108,6 @@ function updateLightnessCanvas(canvas, ctx, lightnessInput, layout) {
 }
 
 function updateSaturationCanvas(canvas, ctx, saturationInput, layout) {
-  canvas.width = SIZE;
-  canvas.height = SIZE;
-
   let xMax = canvas.width;
   let yMax = canvas.height;
 
@@ -163,58 +154,87 @@ function updateSaturationCanvas(canvas, ctx, saturationInput, layout) {
   }
 }
 
-const useCanvas = (draw) => {
-  const canvasRef = useRef(null);
+const updateLines = (canvas, ctx, x, y) => {
+  let xMax = canvas.width;
+  let yMax = canvas.height;
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    draw(canvas, context);
-  }, [draw]);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(x * xMax, 0, 1, yMax);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(x * xMax - 1, 0, 1, yMax);
 
-  return canvasRef;
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, yMax * y, xMax, 1);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, yMax * y - 1, xMax, 1);
 };
 
 // Todo: Error catching if canvas isn't loaded
 
 export const Gamut = () => {
-  let [hue, setHue] = useState(0);
+  let [hue, setHue] = useState(0.1);
   let [lightness, setLightness] = useState(0.8);
   let [saturation, setSaturation] = useState(0.8);
 
   let [layout, setLayout] = useState(layouts.LCH);
 
-  let drawHue = useCallback(
-    (canvas, context) => {
-      updateHueCanvas(canvas, context, hue, layout);
-    },
-    [hue, layout]
-  );
+  const hueCanvas = useRef(null);
+  const saturationCanvas = useRef(null);
+  const lightnessCanvas = useRef(null);
 
-  let hueCanvas = useCanvas(drawHue);
+  const hueLineCanvas = useRef(null);
+  const saturationLineCanvas = useRef(null);
+  const lightnessLineCanvas = useRef(null);
 
-  let drawLightness = useCallback(
-    (canvas, context) => {
-      updateLightnessCanvas(canvas, context, lightness, layout);
-    },
-    [lightness, layout]
-  );
+  useEffect(() => {
+    const canvas = hueCanvas.current;
+    const context = canvas.getContext("2d");
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+    updateHueCanvas(canvas, context, hue, layout);
+  }, [hue, layout]);
 
-  let lightnessCanvas = useCanvas(drawLightness);
+  useEffect(() => {
+    const canvas = saturationCanvas.current;
+    const context = canvas.getContext("2d");
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+    updateSaturationCanvas(canvas, context, saturation, layout);
+  }, [saturation, layout]);
 
-  let drawSaturation = useCallback(
-    (canvas, context) => {
-      updateSaturationCanvas(canvas, context, saturation, layout);
-    },
-    [saturation, layout]
-  );
+  useEffect(() => {
+    const canvas = lightnessCanvas.current;
+    const context = canvas.getContext("2d");
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+    updateLightnessCanvas(canvas, context, lightness, layout);
+  }, [lightness, layout]);
 
-  let saturationCanvas = useCanvas(drawSaturation);
+  useEffect(() => {
+    const canvas = hueLineCanvas.current;
+    const context = canvas.getContext("2d");
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+    updateLines(canvas, context, lightness, saturation);
+  }, [lightness, saturation, layout]);
 
-  // useEffect(() => {
-  //   updateOklchCanvas(hue, layout);
-  // }, [hue, layout]);
+  useEffect(() => {
+    const canvas = lightnessLineCanvas.current;
+    const context = canvas.getContext("2d");
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+    updateLines(canvas, context, hue, saturation);
+  }, [hue, saturation, layout]);
+
+  useEffect(() => {
+    const canvas = saturationLineCanvas.current;
+    const context = canvas.getContext("2d");
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+    updateLines(canvas, context, hue, lightness);
+  }, [hue, lightness, layout]);
 
   let s100l25 = texel.RGBToHex(
     texel.convert([hue, 1.0, 0.25], texel.OKHSL, texel.sRGB)
@@ -241,6 +261,11 @@ export const Gamut = () => {
 
   return (
     <div>
+      <label for="saturation_input">
+        {layout === layouts.HSV || layout === layouts.HSL
+          ? "Saturation"
+          : "Chroma"}
+      </label>
       <div>
         <button
           className={[
@@ -280,20 +305,23 @@ export const Gamut = () => {
         value={hue}
         onChange={(e) => setHue(parseInt(e.target.value))}
       />
-
       <div
         style={{
           backgroundColor: "#555",
         }}
-        className="p-4 w-fit rounded-xl"
+        className="w-fit p-4 rounded-xl"
       >
-        <canvas ref={hueCanvas} />
+        <div
+          style={{
+            width: SIZE + "px",
+            height: SIZE + "px",
+          }}
+        >
+          <canvas className="absolute" ref={hueCanvas} />
+          <canvas className="absolute" ref={hueLineCanvas} />
+        </div>
       </div>
-      <label for="saturation_input">
-        {layout === layouts.HSV || layout === layouts.HSL
-          ? "Saturation"
-          : "Chroma"}
-      </label>
+
       <input
         id={"saturation_input"}
         type="range"
@@ -309,9 +337,17 @@ export const Gamut = () => {
         style={{
           backgroundColor: "#555",
         }}
-        className="p-4 w-fit rounded-xl"
+        className="w-fit p-4 rounded-xl"
       >
-        <canvas ref={saturationCanvas} />
+        <div
+          style={{
+            width: SIZE + "px",
+            height: SIZE + "px",
+          }}
+        >
+          <canvas className="absolute" ref={saturationCanvas} />
+          <canvas className="absolute" ref={saturationLineCanvas} />
+        </div>
       </div>
       <label for="lightness_input">
         {layout === layouts.LCH || layout === layouts.HSL
@@ -333,9 +369,17 @@ export const Gamut = () => {
         style={{
           backgroundColor: "#555",
         }}
-        className="p-4 w-fit rounded-xl"
+        className="w-fit p-4 rounded-xl"
       >
-        <canvas ref={lightnessCanvas} />
+        <div
+          style={{
+            width: SIZE + "px",
+            height: SIZE + "px",
+          }}
+        >
+          <canvas className="absolute" ref={lightnessCanvas} />
+          <canvas className="absolute" ref={lightnessLineCanvas} />
+        </div>
       </div>
       <div className="flex flex-row gap-2 py-2">
         <div
