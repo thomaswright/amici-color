@@ -238,6 +238,38 @@ const Chart = ({ yInput, xInput, gamut, lines, name, flip = false }) => {
   );
 };
 
+let makeDefaultPalette = () => {
+  return [
+    texel.RGBToHex(texel.convert([0.3, 1.0, 0.25], texel.OKHSV, texel.sRGB)),
+    texel.RGBToHex(texel.convert([0.3, 1.0, 0.5], texel.OKHSV, texel.sRGB)),
+    texel.RGBToHex(texel.convert([0.3, 1.0, 0.75], texel.OKHSV, texel.sRGB)),
+  ];
+};
+
+const Palette = () => {
+  let [picks, setPicks] = useState(() => [makeDefaultPalette()]);
+
+  return (
+    <div className="w-20 bg-pink-400">
+      {picks.map((group, i) => {
+        return (
+          <>
+            {group.map((hex, j) => {
+              return (
+                <div
+                  key={i + "" + j}
+                  className="w-10 h-10"
+                  style={{ backgroundColor: hex }}
+                />
+              );
+            })}
+          </>
+        );
+      })}
+    </div>
+  );
+};
+
 export const Gamut = () => {
   let [hue, setHue] = useState(0.1);
   let [lightness, setLightness] = useState(0.8);
@@ -330,134 +362,137 @@ export const Gamut = () => {
   );
 
   return (
-    <div>
+    <div className="flex flex-row">
       <div>
-        <button
-          className={[
-            "px-4 rounded mr-2 font-medium",
-            layout === layouts.LCH ? "bg-blue-600 text-white" : "bg-gray-200",
-          ].join(" ")}
-          onClick={(_) => setLayout(layouts.LCH)}
-        >
-          LCH
-        </button>
-        <button
-          className={[
-            "px-4 rounded mr-2 font-medium",
-            layout === layouts.HSL ? "bg-blue-600 text-white" : "bg-gray-200",
-          ].join(" ")}
-          onClick={(_) => setLayout(layouts.HSL)}
-        >
-          HSL
-        </button>
-        <button
-          className={[
-            "px-4 rounded mr-2 font-medium",
-            layout === layouts.HSV ? "bg-blue-600 text-white" : "bg-gray-200",
-          ].join(" ")}
-          onClick={(_) => setLayout(layouts.HSV)}
-        >
-          HSV
-        </button>
-      </div>
+        <div>
+          <button
+            className={[
+              "px-4 rounded mr-2 font-medium",
+              layout === layouts.LCH ? "bg-blue-600 text-white" : "bg-gray-200",
+            ].join(" ")}
+            onClick={(_) => setLayout(layouts.LCH)}
+          >
+            LCH
+          </button>
+          <button
+            className={[
+              "px-4 rounded mr-2 font-medium",
+              layout === layouts.HSL ? "bg-blue-600 text-white" : "bg-gray-200",
+            ].join(" ")}
+            onClick={(_) => setLayout(layouts.HSL)}
+          >
+            HSL
+          </button>
+          <button
+            className={[
+              "px-4 rounded mr-2 font-medium",
+              layout === layouts.HSV ? "bg-blue-600 text-white" : "bg-gray-200",
+            ].join(" ")}
+            onClick={(_) => setLayout(layouts.HSV)}
+          >
+            HSV
+          </button>
+        </div>
 
-      <Chart
-        yInput={{
-          min: "0",
-          max: "1",
-          step: "0.02",
-          value: saturation,
-          set: (v) => setSaturation(v),
-        }}
-        xInput={{
-          min: "0",
-          max: "1",
-          step: "0.02",
-          value: lightness,
-          set: (v) => setLightness(v),
-        }}
-        gamut={hueCanvas}
-        lines={hueLineCanvas}
-        flip={layout === layouts.LCH}
-        name={"Hue"}
-      />
-      <Chart
-        yInput={{
-          min: "0",
-          max: "1",
-          step: "0.02",
-          value: lightness,
-          set: (v) => setLightness(v),
-        }}
-        xInput={{
-          min: "0",
-          max: "360",
-          step: "2",
-          value: hue,
-          set: (v) => setHue(v),
-        }}
-        gamut={saturationCanvas}
-        lines={saturationLineCanvas}
-        name={layout === layouts.LCH ? "Chroma" : "Saturation"}
-      />
-      <Chart
-        yInput={{
-          min: "0",
-          max: "1",
-          step: "0.02",
-          value: saturation,
-          set: (v) => setSaturation(v),
-        }}
-        xInput={{
-          min: "0",
-          max: "360",
-          step: "2",
-          value: hue,
-          set: (v) => setHue(v),
-        }}
-        gamut={lightnessCanvas}
-        lines={lightnessLineCanvas}
-        name={layout === layouts.HSV ? "value" : "Lightness"}
-      />
+        <Chart
+          yInput={{
+            min: "0",
+            max: "1",
+            step: "0.02",
+            value: saturation,
+            set: (v) => setSaturation(v),
+          }}
+          xInput={{
+            min: "0",
+            max: "1",
+            step: "0.02",
+            value: lightness,
+            set: (v) => setLightness(v),
+          }}
+          gamut={hueCanvas}
+          lines={hueLineCanvas}
+          flip={layout === layouts.LCH}
+          name={"Hue"}
+        />
+        <Chart
+          yInput={{
+            min: "0",
+            max: "1",
+            step: "0.02",
+            value: lightness,
+            set: (v) => setLightness(v),
+          }}
+          xInput={{
+            min: "0",
+            max: "360",
+            step: "2",
+            value: hue,
+            set: (v) => setHue(v),
+          }}
+          gamut={saturationCanvas}
+          lines={saturationLineCanvas}
+          name={layout === layouts.LCH ? "Chroma" : "Saturation"}
+        />
+        <Chart
+          yInput={{
+            min: "0",
+            max: "1",
+            step: "0.02",
+            value: saturation,
+            set: (v) => setSaturation(v),
+          }}
+          xInput={{
+            min: "0",
+            max: "360",
+            step: "2",
+            value: hue,
+            set: (v) => setHue(v),
+          }}
+          gamut={lightnessCanvas}
+          lines={lightnessLineCanvas}
+          name={layout === layouts.HSV ? "value" : "Lightness"}
+        />
 
-      <div className="flex flex-row gap-2 py-2">
-        <div
-          style={{
-            backgroundColor: s100l25,
-          }}
-          className="w-10 h-10 rounded"
-        />
-        <div
-          style={{
-            backgroundColor: s100l50,
-          }}
-          className="w-10 h-10 rounded"
-        />
-        <div
-          style={{
-            backgroundColor: s100l75,
-          }}
-          className="w-10 h-10 rounded"
-        />
-        <div
-          style={{
-            backgroundColor: s100v100,
-          }}
-          className="w-10 h-10 rounded"
-        />
-        <div
-          style={{
-            backgroundColor: s50v100,
-          }}
-          className="w-10 h-10 rounded"
-        />
-        <div
-          style={{
-            backgroundColor: s100v50,
-          }}
-          className="w-10 h-10 rounded"
-        />
+        <div className="flex flex-row gap-2 py-2">
+          <div
+            style={{
+              backgroundColor: s100l25,
+            }}
+            className="w-10 h-10 rounded"
+          />
+          <div
+            style={{
+              backgroundColor: s100l50,
+            }}
+            className="w-10 h-10 rounded"
+          />
+          <div
+            style={{
+              backgroundColor: s100l75,
+            }}
+            className="w-10 h-10 rounded"
+          />
+          <div
+            style={{
+              backgroundColor: s100v100,
+            }}
+            className="w-10 h-10 rounded"
+          />
+          <div
+            style={{
+              backgroundColor: s50v100,
+            }}
+            className="w-10 h-10 rounded"
+          />
+          <div
+            style={{
+              backgroundColor: s100v50,
+            }}
+            className="w-10 h-10 rounded"
+          />
+        </div>
       </div>
+      <Palette />
     </div>
   );
 };
