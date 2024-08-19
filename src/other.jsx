@@ -238,16 +238,25 @@ const Chart = ({ yInput, xInput, gamut, lines, name, flip = false }) => {
   );
 };
 
-let makeDefaultPalette = () => {
-  return [
-    texel.RGBToHex(texel.convert([0.3, 1.0, 0.25], texel.OKHSV, texel.sRGB)),
-    texel.RGBToHex(texel.convert([0.3, 1.0, 0.5], texel.OKHSV, texel.sRGB)),
-    texel.RGBToHex(texel.convert([0.3, 1.0, 0.75], texel.OKHSV, texel.sRGB)),
-  ];
+let makeDefaultPalette = (xMax, yMax) => {
+  // let result = [];
+  // for (let x = 0; x < xMax; x++) {
+  //   for (let y = 0; y < yMax; y++) {
+  //     result;
+  //   }
+  // }
+
+  // return [
+  //   texel.RGBToHex(texel.convert([0.3, 1.0, 0.25], texel.OKHSV, texel.sRGB)),
+  //   texel.RGBToHex(texel.convert([0.3, 1.0, 0.5], texel.OKHSV, texel.sRGB)),
+  //   texel.RGBToHex(texel.convert([0.3, 1.0, 0.75], texel.OKHSV, texel.sRGB)),
+  // ];
+
+  return [[]];
 };
 
 const Palette = () => {
-  let [picks, setPicks] = useState(() => [makeDefaultPalette()]);
+  let [picks, setPicks] = useState(() => makeDefaultPalette());
 
   return (
     <div className="w-20 bg-pink-400">
