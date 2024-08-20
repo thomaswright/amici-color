@@ -239,42 +239,53 @@ const Chart = ({ yInput, xInput, gamut, lines, name, flip = false }) => {
 };
 
 let makeDefaultPalette = (xMax, yMax) => {
-  // let result = [];
-  // for (let x = 0; x < xMax; x++) {
-  //   for (let y = 0; y < yMax; y++) {
-  //     result;
-  //   }
-  // }
+  let result = [];
+  for (let x = 0; x < xMax; x++) {
+    result.push([]);
+    for (let y = 0; y < yMax; y++) {
+      let hex = texel.RGBToHex(
+        texel.convert(
+          [(x / xMax) * 360, (y + 1) / yMax, 1.0],
+          texel.OKHSV,
+          texel.sRGB
+        )
+      );
 
-  // return [
-  //   texel.RGBToHex(texel.convert([0.3, 1.0, 0.25], texel.OKHSV, texel.sRGB)),
-  //   texel.RGBToHex(texel.convert([0.3, 1.0, 0.5], texel.OKHSV, texel.sRGB)),
-  //   texel.RGBToHex(texel.convert([0.3, 1.0, 0.75], texel.OKHSV, texel.sRGB)),
-  // ];
+      result[x].push(hex);
+    }
+  }
 
-  return [[]];
+  return result;
 };
 
 const Palette = () => {
-  let [picks, setPicks] = useState(() => makeDefaultPalette());
-
+  let [picks, setPicks] = useState(() => makeDefaultPalette(5, 5));
+  let addColumn = (i) => {};
   return (
-    <div className="w-20 bg-pink-400">
-      {picks.map((group, i) => {
-        return (
-          <>
-            {group.map((hex, j) => {
-              return (
-                <div
-                  key={i + "" + j}
-                  className="w-10 h-10"
-                  style={{ backgroundColor: hex }}
-                />
-              );
-            })}
-          </>
-        );
-      })}
+    <div>
+      <div className="flex flex-row gap-1">
+        {picks.map((group, i) => {
+          return (
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={(_) => addColumn(i)}
+                className="-ml-[25%] bg-blue-200 w-fit p-1 flex flex-row items-center justify-center rounded"
+              >
+                {"+"}
+              </button>
+              {group.map((hex, j) => {
+                return (
+                  <div
+                    key={"swatch" + i + "" + j}
+                    className="w-10 h-10 rounded-xl"
+                    style={{ backgroundColor: hex }}
+                  />
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
