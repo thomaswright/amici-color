@@ -347,7 +347,12 @@ export const Gamut = () => {
     const context = canvas.getContext("2d");
     canvas.width = SIZE;
     canvas.height = SIZE;
-    updateLines(canvas, context, hue / 360, saturation);
+    updateLines(
+      canvas,
+      context,
+      hue / 360,
+      layout === layouts.LCH ? 1 - saturation : saturation
+    );
   }, [hue, saturation, layout]);
 
   useEffect(() => {
@@ -470,6 +475,7 @@ export const Gamut = () => {
           }}
           gamut={lightnessCanvas}
           lines={lightnessLineCanvas}
+          flip={layout === layouts.LCH}
           name={layout === layouts.HSV ? "value" : "Lightness"}
         />
 
@@ -512,7 +518,7 @@ export const Gamut = () => {
           />
         </div>
       </div>
-      <Palette />
+      {/* <Palette /> */}
     </div>
   );
 };

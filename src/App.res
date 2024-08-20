@@ -62,41 +62,17 @@ module Palette = {
   let make = (~arr) => {
     let (picks, letPicks) = React.useState(() => makeDefaultPalette(5, 5))
     Console.log(picks)
-    let len = picks->Array.getUnsafe(0)->{x => x.elements->Array.length}
+    let hueLen = picks->Array.length
+    let shadeLen = picks->Array.getUnsafe(0)->{x => x.elements->Array.length}
 
-    <div className="p-6">
-      <div className="flex flex-row">
-        {Utils.mapRange(len, i => {
-          <div className="w-10">
-            <button className={"w-4 h-4 bg-blue-500 -ml-2 rounded-full"} />
-          </div>
-        })->React.array}
-      </div>
-      {picks
-      ->Array.map(({id, elements}) => {
-        <div key={id} className="flex flex-row ">
-          <button className={"w-4 h-4 bg-blue-500 -mt-2 rounded-full"} />
-          {elements
-          ->Array.map(element =>
-            <div
-              className={"w-10 h-10 m-1"}
-              key={element.id}
-              style={{
-                backgroundColor: element.hex,
-              }}
-            />
-          )
-          ->React.array}
-        </div>
-      })
-      ->React.array}
-    </div>
+    <div className="p-6" />
   }
 }
 
 @react.component
 let make = () => {
   <div className="p-6 ">
-    <Palette arr={[]} />
+    // <Palette arr={[]} />
+    <Gamut />
   </div>
 }
