@@ -281,7 +281,8 @@ function App$Palette(props) {
                                   }),
                               className: "flex flex-col justify-end",
                               style: {
-                                gridArea: "addShade"
+                                gridColumn: "-1 / -2",
+                                gridRow: "1 / 2"
                               }
                             }),
                         JsxRuntime.jsx("div", {
@@ -300,7 +301,8 @@ function App$Palette(props) {
                                   }),
                               className: "flex flex-col items-end",
                               style: {
-                                gridArea: "addHue"
+                                gridColumn: "1 / 2",
+                                gridRow: "-1 / -2"
                               }
                             }),
                         JsxRuntime.jsx("div", {
@@ -358,9 +360,9 @@ function App$Palette(props) {
                                               }, pick.id);
                                   }),
                               style: {
-                                display: "grid",
-                                gridArea: "yAxis",
-                                gridTemplateRows: "repeat(" + shadeLen.toString() + ", 1fr)"
+                                gridColumn: "1 / 2",
+                                gridRow: "2 / -2",
+                                gridTemplateRows: "subgrid"
                               }
                             }),
                         JsxRuntime.jsx("div", {
@@ -461,8 +463,9 @@ function App$Palette(props) {
                                   }),
                               style: {
                                 display: "grid",
-                                gridArea: "xAxis",
-                                gridTemplateColumns: "repeat(" + shadeLen.toString() + ", 1fr)"
+                                gridColumn: "2 / -2",
+                                gridRow: "1 / 2",
+                                gridTemplateColumns: "subgrid"
                               }
                             }),
                         JsxRuntime.jsx("div", {
@@ -476,18 +479,18 @@ function App$Palette(props) {
                                   }),
                               style: {
                                 display: "grid",
-                                gridArea: "main",
-                                gridTemplateColumns: "repeat(" + shadeLen.toString() + ", 1fr)",
-                                gridTemplateRows: "repeat(" + hueLen.toString() + ", 1fr)"
+                                gridColumn: "2 / -2",
+                                gridRow: "2 / -2",
+                                gridTemplateColumns: "subgrid",
+                                gridTemplateRows: "subgrid"
                               }
                             })
                       ],
                       className: "p-6 w-fit",
                       style: {
                         display: "grid",
-                        gridTemplateAreas: "\"... xAxis addShade\" \"yAxis main ...\" \"addHue ... ...\"",
-                        gridTemplateColumns: "5rem 1fr 2.5rem",
-                        gridTemplateRows: "2.5rem 1fr 2.5rem"
+                        gridTemplateColumns: "5rem repeat(" + shadeLen.toString() + ", 1fr) 2.5rem",
+                        gridTemplateRows: "2.5rem repeat(" + hueLen.toString() + ", 1fr) 2.5rem"
                       }
                     })
               ]

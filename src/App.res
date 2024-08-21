@@ -262,15 +262,15 @@ module Palette = {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "5rem 1fr 2.5rem",
-          gridTemplateRows: "2.5rem 1fr 2.5rem",
-          gridTemplateAreas: `"... xAxis addShade" "yAxis main ..." "addHue ... ..."`,
+          gridTemplateColumns: `5rem repeat(${shadeLen->Int.toString}, 1fr) 2.5rem`,
+          gridTemplateRows: `2.5rem repeat(${hueLen->Int.toString}, 1fr) 2.5rem`,
         }}
         className="p-6 w-fit">
         <div
           className="flex flex-col justify-end"
           style={{
-            gridArea: "addShade",
+            gridRow: "1 / 2",
+            gridColumn: "-1 / -2",
           }}>
           <button
             className="w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full"
@@ -333,7 +333,8 @@ module Palette = {
         <div
           className="flex flex-col items-end"
           style={{
-            gridArea: "addHue",
+            gridRow: "-1 / -2",
+            gridColumn: "1 / 2",
           }}>
           <button
             className="w-5 h-5 bg-blue-500 rounded-bl-full rounded-tl-full rounded-br-full"
@@ -348,9 +349,9 @@ module Palette = {
         </div>
         <div
           style={{
-            display: "grid",
-            gridArea: "yAxis",
-            gridTemplateRows: `repeat(${shadeLen->Int.toString}, 1fr)`,
+            gridRow: "2 / -2",
+            gridColumn: "1 / 2",
+            gridTemplateRows: `subgrid`,
           }}>
           {picks
           ->Array.map(pick => {
@@ -399,8 +400,9 @@ module Palette = {
         <div
           style={{
             display: "grid",
-            gridArea: "xAxis",
-            gridTemplateColumns: `repeat(${shadeLen->Int.toString}, 1fr)`,
+            gridRow: "1 / 2",
+            gridColumn: "2 / -2",
+            gridTemplateColumns: `subgrid`,
           }}>
           {shades
           ->Array.map(shade => {
@@ -455,7 +457,7 @@ module Palette = {
                             (a, c, i) => {
                               c.shadeId == shade.id
                                 ? {
-                                    // Todo: interpolate saturation too?
+                                    // Todo: interpolate value too?
 
                                     let left =
                                       i == 0
@@ -519,9 +521,10 @@ module Palette = {
         <div
           style={{
             display: "grid",
-            gridArea: "main",
-            gridTemplateColumns: `repeat(${shadeLen->Int.toString}, 1fr)`,
-            gridTemplateRows: `repeat(${hueLen->Int.toString}, 1fr)`,
+            gridRow: "2 / -2",
+            gridColumn: "2 / -2",
+            gridTemplateColumns: "subgrid",
+            gridTemplateRows: "subgrid",
           }}>
           {picksFlat
           ->Array.map(element => {
