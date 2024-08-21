@@ -152,7 +152,7 @@ function App$HueLine(props) {
 function makeDefaultPicks(xLen, defaultShades) {
   var yLenF = defaultShades.length;
   return mapRange(xLen, (function (x) {
-                var hue = x / xLen * 360;
+                var hue = x / xLen * 360 + 1;
                 var elements = defaultShades.map(function (shade, y) {
                       var s = (y + 1) / yLenF;
                       var hex = Color.RGBToHex(Color.convert([
@@ -175,7 +175,7 @@ function makeDefaultPicks(xLen, defaultShades) {
               }));
 }
 
-function updateHueGamutCanvas(canvas, ctx, hue) {
+function updateLchHGamutCanvas(canvas, ctx, hue) {
   var xMax = canvas.width;
   var yMax = canvas.height;
   for(var x = 0; x <= xMax; ++x){
@@ -196,7 +196,7 @@ function updateHueGamutCanvas(canvas, ctx, hue) {
   }
 }
 
-function App$HueGamut(props) {
+function App$LchHGamut(props) {
   var selected = props.selected;
   var hues = props.hues;
   var canvasRef = React.useRef(null);
@@ -214,7 +214,7 @@ function App$HueGamut(props) {
             if (hueObj !== undefined) {
               canvasDom.width = 300;
               canvasDom.height = 300;
-              updateHueGamutCanvas(canvasDom, context, hueObj.value);
+              updateLchHGamutCanvas(canvasDom, context, hueObj.value);
             } else {
               context.clearRect(0, 0, 300, 300);
             }
@@ -238,6 +238,74 @@ function App$HueGamut(props) {
                                               });
                                   });
                       })),
+                JsxRuntime.jsx("canvas", {
+                      ref: Caml_option.some(canvasRef)
+                    })
+              ],
+              className: "w-fit relative bg-black"
+            });
+}
+
+function updateHslSGamutCanvas(canvas, ctx) {
+  var xMax = canvas.width;
+  var yMax = canvas.height;
+  for(var x = 0; x <= xMax; ++x){
+    for(var y = 0; y <= yMax; ++y){
+      var h = x / xMax * 360;
+      var l = y / yMax;
+      var rgb = Color.convert([
+            h,
+            1.0,
+            l
+          ], Color.OKHSL, Color.sRGB);
+      ctx.fillStyle = Color.RGBToHex(rgb);
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
+}
+
+function App$HslSGamut(props) {
+  var selected = props.selected;
+  var hues = props.hues;
+  var canvasRef = React.useRef(null);
+  var hueObj = Core__Option.flatMap(selected, (function (s) {
+          return hues.find(function (v) {
+                      return v.id === s;
+                    });
+        }));
+  React.useEffect((function () {
+          var canvasDom = canvasRef.current;
+          if (canvasDom === null || canvasDom === undefined) {
+            canvasDom === null;
+          } else {
+            var context = canvasDom.getContext("2d");
+            if (hueObj !== undefined) {
+              canvasDom.width = 300;
+              canvasDom.height = 300;
+              updateHslSGamutCanvas(canvasDom, context);
+            } else {
+              context.clearRect(0, 0, 300, 300);
+            }
+          }
+        }), [
+        canvasRef.current,
+        selected
+      ]);
+  return JsxRuntime.jsxs("div", {
+              children: [
+                Core__Option.isNone(selected) ? null : Belt_Array.concatMany(hues.map(function (hue) {
+                              return hue.elements;
+                            })).map(function (e) {
+                        var match = Color.convert(Color.hexToRGB(e.hex), Color.sRGB, Color.OKHSL);
+                        return JsxRuntime.jsx("div", {
+                                    className: "absolute w-5 h-5 border border-black",
+                                    style: {
+                                      backgroundColor: e.hex,
+                                      left: (match[0] / 360 * 300 | 0).toString() + "px",
+                                      top: (match[2] * 300 | 0).toString() + "px"
+                                    }
+                                  });
+                      }),
                 JsxRuntime.jsx("canvas", {
                       ref: Caml_option.some(canvasRef)
                     })
@@ -365,9 +433,18 @@ function App$Palette(props) {
                       hues: picks,
                       selected: selectedHue
                     }),
-                JsxRuntime.jsx(App$HueGamut, {
-                      hues: picks,
-                      selected: selectedHue
+                JsxRuntime.jsxs("div", {
+                      children: [
+                        JsxRuntime.jsx(App$LchHGamut, {
+                              hues: picks,
+                              selected: selectedHue
+                            }),
+                        JsxRuntime.jsx(App$HslSGamut, {
+                              hues: picks,
+                              selected: selectedHue
+                            })
+                      ],
+                      className: "flex flex-row"
                     }),
                 JsxRuntime.jsxs("div", {
                       children: [

@@ -195,7 +195,7 @@ let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
 
   Utils.mapRange(xLen, x => {
     let xF = x->Int.toFloat
-    let hue = xF /. xLenF *. 360.
+    let hue = xF /. xLenF *. 360. +. 1.
     let elements = defaultShades->Array.mapWithIndex((shade, y) => {
       let yF = y->Int.toFloat
 
@@ -220,7 +220,7 @@ let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
 
 let chromaBound = 0.36
 
-let updateHueGamutCanvas = (canvas, ctx, hue) => {
+let updateLchHGamutCanvas = (canvas, ctx, hue) => {
   let xMax = canvas->Canvas.getWidth
   let yMax = canvas->Canvas.getHeight
 
@@ -243,7 +243,7 @@ let updateHueGamutCanvas = (canvas, ctx, hue) => {
   ()
 }
 
-module HueGamut = {
+module LchHGamut = {
   let xSize = 300
   let ySize = 300
 
@@ -251,6 +251,7 @@ module HueGamut = {
   let make = (~hues: array<hue>, ~selected) => {
     let canvasRef = React.useRef(Nullable.null)
     let hueObj = selected->Option.flatMap(s => hues->Array.find(v => v.id == s))
+    // Todo: update on hues change
     React.useEffect2(() => {
       switch canvasRef.current {
       | Value(canvasDom) =>
@@ -261,7 +262,7 @@ module HueGamut = {
         | Some(selectedHue) =>
           canvas->Canvas.setWidth(xSize)
           canvas->Canvas.setHeight(ySize)
-          updateHueGamutCanvas(canvas, context, selectedHue.value)
+          updateLchHGamutCanvas(canvas, context, selectedHue.value)
 
         | None => context->Canvas.clearRect(~x=0, ~y=0, ~w=xSize, ~h=ySize)
         }
@@ -288,6 +289,85 @@ module HueGamut = {
         })
         ->React.array
       })}
+      <canvas ref={ReactDOM.Ref.domRef(canvasRef)} />
+    </div>
+  }
+}
+
+let updateHslSGamutCanvas = (canvas, ctx) => {
+  let xMax = canvas->Canvas.getWidth
+  let yMax = canvas->Canvas.getHeight
+
+  // context->Canvas.clearRect(~x=0, ~y=0, ~w=xSize, ~h=ySize)
+
+  for x in 0 to xMax {
+    for y in 0 to yMax {
+      let h = x->Int.toFloat /. xMax->Int.toFloat *. 360.
+      let l = y->Int.toFloat /. yMax->Int.toFloat
+      let s = 1.0
+      let rgb = Texel.convert((h, s, l), Texel.okhsl, Texel.srgb)
+
+      ctx->Canvas.setFillStyle(Texel.rgbToHex(rgb))
+      ctx->Canvas.fillRect(~x, ~y, ~w=1, ~h=1)
+    }
+  }
+
+  ()
+}
+
+module HslSGamut = {
+  let xSize = 300
+  let ySize = 300
+
+  @react.component
+  let make = (~hues: array<hue>, ~selected) => {
+    let canvasRef = React.useRef(Nullable.null)
+    let hueObj = selected->Option.flatMap(s => hues->Array.find(v => v.id == s))
+    // Todo: update on hues change
+
+    React.useEffect2(() => {
+      switch canvasRef.current {
+      | Value(canvasDom) =>
+        let canvas = canvasDom->Obj.magic
+        let context = canvas->Canvas.getContext("2d")
+
+        switch hueObj {
+        | Some(_) =>
+          canvas->Canvas.setWidth(xSize)
+          canvas->Canvas.setHeight(ySize)
+          updateHslSGamutCanvas(canvas, context)
+
+        | None => context->Canvas.clearRect(~x=0, ~y=0, ~w=xSize, ~h=ySize)
+        }
+      | Null | Undefined => ()
+      }
+
+      None
+    }, (canvasRef.current, selected))
+
+    <div className="w-fit relative bg-black">
+      {selected->Option.isNone
+        ? React.null
+        : {
+            hues
+            ->Array.map(hue => hue.elements)
+            ->Belt.Array.concatMany
+            ->Array.map(e => {
+              let (h, _, l) = Texel.convert(e.hex->Texel.hexToRgb, Texel.srgb, Texel.okhsl)
+
+              <div
+                className="absolute w-5 h-5 border border-black"
+                style={{
+                  backgroundColor: e.hex,
+                  top: (l *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+                  left: (h /. 360. *. xSize->Int.toFloat)
+                  ->Float.toInt
+                  ->Int.toString ++ "px",
+                }}
+              />
+            })
+            ->React.array
+          }}
       <canvas ref={ReactDOM.Ref.domRef(canvasRef)} />
     </div>
   }
@@ -487,7 +567,10 @@ module Palette = {
 
     <div>
       <HueLine hues={picks} selected={selectedHue} />
-      <HueGamut hues={picks} selected={selectedHue} />
+      <div className="flex flex-row">
+        <LchHGamut hues={picks} selected={selectedHue} />
+        <HslSGamut hues={picks} selected={selectedHue} />
+      </div>
       <div
         style={{
           display: "grid",
