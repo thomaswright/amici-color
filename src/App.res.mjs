@@ -14,7 +14,7 @@ function mapRange(n, f) {
             });
 }
 
-function updateHueLineCanvas(canvas, ctx, hues) {
+function updateHueLineCanvas(canvas, ctx) {
   var xMax = canvas.width;
   var yMax = canvas.height;
   for(var x = 0; x <= xMax; ++x){
@@ -26,18 +26,10 @@ function updateHueLineCanvas(canvas, ctx, hues) {
     ctx.fillStyle = Color.RGBToHex(rgb);
     ctx.fillRect(x, 0, 1, yMax);
   }
-  ctx.fillStyle = "#000";
-  hues.forEach(function (hue) {
-        ctx.fillRect(hue / 360 * xMax | 0, 0, 10, 10);
-      });
 }
 
 function App$HueLine(props) {
-  var hues = props.hues;
   var canvasRef = React.useRef(null);
-  var huesComparison = Core__Array.reduce(hues, "", (function (a, c) {
-          return a + c.toString();
-        }));
   React.useEffect((function () {
           var canvasDom = canvasRef.current;
           if (canvasDom === null || canvasDom === undefined) {
@@ -46,16 +38,24 @@ function App$HueLine(props) {
             var context = canvasDom.getContext("2d");
             canvasDom.width = 500;
             canvasDom.height = 20;
-            updateHueLineCanvas(canvasDom, context, hues);
+            updateHueLineCanvas(canvasDom, context);
           }
-        }), [
-        canvasRef.current,
-        huesComparison
-      ]);
-  return JsxRuntime.jsx("div", {
-              children: JsxRuntime.jsx("canvas", {
-                    ref: Caml_option.some(canvasRef)
-                  })
+        }), [canvasRef.current]);
+  return JsxRuntime.jsxs("div", {
+              children: [
+                props.hues.map(function (hue) {
+                      return JsxRuntime.jsx("div", {
+                                  className: "bg-black w-2 h-2 absolute ",
+                                  style: {
+                                    left: (hue / 360 * 500 | 0).toString() + "px"
+                                  }
+                                });
+                    }),
+                JsxRuntime.jsx("canvas", {
+                      ref: Caml_option.some(canvasRef)
+                    })
+              ],
+              className: "w-fit relative"
             });
 }
 
@@ -164,7 +164,7 @@ function App$Palette(props) {
                         JsxRuntime.jsx("div", {
                               children: picksFlat.map(function (element) {
                                     return JsxRuntime.jsx("div", {
-                                                className: "w-10 h-10 rounded",
+                                                className: "w-10 h-10",
                                                 style: {
                                                   backgroundColor: element.hex
                                                 }

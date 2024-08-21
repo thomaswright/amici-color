@@ -50,7 +50,7 @@ module Canvas = {
   @send external getContext: (canvas, string) => context = "getContext"
 }
 
-let updateHueLineCanvas = (canvas, ctx, hues) => {
+let updateHueLineCanvas = (canvas, ctx) => {
   let xMax = canvas->Canvas.getWidth
   let yMax = canvas->Canvas.getHeight
 
@@ -64,36 +64,47 @@ let updateHueLineCanvas = (canvas, ctx, hues) => {
     ctx->Canvas.fillRect(~x, ~y=0, ~w=1, ~h=yMax)
   }
 
-  ctx->Canvas.setFillStyle("#000")
+  // ctx->Canvas.setFillStyle("#000")
 
-  hues->Array.forEach(hue => {
-    ctx->Canvas.fillRect(~x=(hue /. 360. *. xMax->Int.toFloat)->Float.toInt, ~y=0, ~w=10, ~h=10)
-  })
+  // hues->Array.forEach(hue => {
+  //   ctx->Canvas.fillRect(~x=(hue /. 360. *. xMax->Int.toFloat)->Float.toInt, ~y=0, ~w=10, ~h=10)
+  // })
 
   ()
 }
 
 module HueLine = {
+  let xSize = 500
   @react.component
   let make = (~hues) => {
     let canvasRef = React.useRef(Nullable.null)
-    let huesComparison = hues->Array.reduce("", (a, c) => {a ++ c->Float.toString})
-    React.useEffect2(() => {
+    // let huesComparison = hues->Array.reduce("", (a, c) => {a ++ c->Float.toString})
+    React.useEffect1(() => {
       switch canvasRef.current {
       | Value(canvasDom) => {
           let canvas = canvasDom->Obj.magic
           let context = canvas->Canvas.getContext("2d")
-          canvas->Canvas.setWidth(500)
+          canvas->Canvas.setWidth(xSize)
           canvas->Canvas.setHeight(20)
-          updateHueLineCanvas(canvas, context, hues)
+          updateHueLineCanvas(canvas, context)
         }
       | Null | Undefined => ()
       }
 
       None
-    }, (canvasRef.current, huesComparison))
+    }, [canvasRef.current])
 
-    <div>
+    <div className="w-fit relative">
+      {hues
+      ->Array.map(hue => {
+        <div
+          className={"bg-black w-2 h-2 absolute "}
+          style={{
+            left: (hue /. 360. *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+          }}
+        />
+      })
+      ->React.array}
       <canvas ref={ReactDOM.Ref.domRef(canvasRef)} />
     </div>
   }
@@ -204,7 +215,7 @@ module Palette = {
           ->Array.map(element => {
             <div
               key={element.id}
-              className="w-10 h-10 rounded"
+              className="w-10 h-10"
               style={{
                 backgroundColor: element.hex,
               }}
