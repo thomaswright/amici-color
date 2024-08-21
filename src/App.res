@@ -19,6 +19,7 @@ type element = {
 
 type row = {
   hueId: string,
+  hue: float,
   elements: array<element>,
 }
 
@@ -35,30 +36,6 @@ module Texel = {
   @module("@texel/color") external convert: (triple, texelType, texelType) => triple = "convert"
 }
 
-let makeDefaultPalette = (xLen, yLen) => {
-  let xLenF = xLen->Int.toFloat
-  let yLenF = yLen->Int.toFloat
-
-  Utils.mapRange(xLen, x => {
-    let xF = x->Int.toFloat
-    let elements = Utils.mapRange(yLen, y => {
-      let yF = y->Int.toFloat
-      let hex = Texel.rgbToHex(
-        Texel.convert((xF /. xLenF *. 360., (yF +. 1.) /. yLenF, 1.0), Texel.okhsv, Texel.srgb),
-      )
-      {
-        id: y->Int.toString ++ x->Int.toString,
-        hueId: x->Int.toString,
-        hex,
-      }
-    })
-    {
-      hueId: x->Int.toString,
-      elements,
-    }
-  })
-}
-
 module Canvas = {
   type canvas
   type context
@@ -73,7 +50,7 @@ module Canvas = {
   @send external getContext: (canvas, string) => context = "getContext"
 }
 
-let updateHueLineCanvas = (canvas, ctx) => {
+let updateHueLineCanvas = (canvas, ctx, hues) => {
   let xMax = canvas->Canvas.getWidth
   let yMax = canvas->Canvas.getHeight
 
@@ -87,30 +64,34 @@ let updateHueLineCanvas = (canvas, ctx) => {
     ctx->Canvas.fillRect(~x, ~y=0, ~w=1, ~h=yMax)
   }
 
+  ctx->Canvas.setFillStyle("#000")
+
+  hues->Array.forEach(hue => {
+    ctx->Canvas.fillRect(~x=(hue /. 360. *. xMax->Int.toFloat)->Float.toInt, ~y=0, ~w=10, ~h=10)
+  })
+
   ()
 }
 
-let size = 500
-
 module HueLine = {
   @react.component
-  let make = () => {
+  let make = (~hues) => {
     let canvasRef = React.useRef(Nullable.null)
-
-    React.useEffect1(() => {
+    let huesComparison = hues->Array.reduce("", (a, c) => {a ++ c->Float.toString})
+    React.useEffect2(() => {
       switch canvasRef.current {
       | Value(canvasDom) => {
           let canvas = canvasDom->Obj.magic
           let context = canvas->Canvas.getContext("2d")
-          canvas->Canvas.setWidth(size)
+          canvas->Canvas.setWidth(500)
           canvas->Canvas.setHeight(20)
-          updateHueLineCanvas(canvas, context)
+          updateHueLineCanvas(canvas, context, hues)
         }
       | Null | Undefined => ()
       }
 
       None
-    }, [canvasRef.current])
+    }, (canvasRef.current, huesComparison))
 
     <div>
       <canvas ref={ReactDOM.Ref.domRef(canvasRef)} />
@@ -118,10 +99,36 @@ module HueLine = {
   }
 }
 
+let makeDefaultPalette = (xLen, yLen) => {
+  let xLenF = xLen->Int.toFloat
+  let yLenF = yLen->Int.toFloat
+
+  Utils.mapRange(xLen, x => {
+    let xF = x->Int.toFloat
+    let hue = xF /. xLenF *. 360.
+    let elements = Utils.mapRange(yLen, y => {
+      let yF = y->Int.toFloat
+      let s = (yF +. 1.) /. yLenF
+      let hex = Texel.rgbToHex(Texel.convert((hue, s, 1.0), Texel.okhsv, Texel.srgb))
+      {
+        id: y->Int.toString ++ x->Int.toString,
+        hueId: x->Int.toString,
+        hex,
+      }
+    })
+    {
+      hueId: x->Int.toString,
+      hue,
+      elements,
+    }
+  })
+}
+
 module Palette = {
   @react.component
   let make = (~arr) => {
-    let (picks, letPicks) = React.useState(() => makeDefaultPalette(5, 5))
+    let (picks, setPicks) = React.useState(() => makeDefaultPalette(5, 5))
+
     let hueLen = picks->Array.length
     let shadeLen = picks->Array.getUnsafe(0)->{x => x.elements->Array.length}
     let picksFlat =
@@ -134,75 +141,77 @@ module Palette = {
       <div className="w-5 h-5 bg-neutral-500 rounded-bl-full rounded-tl-full rounded-br-full" />
     let addShade =
       <div className="w-5 h-5 bg-neutral-500 rounded-tr-full rounded-tl-full rounded-br-full" />
-
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "2.5rem 1fr 2.5rem",
-        gridTemplateRows: "2.5rem 1fr 2.5rem",
-        gridTemplateAreas: `"... xAxis addShade" "yAxis main ..." "addHue ... ..."`,
-      }}
-      className="p-6 w-fit">
-      <div
-        style={{
-          gridArea: "addShade",
-        }}>
-        {addShade}
-      </div>
-      <div
-        style={{
-          gridArea: "addHue",
-        }}>
-        {addHue}
-      </div>
+    <div>
+      <HueLine hues={picks->Array.map(({hue}) => hue)} />
       <div
         style={{
           display: "grid",
-          gridArea: "yAxis",
-          gridTemplateRows: `repeat(${shadeLen->Int.toString}, 1fr)`,
-        }}>
-        {shadeLen
-        ->Utils.mapRange(i => {
-          <div key={i->Int.toString} className="h-10 w-10">
-            {addHue}
-            <input type_="text" value={"test"} className="w-10 h-5" />
-          </div>
-        })
-        ->React.array}
-      </div>
-      <div
-        style={{
-          display: "grid",
-          gridArea: "xAxis",
-          gridTemplateColumns: `repeat(${shadeLen->Int.toString}, 1fr)`,
-        }}>
-        {hueLen
-        ->Utils.mapRange(i => {
-          <div key={i->Int.toString} className="h-10 w-10">
-            {addShade}
-            <input type_="text" value={"test"} className="w-10 h-5" />
-          </div>
-        })
-        ->React.array}
-      </div>
-      <div
-        style={{
-          display: "grid",
-          gridArea: "main",
-          gridTemplateColumns: `repeat(${hueLen->Int.toString}, 1fr)`,
-          gridTemplateRows: `repeat(${shadeLen->Int.toString}, 1fr)`,
-        }}>
-        {picksFlat
-        ->Array.map(element => {
-          <div
-            key={element.id}
-            className="w-10 h-10 rounded"
-            style={{
-              backgroundColor: element.hex,
-            }}
-          />
-        })
-        ->React.array}
+          gridTemplateColumns: "2.5rem 1fr 2.5rem",
+          gridTemplateRows: "2.5rem 1fr 2.5rem",
+          gridTemplateAreas: `"... xAxis addShade" "yAxis main ..." "addHue ... ..."`,
+        }}
+        className="p-6 w-fit">
+        <div
+          style={{
+            gridArea: "addShade",
+          }}>
+          {addShade}
+        </div>
+        <div
+          style={{
+            gridArea: "addHue",
+          }}>
+          {addHue}
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridArea: "yAxis",
+            gridTemplateRows: `repeat(${shadeLen->Int.toString}, 1fr)`,
+          }}>
+          {shadeLen
+          ->Utils.mapRange(i => {
+            <div key={i->Int.toString} className="h-10 w-10">
+              {addHue}
+              <input type_="text" value={"test"} className="w-10 h-5" />
+            </div>
+          })
+          ->React.array}
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridArea: "xAxis",
+            gridTemplateColumns: `repeat(${shadeLen->Int.toString}, 1fr)`,
+          }}>
+          {hueLen
+          ->Utils.mapRange(i => {
+            <div key={i->Int.toString} className="h-10 w-10">
+              {addShade}
+              <input type_="text" value={"test"} className="w-10 h-5" />
+            </div>
+          })
+          ->React.array}
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridArea: "main",
+            gridTemplateColumns: `repeat(${hueLen->Int.toString}, 1fr)`,
+            gridTemplateRows: `repeat(${shadeLen->Int.toString}, 1fr)`,
+          }}>
+          {picksFlat
+          ->Array.map(element => {
+            <div
+              key={element.id}
+              className="w-10 h-10 rounded"
+              style={{
+                backgroundColor: element.hex,
+              }}
+            />
+          })
+          ->React.array}
+        </div>
       </div>
     </div>
   }
@@ -211,7 +220,6 @@ module Palette = {
 @react.component
 let make = () => {
   <div className="p-6 ">
-    <HueLine />
     <Palette arr={[]} />
     // <Gamut />
   </div>
