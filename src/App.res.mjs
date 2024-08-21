@@ -15,6 +15,10 @@ function mapRange(n, f) {
             });
 }
 
+function bound(left, right, v) {
+  return Math.max(left, Math.min(right, v));
+}
+
 function hueToName(hue) {
   if (hue >= 5 && hue < 15) {
     return "rose";
@@ -138,41 +142,48 @@ function App$HueLine(props) {
             });
 }
 
-function App$Palette(props) {
-  var match = React.useState(function () {
-        var xLen = 5;
-        var yLen = 5;
-        return mapRange(xLen, (function (x) {
-                      var hue = x / xLen * 360;
-                      var elements = mapRange(yLen, (function (y) {
-                              var s = (y + 1) / yLen;
-                              var hex = Color.RGBToHex(Color.convert([
-                                        hue,
-                                        s,
-                                        1.0
-                                      ], Color.OKHSV, Color.sRGB));
-                              return {
-                                      id: Ulid.ulid(),
-                                      shadeId: x.toString(),
-                                      hex: hex
-                                    };
-                            }));
+function makeDefaultPicks(xLen, defaultShades) {
+  var yLenF = defaultShades.length;
+  return mapRange(xLen, (function (x) {
+                var hue = x / xLen * 360;
+                var elements = defaultShades.map(function (shade, y) {
+                      var s = (y + 1) / yLenF;
+                      var hex = Color.RGBToHex(Color.convert([
+                                hue,
+                                s,
+                                1.0
+                              ], Color.OKHSV, Color.sRGB));
                       return {
                               id: Ulid.ulid(),
-                              value: hue,
-                              name: hueToName(hue),
-                              elements: elements
+                              shadeId: shade.id,
+                              hex: hex
                             };
-                    }));
+                    });
+                return {
+                        id: Ulid.ulid(),
+                        value: hue,
+                        name: hueToName(hue),
+                        elements: elements
+                      };
+              }));
+}
+
+var defaultShades = mapRange(5, (function (i) {
+        return {
+                id: Ulid.ulid(),
+                name: Math.imul(i + 1 | 0, 100).toString()
+              };
+      }));
+
+var defaultPicks = makeDefaultPicks(5, defaultShades);
+
+function App$Palette(props) {
+  var match = React.useState(function () {
+        return defaultPicks;
       });
   var setPicks = match[1];
   var match$1 = React.useState(function () {
-        return mapRange(5, (function (i) {
-                      return {
-                              id: Ulid.ulid(),
-                              name: Math.imul(i + 1 | 0, 100).toString()
-                            };
-                    }));
+        return defaultShades;
       });
   var setShades = match$1[1];
   var shades = match$1[0];
@@ -184,15 +195,15 @@ function App$Palette(props) {
   var picksFlat = Belt_Array.concatMany(picks.map(function (pick) {
             return pick.elements;
           }));
-  var changeHexHueByHSL = function (hex, hue) {
-    var match = Color.convert(Color.hexToRGB(hex), Color.sRGB, Color.OKHSL);
+  var changeHexHueByHSV = function (hex, hue) {
+    var match = Color.convert(Color.hexToRGB(hex), Color.sRGB, Color.OKHSV);
     return Color.RGBToHex(Color.convert([
                     hue,
                     match[1],
                     match[2]
-                  ], Color.OKHSL, Color.sRGB));
+                  ], Color.OKHSV, Color.sRGB));
   };
-  var makeNewElement = function (copy, left, right) {
+  var makeNewHue = function (copy, left, right) {
     var newValue = (left + right) / 2;
     return {
             id: Ulid.ulid(),
@@ -202,7 +213,7 @@ function App$Palette(props) {
                   return {
                           id: Ulid.ulid(),
                           shadeId: v.shadeId,
-                          hex: changeHexHueByHSL(v.hex, newValue)
+                          hex: changeHexHueByHSV(v.hex, newValue)
                         };
                 })
           };
@@ -217,9 +228,58 @@ function App$Palette(props) {
                 JsxRuntime.jsxs("div", {
                       children: [
                         JsxRuntime.jsx("div", {
-                              children: JsxRuntime.jsx("div", {
-                                    className: "w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full"
+                              children: JsxRuntime.jsx("button", {
+                                    className: "w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full",
+                                    onClick: (function (param) {
+                                        var newShadeId = Ulid.ulid();
+                                        setShades(function (s_) {
+                                              return Belt_Array.concatMany([
+                                                          s_,
+                                                          [{
+                                                              id: newShadeId,
+                                                              name: "New"
+                                                            }]
+                                                        ]);
+                                            });
+                                        setPicks(function (p_) {
+                                              return p_.map(function (v) {
+                                                          return {
+                                                                  id: v.id,
+                                                                  value: v.value,
+                                                                  name: v.name,
+                                                                  elements: Core__Array.reduceWithIndex(v.elements, [], (function (a, c, i) {
+                                                                          if (i !== (v.elements.length - 1 | 0)) {
+                                                                            return Belt_Array.concatMany([
+                                                                                        a,
+                                                                                        [c]
+                                                                                      ]);
+                                                                          }
+                                                                          var match = Color.convert(Color.hexToRGB(c.hex), Color.sRGB, Color.OKHSV);
+                                                                          var avg = (match[2] + 1.0) / 2;
+                                                                          var newValue = bound(0.0, 1.0, avg);
+                                                                          var newHex = Color.RGBToHex(Color.convert([
+                                                                                    match[0],
+                                                                                    match[1],
+                                                                                    newValue
+                                                                                  ], Color.OKHSV, Color.sRGB));
+                                                                          return Belt_Array.concatMany([
+                                                                                      a,
+                                                                                      [
+                                                                                        c,
+                                                                                        {
+                                                                                          id: Ulid.ulid(),
+                                                                                          shadeId: newShadeId,
+                                                                                          hex: newHex
+                                                                                        }
+                                                                                      ]
+                                                                                    ]);
+                                                                        }))
+                                                                };
+                                                        });
+                                            });
+                                      })
                                   }),
+                              className: "flex flex-col justify-end",
                               style: {
                                 gridArea: "addShade"
                               }
@@ -230,7 +290,7 @@ function App$Palette(props) {
                                     onClick: (function (param) {
                                         setPicks(function (p_) {
                                               var lastHue = picks.toReversed()[0];
-                                              var $$new = makeNewElement(lastHue, lastHue.value, 360);
+                                              var $$new = makeNewHue(lastHue, lastHue.value, 360);
                                               return Belt_Array.concatMany([
                                                           p_,
                                                           [$$new]
@@ -238,6 +298,7 @@ function App$Palette(props) {
                                             });
                                       })
                                   }),
+                              className: "flex flex-col items-end",
                               style: {
                                 gridArea: "addHue"
                               }
@@ -256,7 +317,7 @@ function App$Palette(props) {
                                                                                   return Belt_Array.concatMany([
                                                                                               acc,
                                                                                               [
-                                                                                                makeNewElement(cur, leftValue, cur.value),
+                                                                                                makeNewHue(cur, leftValue, cur.value),
                                                                                                 cur
                                                                                               ]
                                                                                             ]);
@@ -271,7 +332,7 @@ function App$Palette(props) {
                                                           })
                                                       }),
                                                   JsxRuntime.jsx("input", {
-                                                        className: "w-10 h-5",
+                                                        className: "w-20 h-5",
                                                         type: "text",
                                                         value: pick.name,
                                                         onChange: (function (e) {
@@ -293,7 +354,7 @@ function App$Palette(props) {
                                                           })
                                                       })
                                                 ],
-                                                className: "h-10 w-10"
+                                                className: "h-10 w-20 flex flex-col items-end"
                                               }, pick.id);
                                   }),
                               style: {
@@ -306,9 +367,6 @@ function App$Palette(props) {
                               children: shades.map(function (shade) {
                                     return JsxRuntime.jsxs("div", {
                                                 children: [
-                                                  JsxRuntime.jsx("div", {
-                                                        className: "w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full"
-                                                      }),
                                                   JsxRuntime.jsx("input", {
                                                         className: "w-10 h-5",
                                                         type: "text",
@@ -328,9 +386,77 @@ function App$Palette(props) {
                                                                             });
                                                                 });
                                                           })
+                                                      }),
+                                                  JsxRuntime.jsx("button", {
+                                                        className: "w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full",
+                                                        onClick: (function (param) {
+                                                            var newShadeId = Ulid.ulid();
+                                                            setShades(function (s_) {
+                                                                  return Core__Array.reduce(s_, [], (function (a, c) {
+                                                                                if (c.id === shade.id) {
+                                                                                  return Belt_Array.concatMany([
+                                                                                              a,
+                                                                                              [
+                                                                                                {
+                                                                                                  id: newShadeId,
+                                                                                                  name: "New"
+                                                                                                },
+                                                                                                c
+                                                                                              ]
+                                                                                            ]);
+                                                                                } else {
+                                                                                  return Belt_Array.concatMany([
+                                                                                              a,
+                                                                                              [c]
+                                                                                            ]);
+                                                                                }
+                                                                              }));
+                                                                });
+                                                            setPicks(function (p_) {
+                                                                  return p_.map(function (v) {
+                                                                              return {
+                                                                                      id: v.id,
+                                                                                      value: v.value,
+                                                                                      name: v.name,
+                                                                                      elements: Core__Array.reduceWithIndex(v.elements, [], (function (a, c, i) {
+                                                                                              if (c.shadeId !== shade.id) {
+                                                                                                return Belt_Array.concatMany([
+                                                                                                            a,
+                                                                                                            [c]
+                                                                                                          ]);
+                                                                                              }
+                                                                                              var left = i === 0 ? 0.0 : (function (x) {
+                                                                                                      return Color.convert(Color.hexToRGB(x.hex), Color.sRGB, Color.OKHSV)[1];
+                                                                                                    })(v.elements[i - 1 | 0]);
+                                                                                              var match = Color.convert(Color.hexToRGB(c.hex), Color.sRGB, Color.OKHSV);
+                                                                                              var right = match[1];
+                                                                                              var avg = (left + right) / 2;
+                                                                                              var newValue = bound(0.0, 1.0, avg);
+                                                                                              var newHex = Color.RGBToHex(Color.convert([
+                                                                                                        match[0],
+                                                                                                        newValue,
+                                                                                                        match[2]
+                                                                                                      ], Color.OKHSV, Color.sRGB));
+                                                                                              console.log(left, right, newValue, newHex);
+                                                                                              return Belt_Array.concatMany([
+                                                                                                          a,
+                                                                                                          [
+                                                                                                            {
+                                                                                                              id: Ulid.ulid(),
+                                                                                                              shadeId: newShadeId,
+                                                                                                              hex: newHex
+                                                                                                            },
+                                                                                                            c
+                                                                                                          ]
+                                                                                                        ]);
+                                                                                            }))
+                                                                                    };
+                                                                            });
+                                                                });
+                                                          })
                                                       })
                                                 ],
-                                                className: "h-10 w-10"
+                                                className: "h-10 w-10 flex flex-col"
                                               }, shade.id);
                                   }),
                               style: {
@@ -342,7 +468,7 @@ function App$Palette(props) {
                         JsxRuntime.jsx("div", {
                               children: picksFlat.map(function (element) {
                                     return JsxRuntime.jsx("div", {
-                                                className: "w-10 h-10",
+                                                className: "w-10 h-10 max-h-10 max-w-10",
                                                 style: {
                                                   backgroundColor: element.hex
                                                 }
@@ -360,7 +486,7 @@ function App$Palette(props) {
                       style: {
                         display: "grid",
                         gridTemplateAreas: "\"... xAxis addShade\" \"yAxis main ...\" \"addHue ... ...\"",
-                        gridTemplateColumns: "2.5rem 1fr 2.5rem",
+                        gridTemplateColumns: "5rem 1fr 2.5rem",
                         gridTemplateRows: "2.5rem 1fr 2.5rem"
                       }
                     })
