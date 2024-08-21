@@ -14,6 +14,84 @@ function mapRange(n, f) {
             });
 }
 
+function hueToName(hue) {
+  if (hue >= 5 && hue < 15) {
+    return "rose";
+  } else if (hue >= 15 && hue < 25) {
+    return "crimson";
+  } else if (hue >= 25 && hue < 35) {
+    return "red";
+  } else if (hue >= 35 && hue < 45) {
+    return "vermillion";
+  } else if (hue >= 45 && hue < 55) {
+    return "persimmon";
+  } else if (hue >= 55 && hue < 65) {
+    return "orange";
+  } else if (hue >= 65 && hue < 75) {
+    return "pumpkin";
+  } else if (hue >= 75 && hue < 85) {
+    return "mango";
+  } else if (hue >= 85 && hue < 95) {
+    return "amber";
+  } else if (hue >= 95 && hue < 105) {
+    return "gold";
+  } else if (hue >= 105 && hue < 115) {
+    return "yellow";
+  } else if (hue >= 115 && hue < 125) {
+    return "citron";
+  } else if (hue >= 125 && hue < 135) {
+    return "pear";
+  } else if (hue >= 135 && hue < 145) {
+    return "chartreuse";
+  } else if (hue >= 145 && hue < 155) {
+    return "lime";
+  } else if (hue >= 155 && hue < 165) {
+    return "green";
+  } else if (hue >= 165 && hue < 175) {
+    return "emerald";
+  } else if (hue >= 175 && hue < 185) {
+    return "mint";
+  } else if (hue >= 185 && hue < 195) {
+    return "sea";
+  } else if (hue >= 195 && hue < 205) {
+    return "teal";
+  } else if (hue >= 205 && hue < 215) {
+    return "cyan";
+  } else if (hue >= 215 && hue < 225) {
+    return "pacific";
+  } else if (hue >= 225 && hue < 235) {
+    return "cerulean";
+  } else if (hue >= 235 && hue < 245) {
+    return "capri";
+  } else if (hue >= 245 && hue < 255) {
+    return "sky";
+  } else if (hue >= 255 && hue < 265) {
+    return "blue";
+  } else if (hue >= 265 && hue < 275) {
+    return "sapphire";
+  } else if (hue >= 275 && hue < 285) {
+    return "indigo";
+  } else if (hue >= 285 && hue < 295) {
+    return "veronica";
+  } else if (hue >= 295 && hue < 305) {
+    return "violet";
+  } else if (hue >= 305 && hue < 315) {
+    return "amethyst";
+  } else if (hue >= 315 && hue < 325) {
+    return "purple";
+  } else if (hue >= 325 && hue < 335) {
+    return "plum";
+  } else if (hue >= 335 && hue < 345) {
+    return "fuchsia";
+  } else if (hue >= 345 && hue < 355) {
+    return "magenta";
+  } else if (hue >= 355 || hue < 5) {
+    return "pink";
+  } else {
+    return "?";
+  }
+}
+
 function updateHueLineCanvas(canvas, ctx) {
   var xMax = canvas.width;
   var yMax = canvas.height;
@@ -81,24 +159,31 @@ function App$Palette(props) {
                       return {
                               hueId: x.toString(),
                               hue: hue,
+                              hueName: hueToName(hue),
                               elements: elements
                             };
                     }));
       });
-  var picks = match[0];
+  var match$1 = React.useState(function () {
+        return mapRange(5, (function (i) {
+                      return Math.imul(i + 1 | 0, 100).toString();
+                    }));
+      });
+  var shades = match$1[0];
+  var picks = match[0].toSorted(function (a, b) {
+        return a.hue - b.hue;
+      });
   var hueLen = picks.length;
-  var shadeLen = (function (x) {
-        return x.elements.length;
-      })(picks[0]);
+  var shadeLen = shades.length;
   var picksFlat = Belt_Array.concatMany(picks.map(function (pick) {
             return pick.elements;
           }));
   console.log(picksFlat);
   var addHue = JsxRuntime.jsx("div", {
-        className: "w-5 h-5 bg-neutral-500 rounded-bl-full rounded-tl-full rounded-br-full"
+        className: "w-5 h-5 bg-blue-500 rounded-bl-full rounded-tl-full rounded-br-full"
       });
   var addShade = JsxRuntime.jsx("div", {
-        className: "w-5 h-5 bg-neutral-500 rounded-tr-full rounded-tl-full rounded-br-full"
+        className: "w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full"
       });
   return JsxRuntime.jsxs("div", {
               children: [
@@ -122,19 +207,19 @@ function App$Palette(props) {
                               }
                             }),
                         JsxRuntime.jsx("div", {
-                              children: mapRange(shadeLen, (function (i) {
-                                      return JsxRuntime.jsxs("div", {
-                                                  children: [
-                                                    addHue,
-                                                    JsxRuntime.jsx("input", {
-                                                          className: "w-10 h-5",
-                                                          type: "text",
-                                                          value: "test"
-                                                        })
-                                                  ],
-                                                  className: "h-10 w-10"
-                                                }, i.toString());
-                                    })),
+                              children: picks.map(function (pick, i) {
+                                    return JsxRuntime.jsxs("div", {
+                                                children: [
+                                                  addHue,
+                                                  JsxRuntime.jsx("input", {
+                                                        className: "w-10 h-5",
+                                                        type: "text",
+                                                        value: pick.hueName
+                                                      })
+                                                ],
+                                                className: "h-10 w-10"
+                                              }, i.toString());
+                                  }),
                               style: {
                                 display: "grid",
                                 gridArea: "yAxis",
@@ -142,19 +227,19 @@ function App$Palette(props) {
                               }
                             }),
                         JsxRuntime.jsx("div", {
-                              children: mapRange(hueLen, (function (i) {
-                                      return JsxRuntime.jsxs("div", {
-                                                  children: [
-                                                    addShade,
-                                                    JsxRuntime.jsx("input", {
-                                                          className: "w-10 h-5",
-                                                          type: "text",
-                                                          value: "test"
-                                                        })
-                                                  ],
-                                                  className: "h-10 w-10"
-                                                }, i.toString());
-                                    })),
+                              children: shades.map(function (shade, i) {
+                                    return JsxRuntime.jsxs("div", {
+                                                children: [
+                                                  addShade,
+                                                  JsxRuntime.jsx("input", {
+                                                        className: "w-10 h-5",
+                                                        type: "text",
+                                                        value: shade
+                                                      })
+                                                ],
+                                                className: "h-10 w-10"
+                                              }, i.toString() + "shade");
+                                  }),
                               style: {
                                 display: "grid",
                                 gridArea: "xAxis",
