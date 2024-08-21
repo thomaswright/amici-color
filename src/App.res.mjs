@@ -153,6 +153,7 @@ function makeDefaultPicks(xLen, defaultShades) {
   var yLenF = defaultShades.length;
   return mapRange(xLen, (function (x) {
                 var hue = x / xLen * 360 + 1;
+                var hueId = Ulid.ulid();
                 var elements = defaultShades.map(function (shade, y) {
                       var s = (y + 1) / yLenF;
                       var hex = Color.RGBToHex(Color.convert([
@@ -163,11 +164,12 @@ function makeDefaultPicks(xLen, defaultShades) {
                       return {
                               id: Ulid.ulid(),
                               shadeId: shade.id,
+                              hueId: hueId,
                               hex: hex
                             };
                     });
                 return {
-                        id: Ulid.ulid(),
+                        id: hueId,
                         value: hue,
                         name: hueToName(hue),
                         elements: elements
@@ -251,11 +253,11 @@ function updateHslSGamutCanvas(canvas, ctx) {
   var yMax = canvas.height;
   for(var x = 0; x <= xMax; ++x){
     for(var y = 0; y <= yMax; ++y){
-      var h = x / xMax * 360;
-      var l = y / yMax;
+      var h = y / yMax * 360;
+      var l = x / xMax;
       var rgb = Color.convert([
             h,
-            1.0,
+            0.0,
             l
           ], Color.OKHSL, Color.sRGB);
       ctx.fillStyle = Color.RGBToHex(rgb);
@@ -301,8 +303,8 @@ function App$HslSGamut(props) {
                                     className: "absolute w-5 h-5 border border-black",
                                     style: {
                                       backgroundColor: e.hex,
-                                      left: (match[0] / 360 * 300 | 0).toString() + "px",
-                                      top: (match[2] * 300 | 0).toString() + "px"
+                                      left: (match[2] * 300 | 0).toString() + "px",
+                                      top: (match[0] / 360 * 300 | 0).toString() + "px"
                                     }
                                   });
                       }),
@@ -310,8 +312,26 @@ function App$HslSGamut(props) {
                       ref: Caml_option.some(canvasRef)
                     })
               ],
-              className: "w-fit relative bg-black"
+              className: "w-fit relative border border-black"
             });
+}
+
+function adjustLchLofHex(hex, f) {
+  var match = Color.convert(Color.hexToRGB(hex), Color.sRGB, Color.OKLCH);
+  return Color.RGBToHex(Color.convert([
+                  f(match[0]),
+                  match[1],
+                  match[2]
+                ], Color.OKLCH, Color.sRGB));
+}
+
+function adjustLchCofHex(hex, f) {
+  var match = Color.convert(Color.hexToRGB(hex), Color.sRGB, Color.OKLCH);
+  return Color.RGBToHex(Color.convert([
+                  match[0],
+                  f(match[1]),
+                  match[2]
+                ], Color.OKLCH, Color.sRGB));
 }
 
 var defaultShades = mapRange(5, (function (i) {
@@ -338,6 +358,82 @@ function App$Palette(props) {
       });
   var setSelectedHue = match$2[1];
   var selectedHue = match$2[0];
+  var match$3 = React.useState(function () {
+        
+      });
+  var setSelectedElement = match$3[1];
+  var selectedElement = match$3[0];
+  var handleKeydown = React.useCallback((function ($$event) {
+          var update = function (f) {
+            Core__Option.mapOr(selectedElement, undefined, (function (e) {
+                    setPicks(function (p_) {
+                          return p_.map(function (hue) {
+                                      return {
+                                              id: hue.id,
+                                              value: hue.value,
+                                              name: hue.name,
+                                              elements: hue.elements.map(function (hueElement) {
+                                                    if (hueElement.id === e) {
+                                                      return {
+                                                              id: hueElement.id,
+                                                              shadeId: hueElement.shadeId,
+                                                              hueId: hueElement.hueId,
+                                                              hex: f(hueElement.hex)
+                                                            };
+                                                    } else {
+                                                      return hueElement;
+                                                    }
+                                                  })
+                                            };
+                                    });
+                        });
+                  }));
+          };
+          var match = $$event.key;
+          switch (match) {
+            case "ArrowDown" :
+                console.log("down");
+                update(function (hex) {
+                      return adjustLchCofHex(hex, (function (c) {
+                                    return Math.max(0.0, c - 0.01 * 0.36);
+                                  }));
+                    });
+                $$event.preventDefault();
+                return ;
+            case "ArrowLeft" :
+                update(function (hex) {
+                      return adjustLchLofHex(hex, (function (l) {
+                                    return Math.max(0.0, l - 0.01);
+                                  }));
+                    });
+                $$event.preventDefault();
+                return ;
+            case "ArrowRight" :
+                update(function (hex) {
+                      return adjustLchLofHex(hex, (function (l) {
+                                    return Math.min(1.0, l + 0.01);
+                                  }));
+                    });
+                $$event.preventDefault();
+                return ;
+            case "ArrowUp" :
+                update(function (hex) {
+                      return adjustLchCofHex(hex, (function (c) {
+                                    return Math.min(1.0, c + 0.01 * 0.36);
+                                  }));
+                    });
+                $$event.preventDefault();
+                return ;
+            default:
+              return ;
+          }
+        }), [selectedElement]);
+  React.useEffect((function () {
+          document.addEventListener("keydown", handleKeydown);
+          return (function () {
+                    document.removeEventListener("keydown", handleKeydown);
+                  });
+        }), [selectedElement]);
   var picks = match[0].toSorted(function (a, b) {
         return a.value - b.value;
       });
@@ -356,14 +452,16 @@ function App$Palette(props) {
   };
   var makeNewHue = function (copy, left, right) {
     var newValue = (left + right) / 2;
+    var hueId = Ulid.ulid();
     return {
-            id: Ulid.ulid(),
+            id: hueId,
             value: newValue,
             name: hueToName(newValue),
             elements: copy.elements.map(function (v) {
                   return {
                           id: Ulid.ulid(),
                           shadeId: v.shadeId,
+                          hueId: hueId,
                           hex: changeHexHueByHSV(v.hex, newValue)
                         };
                 })
@@ -418,6 +516,7 @@ function App$Palette(props) {
                                                     {
                                                       id: Ulid.ulid(),
                                                       shadeId: newShadeId,
+                                                      hueId: v.id,
                                                       hex: newHex
                                                     }
                                                   ]
@@ -444,7 +543,7 @@ function App$Palette(props) {
                               selected: selectedHue
                             })
                       ],
-                      className: "flex flex-row"
+                      className: "flex flex-row gap-2 py-2"
                     }),
                 JsxRuntime.jsxs("div", {
                       children: [
@@ -631,12 +730,12 @@ function App$Palette(props) {
                                                                                       }));
                                                                         });
                                                                     setPicks(function (p_) {
-                                                                          return p_.map(function (v) {
+                                                                          return p_.map(function (hue) {
                                                                                       return {
-                                                                                              id: v.id,
-                                                                                              value: v.value,
-                                                                                              name: v.name,
-                                                                                              elements: Core__Array.reduceWithIndex(v.elements, [], (function (a, c, i) {
+                                                                                              id: hue.id,
+                                                                                              value: hue.value,
+                                                                                              name: hue.name,
+                                                                                              elements: Core__Array.reduceWithIndex(hue.elements, [], (function (a, c, i) {
                                                                                                       if (c.shadeId !== shade.id) {
                                                                                                         return Belt_Array.concatMany([
                                                                                                                     a,
@@ -645,7 +744,7 @@ function App$Palette(props) {
                                                                                                       }
                                                                                                       var left = i === 0 ? 0.0 : (function (x) {
                                                                                                               return Color.convert(Color.hexToRGB(x.hex), Color.sRGB, Color.OKHSV)[1];
-                                                                                                            })(v.elements[i - 1 | 0]);
+                                                                                                            })(hue.elements[i - 1 | 0]);
                                                                                                       var match = Color.convert(Color.hexToRGB(c.hex), Color.sRGB, Color.OKHSV);
                                                                                                       var right = match[1];
                                                                                                       var avg = (left + right) / 2;
@@ -662,6 +761,7 @@ function App$Palette(props) {
                                                                                                                     {
                                                                                                                       id: Ulid.ulid(),
                                                                                                                       shadeId: newShadeId,
+                                                                                                                      hueId: hue.id,
                                                                                                                       hex: newHex
                                                                                                                     },
                                                                                                                     c
@@ -714,10 +814,21 @@ function App$Palette(props) {
                         JsxRuntime.jsx("div", {
                               children: picksFlat.map(function (element) {
                                     return JsxRuntime.jsx("div", {
-                                                className: "w-10 h-10 max-h-10 max-w-10",
+                                                children: Core__Option.mapOr(selectedElement, false, (function (e) {
+                                                        return e === element.id;
+                                                      })) ? "•" : null,
+                                                className: "w-10 h-10 max-h-10 max-w-10 flex flex-row items-center justify-center text-xl cursor-pointer",
                                                 style: {
                                                   backgroundColor: element.hex
-                                                }
+                                                },
+                                                onClick: (function (param) {
+                                                    setSelectedElement(function (param) {
+                                                          return element.id;
+                                                        });
+                                                    setSelectedHue(function (param) {
+                                                          return element.hueId;
+                                                        });
+                                                  })
                                               }, element.id);
                                   }),
                               style: {

@@ -63,6 +63,7 @@ type shade = {id: string, name: string}
 type element = {
   id: string,
   shadeId: string,
+  hueId: string,
   hex: string,
 }
 
@@ -196,6 +197,7 @@ let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
   Utils.mapRange(xLen, x => {
     let xF = x->Int.toFloat
     let hue = xF /. xLenF *. 360. +. 1.
+    let hueId = ulid()
     let elements = defaultShades->Array.mapWithIndex((shade, y) => {
       let yF = y->Int.toFloat
 
@@ -204,13 +206,14 @@ let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
 
       {
         shadeId: shade.id,
+        hueId,
         id: ulid(),
         hex,
       }
     })
 
     {
-      id: ulid(),
+      id: hueId,
       value: hue,
       name: hue->hueToName,
       elements,
@@ -302,9 +305,9 @@ let updateHslSGamutCanvas = (canvas, ctx) => {
 
   for x in 0 to xMax {
     for y in 0 to yMax {
-      let h = x->Int.toFloat /. xMax->Int.toFloat *. 360.
-      let l = y->Int.toFloat /. yMax->Int.toFloat
-      let s = 1.0
+      let h = y->Int.toFloat /. yMax->Int.toFloat *. 360.
+      let l = x->Int.toFloat /. xMax->Int.toFloat
+      let s = 0.0
       let rgb = Texel.convert((h, s, l), Texel.okhsl, Texel.srgb)
 
       ctx->Canvas.setFillStyle(Texel.rgbToHex(rgb))
@@ -345,7 +348,7 @@ module HslSGamut = {
       None
     }, (canvasRef.current, selected))
 
-    <div className="w-fit relative bg-black">
+    <div className="w-fit relative border border-black">
       {selected->Option.isNone
         ? React.null
         : {
@@ -359,8 +362,8 @@ module HslSGamut = {
                 className="absolute w-5 h-5 border border-black"
                 style={{
                   backgroundColor: e.hex,
-                  top: (l *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
-                  left: (h /. 360. *. xSize->Int.toFloat)
+                  left: (l *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+                  top: (h /. 360. *. xSize->Int.toFloat)
                   ->Float.toInt
                   ->Int.toString ++ "px",
                 }}
@@ -371,6 +374,23 @@ module HslSGamut = {
       <canvas ref={ReactDOM.Ref.domRef(canvasRef)} />
     </div>
   }
+}
+
+@val @scope("document")
+external addKeyboardListner: (string, ReactEvent.Keyboard.t => unit) => unit = "addEventListener"
+
+@val @scope("document")
+external removeKeyboardListner: (string, ReactEvent.Keyboard.t => unit) => unit =
+  "removeEventListener"
+
+let adjustLchLofHex = (hex, f) => {
+  let (l, c, h) = hex->Texel.hexToRgb->Texel.convert(Texel.srgb, Texel.oklch)
+  Texel.convert((l->f, c, h), Texel.oklch, Texel.srgb)->Texel.rgbToHex
+}
+
+let adjustLchCofHex = (hex, f) => {
+  let (l, c, h) = hex->Texel.hexToRgb->Texel.convert(Texel.srgb, Texel.oklch)
+  Texel.convert((l, c->f, h), Texel.oklch, Texel.srgb)->Texel.rgbToHex
 }
 
 module Palette = {
@@ -386,6 +406,69 @@ module Palette = {
     let (picks_, setPicks) = React.useState(() => defaultPicks)
     let (shades, setShades) = React.useState(() => defaultShades)
     let (selectedHue, setSelectedHue) = React.useState(() => None)
+    let (selectedElement, setSelectedElement) = React.useState(() => None)
+
+    let handleKeydown = React.useCallback1(event => {
+      let update = f => {
+        selectedElement->Option.mapOr((), e =>
+          setPicks(
+            p_ => {
+              p_->Array.map(
+                hue => {
+                  ...hue,
+                  elements: hue.elements->Array.map(
+                    hueElement => {
+                      if hueElement.id == e {
+                        {
+                          ...hueElement,
+                          hex: hueElement.hex->f,
+                        }
+                      } else {
+                        hueElement
+                      }
+                    },
+                  ),
+                },
+              )
+            },
+          )
+        )
+      }
+
+      switch event->ReactEvent.Keyboard.key {
+      | "ArrowDown" =>
+        Console.log("down")
+        update(hex => {
+          hex->adjustLchCofHex(c => Math.max(0.0, c -. 0.01 *. chromaBound))
+        })
+        event->ReactEvent.Keyboard.preventDefault
+
+      | "ArrowUp" =>
+        update(hex => {
+          hex->adjustLchCofHex(c => Math.min(1.0, c +. 0.01 *. chromaBound))
+        })
+        event->ReactEvent.Keyboard.preventDefault
+
+      | "ArrowLeft" =>
+        update(hex => {
+          hex->adjustLchLofHex(l => Math.max(0.0, l -. 0.01))
+        })
+        event->ReactEvent.Keyboard.preventDefault
+
+      | "ArrowRight" =>
+        update(hex => {
+          hex->adjustLchLofHex(l => Math.min(1.0, l +. 0.01))
+        })
+        event->ReactEvent.Keyboard.preventDefault
+
+      | _ => ()
+      }
+    }, [selectedElement])
+
+    React.useEffect1(() => {
+      addKeyboardListner("keydown", handleKeydown)
+      Some(() => removeKeyboardListner("keydown", handleKeydown))
+    }, [selectedElement])
 
     let picks = picks_->Array.toSorted((a, b) => a.value -. b.value)
 
@@ -404,13 +487,15 @@ module Palette = {
 
     let makeNewHue = (copy, left, right) => {
       let newValue = (left +. right) /. 2.
+      let hueId = ulid()
       {
-        id: ulid(),
+        id: hueId,
         name: newValue->hueToName,
         value: newValue,
         elements: copy.elements->Array.map(v => {
           {
             id: ulid(),
+            hueId,
             shadeId: v.shadeId,
             hex: changeHexHueByHSV(v.hex, newValue),
           }
@@ -476,6 +561,7 @@ module Palette = {
                         {
                           id: ulid(),
                           shadeId: newShadeId,
+                          hueId: v.id,
                           hex: newHex,
                         },
                       ]
@@ -505,10 +591,10 @@ module Palette = {
         })
       })
       setPicks(p_ => {
-        p_->Array.map(v => {
+        p_->Array.map(hue => {
           {
-            ...v,
-            elements: v.elements->Array.reduceWithIndex(
+            ...hue,
+            elements: hue.elements->Array.reduceWithIndex(
               [],
               (a, c, i) => {
                 c.shadeId == shade.id
@@ -518,7 +604,7 @@ module Palette = {
                       let left =
                         i == 0
                           ? 0.0
-                          : v.elements
+                          : hue.elements
                             ->Array.getUnsafe(i - 1)
                             ->{
                               x => {
@@ -552,6 +638,7 @@ module Palette = {
                         {
                           id: ulid(),
                           shadeId: newShadeId,
+                          hueId: hue.id,
                           hex: newHex,
                         },
                         c,
@@ -567,7 +654,7 @@ module Palette = {
 
     <div>
       <HueLine hues={picks} selected={selectedHue} />
-      <div className="flex flex-row">
+      <div className="flex flex-row gap-2 py-2">
         <LchHGamut hues={picks} selected={selectedHue} />
         <HslSGamut hues={picks} selected={selectedHue} />
       </div>
@@ -729,11 +816,18 @@ module Palette = {
           ->Array.map(element => {
             <div
               key={element.id}
-              className="w-10 h-10 max-h-10 max-w-10"
+              className="w-10 h-10 max-h-10 max-w-10 flex flex-row items-center justify-center text-xl cursor-pointer"
               style={{
                 backgroundColor: element.hex,
               }}
-            />
+              onClick={_ => {
+                setSelectedElement(_ => Some(element.id))
+                setSelectedHue(_ => Some(element.hueId))
+              }}>
+              {selectedElement->Option.mapOr(false, e => e == element.id)
+                ? {"•"->React.string}
+                : React.null}
+            </div>
           })
           ->React.array}
         </div>
