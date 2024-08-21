@@ -257,6 +257,153 @@ module Palette = {
       }
     }
 
+    let newInterHue = (pick: hue) => {
+      setPicks(p_ => {
+        p_->Array.reduceWithIndex([], (acc, cur, i) => {
+          let leftValue = i == 0 ? 0. : p_->Array.getUnsafe(i - 1)->{x => x.value}
+
+          cur.id == pick.id ? [...acc, makeNewHue(cur, leftValue, cur.value), cur] : [...acc, cur]
+        })
+      })
+    }
+
+    let newEndHue = () => {
+      setPicks(p_ => {
+        let lastHue = picks->Array.toReversed->Array.getUnsafe(0)
+
+        let new = makeNewHue(lastHue, lastHue.value, 360.)
+        [...p_, new]
+      })
+    }
+
+    let newEndShade = () => {
+      let newShadeId = ulid()
+      setShades(s_ => {
+        [
+          ...s_,
+          {
+            id: newShadeId,
+            name: "New",
+          },
+        ]
+      })
+      setPicks(p_ => {
+        p_->Array.map(v => {
+          {
+            ...v,
+            elements: v.elements->Array.reduceWithIndex(
+              [],
+              (a, c, i) => {
+                i == v.elements->Array.length - 1
+                  ? {
+                      let (h, s, left) = Texel.convert(
+                        c.hex->Texel.hexToRgb,
+                        Texel.srgb,
+                        Texel.okhsv,
+                      )
+
+                      let right = 1.0
+                      let avg = (left +. right) /. 2.
+
+                      let newValue = Utils.bound(0.0, 1.0, avg)
+                      let newHex =
+                        Texel.convert((h, s, newValue), Texel.okhsv, Texel.srgb)->Texel.rgbToHex
+
+                      [
+                        ...a,
+                        c,
+                        {
+                          id: ulid(),
+                          shadeId: newShadeId,
+                          hex: newHex,
+                        },
+                      ]
+                    }
+                  : [...a, c]
+              },
+            ),
+          }
+        })
+      })
+    }
+
+    let newInterShade = (shade: shade) => {
+      let newShadeId = ulid()
+      setShades(s_ => {
+        s_->Array.reduce([], (a, c) => {
+          c.id == shade.id
+            ? [
+                ...a,
+                {
+                  id: newShadeId,
+                  name: "New",
+                },
+                c,
+              ]
+            : [...a, c]
+        })
+      })
+      setPicks(p_ => {
+        p_->Array.map(v => {
+          {
+            ...v,
+            elements: v.elements->Array.reduceWithIndex(
+              [],
+              (a, c, i) => {
+                c.shadeId == shade.id
+                  ? {
+                      // Todo: interpolate value too?
+
+                      let left =
+                        i == 0
+                          ? 0.0
+                          : v.elements
+                            ->Array.getUnsafe(i - 1)
+                            ->{
+                              x => {
+                                let (_, result, _) = Texel.convert(
+                                  x.hex->Texel.hexToRgb,
+                                  Texel.srgb,
+                                  Texel.okhsv,
+                                )
+
+                                result
+                              }
+                            }
+
+                      let (h, right, v) = Texel.convert(
+                        c.hex->Texel.hexToRgb,
+                        Texel.srgb,
+                        Texel.okhsv,
+                      )
+
+                      let avg = (left +. right) /. 2.
+
+                      let newValue = Utils.bound(0.0, 1.0, avg)
+
+                      let newHex =
+                        Texel.convert((h, newValue, v), Texel.okhsv, Texel.srgb)->Texel.rgbToHex
+
+                      Console.log4(left, right, newValue, newHex)
+
+                      [
+                        ...a,
+                        {
+                          id: ulid(),
+                          shadeId: newShadeId,
+                          hex: newHex,
+                        },
+                        c,
+                      ]
+                    }
+                  : [...a, c]
+              },
+            ),
+          }
+        })
+      })
+    }
+
     <div>
       <HueLine hues={picks->Array.map(({value}) => value)} />
       <div
@@ -274,60 +421,7 @@ module Palette = {
           }}>
           <button
             className="w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full"
-            onClick={_ => {
-              let newShadeId = ulid()
-              setShades(s_ => {
-                [
-                  ...s_,
-                  {
-                    id: newShadeId,
-                    name: "New",
-                  },
-                ]
-              })
-              setPicks(p_ => {
-                p_->Array.map(v => {
-                  {
-                    ...v,
-                    elements: v.elements->Array.reduceWithIndex(
-                      [],
-                      (a, c, i) => {
-                        i == v.elements->Array.length - 1
-                          ? {
-                              let (h, s, left) = Texel.convert(
-                                c.hex->Texel.hexToRgb,
-                                Texel.srgb,
-                                Texel.okhsv,
-                              )
-
-                              let right = 1.0
-                              let avg = (left +. right) /. 2.
-
-                              let newValue = Utils.bound(0.0, 1.0, avg)
-                              let newHex =
-                                Texel.convert(
-                                  (h, s, newValue),
-                                  Texel.okhsv,
-                                  Texel.srgb,
-                                )->Texel.rgbToHex
-
-                              [
-                                ...a,
-                                c,
-                                {
-                                  id: ulid(),
-                                  shadeId: newShadeId,
-                                  hex: newHex,
-                                },
-                              ]
-                            }
-                          : [...a, c]
-                      },
-                    ),
-                  }
-                })
-              })
-            }}
+            onClick={_ => {newEndShade()}}
           />
         </div>
         <div
@@ -338,13 +432,7 @@ module Palette = {
           }}>
           <button
             className="w-5 h-5 bg-blue-500 rounded-bl-full rounded-tl-full rounded-br-full"
-            onClick={_ =>
-              setPicks(p_ => {
-                let lastHue = picks->Array.toReversed->Array.getUnsafe(0)
-
-                let new = makeNewHue(lastHue, lastHue.value, 360.)
-                [...p_, new]
-              })}
+            onClick={_ => newEndHue()}
           />
         </div>
         <div
@@ -355,24 +443,17 @@ module Palette = {
           }}>
           {picks
           ->Array.map(pick => {
-            <div key={pick.id} className="h-10 w-20 flex flex-col items-end">
-              <button
-                className="w-5 h-5 bg-blue-500 rounded-bl-full rounded-tl-full rounded-br-full"
-                onClick={_ => {
-                  setPicks(p_ => {
-                    p_->Array.reduceWithIndex(
-                      [],
-                      (acc, cur, i) => {
-                        let leftValue = i == 0 ? 0. : p_->Array.getUnsafe(i - 1)->{x => x.value}
-
-                        cur.id == pick.id
-                          ? [...acc, makeNewHue(cur, leftValue, cur.value), cur]
-                          : [...acc, cur]
-                      },
-                    )
-                  })
-                }}
-              />
+            <div key={pick.id} className="h-10 ">
+              <div className="flex flex-row justify-between w-full">
+                <button
+                  className="w-3 h-3 bg-red-500"
+                  onClick={_ => setPicks(p_ => p_->Array.filter(v => v.id != pick.id))}
+                />
+                <button
+                  className="w-5 h-5 bg-blue-500 rounded-bl-full rounded-tl-full rounded-br-full"
+                  onClick={_ => {newInterHue(pick)}}
+                />
+              </div>
               <input
                 type_="text"
                 value={pick.name}
@@ -426,94 +507,28 @@ module Palette = {
                 value={shade.name}
                 className="w-10 h-5"
               />
-              <button
-                className="w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full"
-                onClick={_ => {
-                  let newShadeId = ulid()
-                  setShades(s_ => {
-                    s_->Array.reduce(
-                      [],
-                      (a, c) => {
-                        c.id == shade.id
-                          ? [
-                              ...a,
-                              {
-                                id: newShadeId,
-                                name: "New",
-                              },
-                              c,
-                            ]
-                          : [...a, c]
-                      },
+              <div className="flex flex-row justify-between">
+                <button
+                  className="w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full"
+                  onClick={_ => {newInterShade(shade)}}
+                />
+                <button
+                  className="w-3 h-3 bg-red-500"
+                  onClick={_ => {
+                    setPicks(p_ =>
+                      p_->Array.map(
+                        v => {
+                          {
+                            ...v,
+                            elements: v.elements->Array.filter(e => e.shadeId != shade.id),
+                          }
+                        },
+                      )
                     )
-                  })
-                  setPicks(p_ => {
-                    p_->Array.map(
-                      v => {
-                        {
-                          ...v,
-                          elements: v.elements->Array.reduceWithIndex(
-                            [],
-                            (a, c, i) => {
-                              c.shadeId == shade.id
-                                ? {
-                                    // Todo: interpolate value too?
-
-                                    let left =
-                                      i == 0
-                                        ? 0.0
-                                        : v.elements
-                                          ->Array.getUnsafe(i - 1)
-                                          ->{
-                                            x => {
-                                              let (_, result, _) = Texel.convert(
-                                                x.hex->Texel.hexToRgb,
-                                                Texel.srgb,
-                                                Texel.okhsv,
-                                              )
-
-                                              result
-                                            }
-                                          }
-
-                                    let (h, right, v) = Texel.convert(
-                                      c.hex->Texel.hexToRgb,
-                                      Texel.srgb,
-                                      Texel.okhsv,
-                                    )
-
-                                    let avg = (left +. right) /. 2.
-
-                                    let newValue = Utils.bound(0.0, 1.0, avg)
-
-                                    let newHex =
-                                      Texel.convert(
-                                        (h, newValue, v),
-                                        Texel.okhsv,
-                                        Texel.srgb,
-                                      )->Texel.rgbToHex
-
-                                    Console.log4(left, right, newValue, newHex)
-
-                                    [
-                                      ...a,
-                                      {
-                                        id: ulid(),
-                                        shadeId: newShadeId,
-                                        hex: newHex,
-                                      },
-                                      c,
-                                    ]
-                                  }
-                                : [...a, c]
-                            },
-                          ),
-                        }
-                      },
-                    )
-                  })
-                }}
-              />
+                    setShades(s_ => s_->Array.filter(v => v.id != shade.id))
+                  }}
+                />
+              </div>
             </div>
           })
           ->React.array}
