@@ -8,6 +8,8 @@ module Utils = {
   }
 }
 
+@module("ulid") external ulid: unit => string = "ulid"
+
 let hueToName = hue => {
   switch hue {
   | x if x >= 05. && x < 15. => "rose"
@@ -78,6 +80,8 @@ module Texel = {
   @module("@texel/color") external srgb: texelType = "sRGB"
 
   @module("@texel/color") external rgbToHex: triple => string = "RGBToHex"
+  @module("@texel/color") external hexToRgb: string => triple = "hexToRGB"
+
   @module("@texel/color") external convert: (triple, texelType, texelType) => triple = "convert"
 }
 
@@ -189,13 +193,13 @@ let makeDefaultPalette = (xLen, yLen) => {
       let s = (yF +. 1.) /. yLenF
       let hex = Texel.rgbToHex(Texel.convert((hue, s, 1.0), Texel.okhsv, Texel.srgb))
       {
-        id: y->Int.toString ++ x->Int.toString,
+        id: ulid(),
         shadeId: x->Int.toString,
         hex,
       }
     })
     {
-      id: x->Int.toString,
+      id: ulid(),
       value: hue,
       name: hue->hueToName,
       elements,
@@ -214,7 +218,7 @@ module Palette = {
     )
     let (shades, setShades) = React.useState(() =>
       Utils.mapRange(defaultShadeNum, i => {
-        id: i->Int.toString,
+        id: ulid(),
         name: ((i + 1) * 100)->Int.toString,
       })
     )
@@ -226,12 +230,29 @@ module Palette = {
       picks
       ->Array.map(pick => pick.elements)
       ->Belt.Array.concatMany
-    Console.log(picksFlat)
 
-    let addHue =
-      <div className="w-5 h-5 bg-blue-500 rounded-bl-full rounded-tl-full rounded-br-full" />
-    let addShade =
-      <div className="w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full" />
+    let changeHexHueByHSL = (hex, hue) => {
+      let (_, s, l) = Texel.convert(hex->Texel.hexToRgb, Texel.srgb, Texel.okhsl)
+      let newHex = Texel.convert((hue, s, l), Texel.okhsl, Texel.srgb)->Texel.rgbToHex
+      newHex
+    }
+
+    let makeNewElement = (copy, left, right) => {
+      let newValue = (left +. right) /. 2.
+      {
+        id: ulid(),
+        name: newValue->hueToName,
+        value: newValue,
+        elements: copy.elements->Array.map(v => {
+          {
+            id: ulid(),
+            shadeId: v.shadeId,
+            hex: changeHexHueByHSL(v.hex, newValue),
+          }
+        }),
+      }
+    }
+
     <div>
       <HueLine hues={picks->Array.map(({value}) => value)} />
       <div
@@ -246,13 +267,22 @@ module Palette = {
           style={{
             gridArea: "addShade",
           }}>
-          {addShade}
+          <div className="w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full" />
         </div>
         <div
           style={{
             gridArea: "addHue",
           }}>
-          {addHue}
+          <button
+            className="w-5 h-5 bg-blue-500 rounded-bl-full rounded-tl-full rounded-br-full"
+            onClick={_ =>
+              setPicks(p_ => {
+                let lastHue = picks->Array.toReversed->Array.getUnsafe(0)
+
+                let new = makeNewElement(lastHue, lastHue.value, 360.)
+                [...p_, new]
+              })}
+          />
         </div>
         <div
           style={{
@@ -261,9 +291,25 @@ module Palette = {
             gridTemplateRows: `repeat(${shadeLen->Int.toString}, 1fr)`,
           }}>
           {picks
-          ->Array.mapWithIndex((pick, i) => {
-            <div key={i->Int.toString} className="h-10 w-10">
-              {addHue}
+          ->Array.map(pick => {
+            <div key={pick.id} className="h-10 w-10">
+              <button
+                className="w-5 h-5 bg-blue-500 rounded-bl-full rounded-tl-full rounded-br-full"
+                onClick={_ => {
+                  setPicks(p_ => {
+                    p_->Array.reduceWithIndex(
+                      [],
+                      (acc, cur, i) => {
+                        let leftValue = i == 0 ? 0. : p_->Array.getUnsafe(i - 1)->{x => x.value}
+
+                        cur.id == pick.id
+                          ? [...acc, makeNewElement(cur, leftValue, cur.value), cur]
+                          : [...acc, cur]
+                      },
+                    )
+                  })
+                }}
+              />
               <input
                 type_="text"
                 value={pick.name}
@@ -295,9 +341,11 @@ module Palette = {
             gridTemplateColumns: `repeat(${shadeLen->Int.toString}, 1fr)`,
           }}>
           {shades
-          ->Array.mapWithIndex((shade, i) => {
-            <div key={i->Int.toString ++ "shade"} className="h-10 w-10">
-              {addShade}
+          ->Array.map(shade => {
+            <div key={shade.id} className="h-10 w-10">
+              <div
+                className="w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full"
+              />
               <input
                 type_="text"
                 onChange={e => {
@@ -325,8 +373,8 @@ module Palette = {
           style={{
             display: "grid",
             gridArea: "main",
-            gridTemplateColumns: `repeat(${hueLen->Int.toString}, 1fr)`,
-            gridTemplateRows: `repeat(${shadeLen->Int.toString}, 1fr)`,
+            gridTemplateColumns: `repeat(${shadeLen->Int.toString}, 1fr)`,
+            gridTemplateRows: `repeat(${hueLen->Int.toString}, 1fr)`,
           }}>
           {picksFlat
           ->Array.map(element => {
