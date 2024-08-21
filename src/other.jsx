@@ -175,65 +175,67 @@ const updateLines = (canvas, ctx, x, y) => {
 
 const Chart = ({ yInput, xInput, gamut, lines, name, flip = false }) => {
   return (
-    <div className="w-fit ">
-      <div className="font-black text-lg w-full text-center">{name}</div>
-      <div className="flex flex-row">
-        <input
-          className="my-2"
-          style={{
-            width: 40,
-            writingMode: flip ? "sideways-lr" : "vertical-lr",
-          }}
-          type="range"
-          min={yInput.min}
-          max={yInput.max}
-          step={yInput.step}
-          value={yInput.value}
-          onChange={(e) => {
-            yInput.set(parseFloat(e.target.value));
-          }}
-        />
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "40px 1fr",
+        gridTemplateRows: "40px 1fr 40px",
+        gridTemplateAreas: `"... title" "yAxis chart" "... xAxis"`,
+      }}
+    >
+      <div
+        style={{ gridArea: "title" }}
+        className=" font-black text-lg text-center"
+      >
+        {name}
+      </div>
+      <input
+        className="my-2"
+        style={{
+          gridArea: "yAxis",
+          writingMode: flip ? "sideways-lr" : "vertical-lr",
+        }}
+        type="range"
+        min={yInput.min}
+        max={yInput.max}
+        step={yInput.step}
+        value={yInput.value}
+        onChange={(e) => {
+          yInput.set(parseFloat(e.target.value));
+        }}
+      />
 
+      <div
+        style={{
+          gridArea: "chart",
+          backgroundColor: "#555",
+        }}
+        className="p-4 rounded-xl"
+      >
         <div
           style={{
-            backgroundColor: "#555",
+            width: SIZE + "px",
+            height: SIZE + "px",
           }}
-          className="w-fit p-4 rounded-xl"
         >
-          <div
-            style={{
-              width: SIZE + "px",
-              height: SIZE + "px",
-            }}
-          >
-            <canvas className="absolute" ref={gamut} />
-            <canvas className="absolute" ref={lines} />
-          </div>
+          <canvas className="absolute" ref={gamut} />
+          <canvas className="absolute" ref={lines} />
         </div>
       </div>
-      <div
-        className=" px-2"
+      <input
         style={{
-          marginLeft: 40,
-          width: SIZE + 32,
-          height: 40,
+          gridArea: "xAxis",
         }}
-      >
-        <input
-          style={{
-            height: 40,
-          }}
-          type="range"
-          className="w-full"
-          min={xInput.min}
-          max={xInput.max}
-          step={xInput.step}
-          value={xInput.value}
-          onChange={(e) => {
-            xInput.set(parseFloat(e.target.value));
-          }}
-        />
-      </div>
+        type="range"
+        className="mx-2"
+        min={xInput.min}
+        max={xInput.max}
+        step={xInput.step}
+        value={xInput.value}
+        onChange={(e) => {
+          xInput.set(parseFloat(e.target.value));
+        }}
+      />
     </div>
   );
 };
