@@ -49,21 +49,22 @@ let hueToName = hue => {
   | _ => "?"
   }
 }
-
 module Gamut = {
   @react.component @module("./other.jsx") external make: unit => React.element = "Gamut"
 }
 
+type shade = {id: string, name: string}
+
 type element = {
   id: string,
-  hueId: string,
+  shadeId: string,
   hex: string,
 }
 
 type hue = {
-  hueId: string,
-  hue: float,
-  hueName: string,
+  id: string,
+  value: float,
+  name: string,
   elements: array<element>,
 }
 
@@ -189,14 +190,14 @@ let makeDefaultPalette = (xLen, yLen) => {
       let hex = Texel.rgbToHex(Texel.convert((hue, s, 1.0), Texel.okhsv, Texel.srgb))
       {
         id: y->Int.toString ++ x->Int.toString,
-        hueId: x->Int.toString,
+        shadeId: x->Int.toString,
         hex,
       }
     })
     {
-      hueId: x->Int.toString,
-      hue,
-      hueName: hue->hueToName,
+      id: x->Int.toString,
+      value: hue,
+      name: hue->hueToName,
       elements,
     }
   })
@@ -208,13 +209,16 @@ module Palette = {
 
   @react.component
   let make = (~arr) => {
-    let (picks_, setPicks_) = React.useState(() =>
+    let (picks_, setPicks) = React.useState(() =>
       makeDefaultPalette(defaultHueNum, defaultShadeNum)
     )
     let (shades, setShades) = React.useState(() =>
-      Utils.mapRange(defaultShadeNum, i => ((i + 1) * 100)->Int.toString)
+      Utils.mapRange(defaultShadeNum, i => {
+        id: i->Int.toString,
+        name: ((i + 1) * 100)->Int.toString,
+      })
     )
-    let picks = picks_->Array.toSorted((a, b) => a.hue -. b.hue)
+    let picks = picks_->Array.toSorted((a, b) => a.value -. b.value)
 
     let hueLen = picks->Array.length
     let shadeLen = shades->Array.length
@@ -229,7 +233,7 @@ module Palette = {
     let addShade =
       <div className="w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full" />
     <div>
-      <HueLine hues={picks->Array.map(({hue}) => hue)} />
+      <HueLine hues={picks->Array.map(({value}) => value)} />
       <div
         style={{
           display: "grid",
@@ -260,7 +264,26 @@ module Palette = {
           ->Array.mapWithIndex((pick, i) => {
             <div key={i->Int.toString} className="h-10 w-10">
               {addHue}
-              <input type_="text" value={pick.hueName} className="w-10 h-5" />
+              <input
+                type_="text"
+                value={pick.name}
+                onChange={e => {
+                  let value = (e->ReactEvent.Form.target)["value"]
+                  setPicks(cur => {
+                    cur->Array.map(
+                      v => {
+                        v.id == pick.id
+                          ? {
+                              ...v,
+                              name: value,
+                            }
+                          : v
+                      },
+                    )
+                  })
+                }}
+                className="w-10 h-5"
+              />
             </div>
           })
           ->React.array}
@@ -275,7 +298,25 @@ module Palette = {
           ->Array.mapWithIndex((shade, i) => {
             <div key={i->Int.toString ++ "shade"} className="h-10 w-10">
               {addShade}
-              <input type_="text" value={shade} className="w-10 h-5" />
+              <input
+                type_="text"
+                onChange={e => {
+                  let value = (e->ReactEvent.Form.target)["value"]
+                  setShades(cur =>
+                    cur->Array.map(
+                      v =>
+                        v.id == shade.id
+                          ? {
+                              ...v,
+                              name: value,
+                            }
+                          : v,
+                    )
+                  )
+                }}
+                value={shade.name}
+                className="w-10 h-5"
+              />
             </div>
           })
           ->React.array}

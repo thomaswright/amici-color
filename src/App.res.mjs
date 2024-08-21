@@ -152,26 +152,31 @@ function App$Palette(props) {
                                       ], Color.OKHSV, Color.sRGB));
                               return {
                                       id: y.toString() + x.toString(),
-                                      hueId: x.toString(),
+                                      shadeId: x.toString(),
                                       hex: hex
                                     };
                             }));
                       return {
-                              hueId: x.toString(),
-                              hue: hue,
-                              hueName: hueToName(hue),
+                              id: x.toString(),
+                              value: hue,
+                              name: hueToName(hue),
                               elements: elements
                             };
                     }));
       });
+  var setPicks = match[1];
   var match$1 = React.useState(function () {
         return mapRange(5, (function (i) {
-                      return Math.imul(i + 1 | 0, 100).toString();
+                      return {
+                              id: i.toString(),
+                              name: Math.imul(i + 1 | 0, 100).toString()
+                            };
                     }));
       });
+  var setShades = match$1[1];
   var shades = match$1[0];
   var picks = match[0].toSorted(function (a, b) {
-        return a.hue - b.hue;
+        return a.value - b.value;
       });
   var hueLen = picks.length;
   var shadeLen = shades.length;
@@ -189,7 +194,7 @@ function App$Palette(props) {
               children: [
                 JsxRuntime.jsx(App$HueLine, {
                       hues: picks.map(function (param) {
-                            return param.hue;
+                            return param.value;
                           })
                     }),
                 JsxRuntime.jsxs("div", {
@@ -214,7 +219,24 @@ function App$Palette(props) {
                                                   JsxRuntime.jsx("input", {
                                                         className: "w-10 h-5",
                                                         type: "text",
-                                                        value: pick.hueName
+                                                        value: pick.name,
+                                                        onChange: (function (e) {
+                                                            var value = e.target.value;
+                                                            setPicks(function (cur) {
+                                                                  return cur.map(function (v) {
+                                                                              if (v.id === pick.id) {
+                                                                                return {
+                                                                                        id: v.id,
+                                                                                        value: v.value,
+                                                                                        name: value,
+                                                                                        elements: v.elements
+                                                                                      };
+                                                                              } else {
+                                                                                return v;
+                                                                              }
+                                                                            });
+                                                                });
+                                                          })
                                                       })
                                                 ],
                                                 className: "h-10 w-10"
@@ -234,7 +256,22 @@ function App$Palette(props) {
                                                   JsxRuntime.jsx("input", {
                                                         className: "w-10 h-5",
                                                         type: "text",
-                                                        value: shade
+                                                        value: shade.name,
+                                                        onChange: (function (e) {
+                                                            var value = e.target.value;
+                                                            setShades(function (cur) {
+                                                                  return cur.map(function (v) {
+                                                                              if (v.id === shade.id) {
+                                                                                return {
+                                                                                        id: v.id,
+                                                                                        name: value
+                                                                                      };
+                                                                              } else {
+                                                                                return v;
+                                                                              }
+                                                                            });
+                                                                });
+                                                          })
                                                       })
                                                 ],
                                                 className: "h-10 w-10"
