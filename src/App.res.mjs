@@ -7,6 +7,7 @@ import * as OtherJsx from "./other.jsx";
 import * as Caml_option from "rescript/lib/es6/caml_option.js";
 import * as Core__Array from "@rescript/core/src/Core__Array.res.mjs";
 import * as Color from "@texel/color";
+import * as Core__Option from "@rescript/core/src/Core__Option.res.mjs";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function mapRange(n, f) {
@@ -112,6 +113,7 @@ function updateHueLineCanvas(canvas, ctx) {
 }
 
 function App$HueLine(props) {
+  var selected = props.selected;
   var canvasRef = React.useRef(null);
   React.useEffect((function () {
           var canvasDom = canvasRef.current;
@@ -128,9 +130,14 @@ function App$HueLine(props) {
               children: [
                 props.hues.map(function (hue) {
                       return JsxRuntime.jsx("div", {
-                                  className: "bg-black w-2 h-2 absolute ",
+                                  className: [
+                                      "w-2 h-2 absolute border-black border",
+                                      Core__Option.mapOr(selected, false, (function (s) {
+                                              return s === hue.id;
+                                            })) ? "bg-green-500" : "bg-black"
+                                    ].join(" "),
                                   style: {
-                                    left: (hue / 360 * 500 | 0).toString() + "px"
+                                    left: (hue.value / 360 * 500 | 0).toString() + "px"
                                   }
                                 });
                     }),
@@ -168,6 +175,77 @@ function makeDefaultPicks(xLen, defaultShades) {
               }));
 }
 
+function updateHueGamutCanvas(canvas, ctx, hue) {
+  var xMax = canvas.width;
+  var yMax = canvas.height;
+  for(var x = 0; x <= xMax; ++x){
+    for(var y = 0; y <= yMax; ++y){
+      var l = x / xMax;
+      var c = y / yMax * 0.36;
+      var rgb = Color.convert([
+            l,
+            c,
+            hue
+          ], Color.OKLCH, Color.sRGB);
+      if (Color.isRGBInGamut(rgb)) {
+        ctx.fillStyle = Color.RGBToHex(rgb);
+        ctx.fillRect(x, yMax - y | 0, 1, 1);
+      }
+      
+    }
+  }
+}
+
+function App$HueGamut(props) {
+  var selected = props.selected;
+  var hues = props.hues;
+  var canvasRef = React.useRef(null);
+  var hueObj = Core__Option.flatMap(selected, (function (s) {
+          return hues.find(function (v) {
+                      return v.id === s;
+                    });
+        }));
+  React.useEffect((function () {
+          var canvasDom = canvasRef.current;
+          if (canvasDom === null || canvasDom === undefined) {
+            canvasDom === null;
+          } else {
+            var context = canvasDom.getContext("2d");
+            if (hueObj !== undefined) {
+              canvasDom.width = 300;
+              canvasDom.height = 300;
+              updateHueGamutCanvas(canvasDom, context, hueObj.value);
+            } else {
+              context.clearRect(0, 0, 300, 300);
+            }
+          }
+        }), [
+        canvasRef.current,
+        selected
+      ]);
+  return JsxRuntime.jsxs("div", {
+              children: [
+                Core__Option.mapOr(hueObj, null, (function (hue) {
+                        return hue.elements.map(function (e) {
+                                    var match = Color.convert(Color.hexToRGB(e.hex), Color.sRGB, Color.OKLCH);
+                                    return JsxRuntime.jsx("div", {
+                                                className: "absolute w-5 h-5 border border-black",
+                                                style: {
+                                                  backgroundColor: e.hex,
+                                                  bottom: (match[1] / 0.36 * 300 | 0).toString() + "px",
+                                                  left: (match[0] * 300 | 0).toString() + "px"
+                                                }
+                                              });
+                                  });
+                      })),
+                JsxRuntime.jsx("canvas", {
+                      ref: Caml_option.some(canvasRef)
+                    })
+              ],
+              className: "w-fit relative bg-black"
+            });
+}
+
 var defaultShades = mapRange(5, (function (i) {
         return {
                 id: Ulid.ulid(),
@@ -187,6 +265,11 @@ function App$Palette(props) {
       });
   var setShades = match$1[1];
   var shades = match$1[0];
+  var match$2 = React.useState(function () {
+        
+      });
+  var setSelectedHue = match$2[1];
+  var selectedHue = match$2[0];
   var picks = match[0].toSorted(function (a, b) {
         return a.value - b.value;
       });
@@ -279,15 +362,18 @@ function App$Palette(props) {
   return JsxRuntime.jsxs("div", {
               children: [
                 JsxRuntime.jsx(App$HueLine, {
-                      hues: picks.map(function (param) {
-                            return param.value;
-                          })
+                      hues: picks,
+                      selected: selectedHue
+                    }),
+                JsxRuntime.jsx(App$HueGamut, {
+                      hues: picks,
+                      selected: selectedHue
                     }),
                 JsxRuntime.jsxs("div", {
                       children: [
                         JsxRuntime.jsx("div", {
                               children: JsxRuntime.jsx("button", {
-                                    className: "w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full",
+                                    className: "w-5 h-5 bg-black rounded-tr-full rounded-tl-full rounded-br-full",
                                     onClick: (function (param) {
                                         newEndShade();
                                       })
@@ -300,7 +386,7 @@ function App$Palette(props) {
                             }),
                         JsxRuntime.jsx("div", {
                               children: JsxRuntime.jsx("button", {
-                                    className: "w-5 h-5 bg-blue-500 rounded-bl-full rounded-tl-full rounded-br-full",
+                                    className: "w-5 h-5 bg-black rounded-bl-full rounded-tl-full rounded-br-full",
                                     onClick: (function (param) {
                                         newEndHue();
                                       })
@@ -317,18 +403,30 @@ function App$Palette(props) {
                                                 children: [
                                                   JsxRuntime.jsxs("div", {
                                                         children: [
-                                                          JsxRuntime.jsx("button", {
-                                                                className: "w-3 h-3 bg-red-500",
-                                                                onClick: (function (param) {
-                                                                    setPicks(function (p_) {
-                                                                          return p_.filter(function (v) {
-                                                                                      return v.id !== pick.id;
+                                                          JsxRuntime.jsx("input", {
+                                                                className: "w-20 h-5",
+                                                                type: "text",
+                                                                value: pick.name,
+                                                                onChange: (function (e) {
+                                                                    var value = e.target.value;
+                                                                    setPicks(function (cur) {
+                                                                          return cur.map(function (v) {
+                                                                                      if (v.id === pick.id) {
+                                                                                        return {
+                                                                                                id: v.id,
+                                                                                                value: v.value,
+                                                                                                name: value,
+                                                                                                elements: v.elements
+                                                                                              };
+                                                                                      } else {
+                                                                                        return v;
+                                                                                      }
                                                                                     });
                                                                         });
                                                                   })
                                                               }),
                                                           JsxRuntime.jsx("button", {
-                                                                className: "w-5 h-5 bg-blue-500 rounded-bl-full rounded-tl-full rounded-br-full",
+                                                                className: "w-5 h-5 bg-black rounded-bl-full rounded-tl-full rounded-br-full",
                                                                 onClick: (function (param) {
                                                                     setPicks(function (p_) {
                                                                           return Core__Array.reduceWithIndex(p_, [], (function (acc, cur, i) {
@@ -352,37 +450,55 @@ function App$Palette(props) {
                                                                   })
                                                               })
                                                         ],
-                                                        className: "flex flex-row justify-between w-full"
+                                                        className: "flex-row flex w-full justify-between"
                                                       }),
-                                                  JsxRuntime.jsx("input", {
-                                                        className: "w-20 h-5",
-                                                        type: "text",
-                                                        value: pick.name,
-                                                        onChange: (function (e) {
-                                                            var value = e.target.value;
-                                                            setPicks(function (cur) {
-                                                                  return cur.map(function (v) {
-                                                                              if (v.id === pick.id) {
-                                                                                return {
-                                                                                        id: v.id,
-                                                                                        value: v.value,
-                                                                                        name: value,
-                                                                                        elements: v.elements
-                                                                                      };
-                                                                              } else {
-                                                                                return v;
-                                                                              }
-                                                                            });
-                                                                });
-                                                          })
+                                                  JsxRuntime.jsxs("div", {
+                                                        children: [
+                                                          JsxRuntime.jsx("button", {
+                                                                className: [
+                                                                    "w-3 h-3 border-black border",
+                                                                    Core__Option.mapOr(selectedHue, false, (function (s) {
+                                                                            return s === pick.id;
+                                                                          })) ? "bg-green-500" : "bg-black"
+                                                                  ].join(" "),
+                                                                onClick: (function (param) {
+                                                                    setSelectedHue(function (param) {
+                                                                          return pick.id;
+                                                                        });
+                                                                  })
+                                                              }),
+                                                          JsxRuntime.jsx("button", {
+                                                                className: "w-3 h-3 bg-red-500",
+                                                                onClick: (function (param) {
+                                                                    setPicks(function (p_) {
+                                                                          return p_.filter(function (v) {
+                                                                                      return v.id !== pick.id;
+                                                                                    });
+                                                                        });
+                                                                    setSelectedHue(function (v) {
+                                                                          return Core__Option.flatMap(v, (function (p) {
+                                                                                        if (p === pick.id) {
+                                                                                          return ;
+                                                                                        } else {
+                                                                                          return p;
+                                                                                        }
+                                                                                      }));
+                                                                        });
+                                                                  })
+                                                              })
+                                                        ],
+                                                        className: "flex flex-row justify-start gap-2 w-full"
                                                       })
                                                 ],
-                                                className: "h-10 "
+                                                className: " "
                                               }, pick.id);
                                   }),
+                              className: "overflow-hidden",
                               style: {
+                                display: "grid",
                                 gridColumn: "1 / 2",
                                 gridRow: "2 / -2",
+                                gridTemplateColumns: "subgrid",
                                 gridTemplateRows: "subgrid"
                               }
                             }),
@@ -413,7 +529,7 @@ function App$Palette(props) {
                                                   JsxRuntime.jsxs("div", {
                                                         children: [
                                                           JsxRuntime.jsx("button", {
-                                                                className: "w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full",
+                                                                className: "w-5 h-5 bg-black rounded-tr-full rounded-tl-full rounded-br-full",
                                                                 onClick: (function (param) {
                                                                     var newShadeId = Ulid.ulid();
                                                                     setShades(function (s_) {
@@ -506,14 +622,16 @@ function App$Palette(props) {
                                                         className: "flex flex-row justify-between"
                                                       })
                                                 ],
-                                                className: "h-10 w-10 flex flex-col"
+                                                className: " flex flex-col"
                                               }, shade.id);
                                   }),
+                              className: "overflow-hidden",
                               style: {
                                 display: "grid",
                                 gridColumn: "2 / -2",
                                 gridRow: "1 / 2",
-                                gridTemplateColumns: "subgrid"
+                                gridTemplateColumns: "subgrid",
+                                gridTemplateRows: "subgrid"
                               }
                             }),
                         JsxRuntime.jsx("div", {
@@ -534,11 +652,11 @@ function App$Palette(props) {
                               }
                             })
                       ],
-                      className: "p-6 w-fit",
+                      className: "py-6 w-fit",
                       style: {
                         display: "grid",
-                        gridTemplateColumns: "5rem repeat(" + shadeLen.toString() + ", 1fr) 2.5rem",
-                        gridTemplateRows: "2.5rem repeat(" + hueLen.toString() + ", 1fr) 2.5rem"
+                        gridTemplateColumns: "auto repeat(" + shadeLen.toString() + ", 2.5rem) 2.5rem",
+                        gridTemplateRows: "auto repeat(" + hueLen.toString() + ", 2.5rem) 2.5rem"
                       }
                     })
               ]

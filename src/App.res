@@ -86,6 +86,7 @@ module Texel = {
   @module("@texel/color") external hexToRgb: string => triple = "hexToRGB"
 
   @module("@texel/color") external convert: (triple, texelType, texelType) => triple = "convert"
+  @module("@texel/color") external isRGBInGamut: triple => bool = "isRGBInGamut"
 }
 
 module Canvas = {
@@ -100,6 +101,7 @@ module Canvas = {
   @set external setWidth: (canvas, int) => unit = "width"
   @set external setHeight: (canvas, int) => unit = "height"
   @send external getContext: (canvas, string) => context = "getContext"
+  @send external clearRect: (context, ~x: int, ~y: int, ~w: int, ~h: int) => unit = "clearRect"
 }
 
 module NameInspection = {
@@ -150,7 +152,7 @@ let updateHueLineCanvas = (canvas, ctx) => {
 module HueLine = {
   let xSize = 500
   @react.component
-  let make = (~hues) => {
+  let make = (~hues: array<hue>, ~selected) => {
     let canvasRef = React.useRef(Nullable.null)
     // let huesComparison = hues->Array.reduce("", (a, c) => {a ++ c->Float.toString})
     React.useEffect1(() => {
@@ -172,9 +174,12 @@ module HueLine = {
       {hues
       ->Array.map(hue => {
         <div
-          className={"bg-black w-2 h-2 absolute "}
+          className={[
+            "w-2 h-2 absolute border-black border",
+            selected->Option.mapOr(false, s => s == hue.id) ? "bg-green-500" : "bg-black",
+          ]->Array.join(" ")}
           style={{
-            left: (hue /. 360. *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+            left: (hue.value /. 360. *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
           }}
         />
       })
@@ -213,6 +218,81 @@ let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
   })
 }
 
+let chromaBound = 0.36
+
+let updateHueGamutCanvas = (canvas, ctx, hue) => {
+  let xMax = canvas->Canvas.getWidth
+  let yMax = canvas->Canvas.getHeight
+
+  // context->Canvas.clearRect(~x=0, ~y=0, ~w=xSize, ~h=ySize)
+
+  for x in 0 to xMax {
+    for y in 0 to yMax {
+      let h = hue
+      let l = x->Int.toFloat /. xMax->Int.toFloat
+      let c = y->Int.toFloat /. yMax->Int.toFloat *. chromaBound
+      let rgb = Texel.convert((l, c, h), Texel.oklch, Texel.srgb)
+
+      if rgb->Texel.isRGBInGamut {
+        ctx->Canvas.setFillStyle(Texel.rgbToHex(rgb))
+        ctx->Canvas.fillRect(~x, ~y=yMax - y, ~w=1, ~h=1)
+      }
+    }
+  }
+
+  ()
+}
+
+module HueGamut = {
+  let xSize = 300
+  let ySize = 300
+
+  @react.component
+  let make = (~hues: array<hue>, ~selected) => {
+    let canvasRef = React.useRef(Nullable.null)
+    let hueObj = selected->Option.flatMap(s => hues->Array.find(v => v.id == s))
+    React.useEffect2(() => {
+      switch canvasRef.current {
+      | Value(canvasDom) =>
+        let canvas = canvasDom->Obj.magic
+        let context = canvas->Canvas.getContext("2d")
+
+        switch hueObj {
+        | Some(selectedHue) =>
+          canvas->Canvas.setWidth(xSize)
+          canvas->Canvas.setHeight(ySize)
+          updateHueGamutCanvas(canvas, context, selectedHue.value)
+
+        | None => context->Canvas.clearRect(~x=0, ~y=0, ~w=xSize, ~h=ySize)
+        }
+      | Null | Undefined => ()
+      }
+
+      None
+    }, (canvasRef.current, selected))
+
+    <div className="w-fit relative bg-black">
+      {hueObj->Option.mapOr(React.null, hue => {
+        hue.elements
+        ->Array.map(e => {
+          let (l, c, h) = Texel.convert(e.hex->Texel.hexToRgb, Texel.srgb, Texel.oklch)
+
+          <div
+            className="absolute w-5 h-5 border border-black"
+            style={{
+              backgroundColor: e.hex,
+              bottom: (c /. chromaBound *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+              left: (l *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+            }}
+          />
+        })
+        ->React.array
+      })}
+      <canvas ref={ReactDOM.Ref.domRef(canvasRef)} />
+    </div>
+  }
+}
+
 module Palette = {
   let defaultShades = Utils.mapRange(5, i => {
     id: ulid(),
@@ -225,6 +305,7 @@ module Palette = {
   let make = (~arr) => {
     let (picks_, setPicks) = React.useState(() => defaultPicks)
     let (shades, setShades) = React.useState(() => defaultShades)
+    let (selectedHue, setSelectedHue) = React.useState(() => None)
 
     let picks = picks_->Array.toSorted((a, b) => a.value -. b.value)
 
@@ -405,14 +486,15 @@ module Palette = {
     }
 
     <div>
-      <HueLine hues={picks->Array.map(({value}) => value)} />
+      <HueLine hues={picks} selected={selectedHue} />
+      <HueGamut hues={picks} selected={selectedHue} />
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: `5rem repeat(${shadeLen->Int.toString}, 1fr) 2.5rem`,
-          gridTemplateRows: `2.5rem repeat(${hueLen->Int.toString}, 1fr) 2.5rem`,
+          gridTemplateColumns: `auto repeat(${shadeLen->Int.toString}, 2.5rem) 2.5rem`,
+          gridTemplateRows: `auto repeat(${hueLen->Int.toString}, 2.5rem) 2.5rem`,
         }}
-        className="p-6 w-fit">
+        className="py-6 w-fit">
         <div
           className="flex flex-col justify-end"
           style={{
@@ -420,7 +502,7 @@ module Palette = {
             gridColumn: "-1 / -2",
           }}>
           <button
-            className="w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full"
+            className="w-5 h-5 bg-black rounded-tr-full rounded-tl-full rounded-br-full"
             onClick={_ => {newEndShade()}}
           />
         </div>
@@ -431,63 +513,82 @@ module Palette = {
             gridColumn: "1 / 2",
           }}>
           <button
-            className="w-5 h-5 bg-blue-500 rounded-bl-full rounded-tl-full rounded-br-full"
+            className="w-5 h-5 bg-black rounded-bl-full rounded-tl-full rounded-br-full"
             onClick={_ => newEndHue()}
           />
         </div>
         <div
+          className="overflow-hidden"
           style={{
+            display: "grid",
             gridRow: "2 / -2",
             gridColumn: "1 / 2",
-            gridTemplateRows: `subgrid`,
+            gridTemplateRows: "subgrid",
+            gridTemplateColumns: "subgrid",
           }}>
           {picks
           ->Array.map(pick => {
-            <div key={pick.id} className="h-10 ">
-              <div className="flex flex-row justify-between w-full">
-                <button
-                  className="w-3 h-3 bg-red-500"
-                  onClick={_ => setPicks(p_ => p_->Array.filter(v => v.id != pick.id))}
+            <div key={pick.id} className=" ">
+              <div className="flex-row flex w-full justify-between">
+                <input
+                  type_="text"
+                  value={pick.name}
+                  onChange={e => {
+                    let value = (e->ReactEvent.Form.target)["value"]
+                    setPicks(cur => {
+                      cur->Array.map(
+                        v => {
+                          v.id == pick.id
+                            ? {
+                                ...v,
+                                name: value,
+                              }
+                            : v
+                        },
+                      )
+                    })
+                  }}
+                  className="w-20 h-5"
                 />
                 <button
-                  className="w-5 h-5 bg-blue-500 rounded-bl-full rounded-tl-full rounded-br-full"
+                  className="w-5 h-5 bg-black rounded-bl-full rounded-tl-full rounded-br-full"
                   onClick={_ => {newInterHue(pick)}}
                 />
               </div>
-              <input
-                type_="text"
-                value={pick.name}
-                onChange={e => {
-                  let value = (e->ReactEvent.Form.target)["value"]
-                  setPicks(cur => {
-                    cur->Array.map(
-                      v => {
-                        v.id == pick.id
-                          ? {
-                              ...v,
-                              name: value,
-                            }
-                          : v
-                      },
-                    )
-                  })
-                }}
-                className="w-20 h-5"
-              />
+              <div className="flex flex-row justify-start gap-2 w-full">
+                <button
+                  className={[
+                    "w-3 h-3 border-black border",
+                    selectedHue->Option.mapOr(false, s => s == pick.id)
+                      ? "bg-green-500"
+                      : "bg-black",
+                  ]->Array.join(" ")}
+                  onClick={_ => setSelectedHue(_ => Some(pick.id))}
+                />
+                <button
+                  className="w-3 h-3 bg-red-500"
+                  onClick={_ => {
+                    setPicks(p_ => p_->Array.filter(v => v.id != pick.id))
+                    setSelectedHue(v => v->Option.flatMap(p => p == pick.id ? None : Some(p)))
+                  }}
+                />
+              </div>
             </div>
           })
           ->React.array}
         </div>
         <div
+          className="overflow-hidden"
           style={{
             display: "grid",
             gridRow: "1 / 2",
             gridColumn: "2 / -2",
-            gridTemplateColumns: `subgrid`,
+            gridTemplateRows: "subgrid",
+            gridTemplateColumns: "subgrid",
           }}>
           {shades
           ->Array.map(shade => {
-            <div key={shade.id} className="h-10 w-10 flex flex-col">
+            <div key={shade.id} className=" flex flex-col">
               <input
                 type_="text"
                 onChange={e => {
@@ -509,7 +610,7 @@ module Palette = {
               />
               <div className="flex flex-row justify-between">
                 <button
-                  className="w-5 h-5 bg-pink-500 rounded-tr-full rounded-tl-full rounded-br-full"
+                  className="w-5 h-5 bg-black rounded-tr-full rounded-tl-full rounded-br-full"
                   onClick={_ => {newInterShade(shade)}}
                 />
                 <button
