@@ -171,10 +171,11 @@ function updateLchHGamutCanvas(canvas, ctx, hue) {
 }
 
 function App$LchHGamut(props) {
-  var selected = props.selected;
+  var selectedElement = props.selectedElement;
+  var selectedHue = props.selectedHue;
   var hues = props.hues;
   var canvasRef = React.useRef(null);
-  var hueObj = Core__Option.flatMap(selected, (function (s) {
+  var hueObj = Core__Option.flatMap(selectedHue, (function (s) {
           return hues.find(function (v) {
                       return v.id === s;
                     });
@@ -195,7 +196,7 @@ function App$LchHGamut(props) {
           }
         }), [
         canvasRef.current,
-        selected
+        selectedHue
       ]);
   return JsxRuntime.jsxs("div", {
               children: [
@@ -212,7 +213,10 @@ function App$LchHGamut(props) {
                                     var match = Color.convert(hsl, Color.OKHSL, Color.OKLCH);
                                     var hex = Color.RGBToHex(Color.convert(hsl, Color.OKHSL, Color.sRGB));
                                     return JsxRuntime.jsx("div", {
-                                                className: "absolute w-5 h-5 border border-black",
+                                                children: Core__Option.mapOr(selectedElement, false, (function (x) {
+                                                        return x === e.id;
+                                                      })) ? "•" : null,
+                                                className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center",
                                                 style: {
                                                   backgroundColor: hex,
                                                   bottom: (match[1] / 0.36 * 300 | 0).toString() + "px",
@@ -248,10 +252,11 @@ function updateHslSGamutCanvas(canvas, ctx) {
 }
 
 function App$HslSGamut(props) {
-  var selected = props.selected;
+  var selectedElement = props.selectedElement;
+  var selectedHue = props.selectedHue;
   var hues = props.hues;
   var canvasRef = React.useRef(null);
-  var hueObj = Core__Option.flatMap(selected, (function (s) {
+  var hueObj = Core__Option.flatMap(selectedHue, (function (s) {
           return hues.find(function (v) {
                       return v.id === s;
                     });
@@ -272,11 +277,11 @@ function App$HslSGamut(props) {
           }
         }), [
         canvasRef.current,
-        selected
+        selectedHue
       ]);
   return JsxRuntime.jsxs("div", {
               children: [
-                Core__Option.isNone(selected) ? null : Belt_Array.concatMany(hues.map(function (hue) {
+                Core__Option.isNone(selectedHue) ? null : Belt_Array.concatMany(hues.map(function (hue) {
                             return hue.elements.map(function (e) {
                                         var hex = Color.RGBToHex(Color.convert([
                                                   hue.value,
@@ -284,7 +289,10 @@ function App$HslSGamut(props) {
                                                   e.lightness
                                                 ], Color.OKHSL, Color.sRGB));
                                         return JsxRuntime.jsx("div", {
-                                                    className: "absolute w-5 h-5 border border-black",
+                                                    children: Core__Option.mapOr(selectedElement, false, (function (x) {
+                                                            return x === e.id;
+                                                          })) ? "•" : null,
+                                                    className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center",
                                                     style: {
                                                       backgroundColor: hex,
                                                       left: (e.lightness * 300 | 0).toString() + "px",
@@ -383,7 +391,6 @@ function App$Palette(props) {
           var match = $$event.key;
           switch (match) {
             case "ArrowDown" :
-                console.log("down");
                 update(function (el) {
                       return {
                               id: el.id,
@@ -527,11 +534,13 @@ function App$Palette(props) {
                       children: [
                         JsxRuntime.jsx(App$LchHGamut, {
                               hues: picks,
-                              selected: selectedHue
+                              selectedHue: selectedHue,
+                              selectedElement: selectedElement
                             }),
                         JsxRuntime.jsx(App$HslSGamut, {
                               hues: picks,
-                              selected: selectedHue
+                              selectedHue: selectedHue,
+                              selectedElement: selectedElement
                             })
                       ],
                       className: "flex flex-row gap-2 py-2"

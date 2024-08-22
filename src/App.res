@@ -222,9 +222,9 @@ module LchHGamut = {
   let ySize = 300
 
   @react.component
-  let make = (~hues: array<hue>, ~selected) => {
+  let make = (~hues: array<hue>, ~selectedHue, ~selectedElement) => {
     let canvasRef = React.useRef(Nullable.null)
-    let hueObj = selected->Option.flatMap(s => hues->Array.find(v => v.id == s))
+    let hueObj = selectedHue->Option.flatMap(s => hues->Array.find(v => v.id == s))
     // Todo: update on hues change
     React.useEffect2(() => {
       switch canvasRef.current {
@@ -244,7 +244,7 @@ module LchHGamut = {
       }
 
       None
-    }, (canvasRef.current, selected))
+    }, (canvasRef.current, selectedHue))
 
     <div className="w-fit relative bg-black">
       {hueObj->Option.mapOr(React.null, hue => {
@@ -256,13 +256,16 @@ module LchHGamut = {
           let hex = Texel.convert(hsl, Texel.okhsl, Texel.srgb)->Texel.rgbToHex
 
           <div
-            className="absolute w-5 h-5 border border-black"
+            className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center"
             style={{
               backgroundColor: hex,
               bottom: (c /. chromaBound *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
               left: (l *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
-            }}
-          />
+            }}>
+            {selectedElement->Option.mapOr(false, x => x == e.id)
+              ? {"•"->React.string}
+              : React.null}
+          </div>
         })
         ->React.array
       })}
@@ -297,9 +300,9 @@ module HslSGamut = {
   let ySize = 300
 
   @react.component
-  let make = (~hues: array<hue>, ~selected) => {
+  let make = (~hues: array<hue>, ~selectedHue, ~selectedElement) => {
     let canvasRef = React.useRef(Nullable.null)
-    let hueObj = selected->Option.flatMap(s => hues->Array.find(v => v.id == s))
+    let hueObj = selectedHue->Option.flatMap(s => hues->Array.find(v => v.id == s))
     // Todo: update on hues change
 
     React.useEffect2(() => {
@@ -320,10 +323,10 @@ module HslSGamut = {
       }
 
       None
-    }, (canvasRef.current, selected))
+    }, (canvasRef.current, selectedHue))
 
     <div className="w-fit relative border border-black">
-      {selected->Option.isNone
+      {selectedHue->Option.isNone
         ? React.null
         : {
             hues
@@ -337,15 +340,18 @@ module HslSGamut = {
                   )->Texel.rgbToHex
 
                 <div
-                  className="absolute w-5 h-5 border border-black"
+                  className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center"
                   style={{
                     backgroundColor: hex,
                     left: (e.lightness *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
                     top: (hue.value /. 360. *. xSize->Int.toFloat)
                     ->Float.toInt
                     ->Int.toString ++ "px",
-                  }}
-                />
+                  }}>
+                  {selectedElement->Option.mapOr(false, x => x == e.id)
+                    ? {"•"->React.string}
+                    : React.null}
+                </div>
               })
             )
             ->Belt.Array.concatMany
@@ -447,7 +453,6 @@ module Palette = {
 
       switch event->ReactEvent.Keyboard.key {
       | "ArrowDown" =>
-        Console.log("down")
         update(el => {
           ...el,
           saturation: Math.max(0.0, el.saturation -. 0.01),
@@ -632,8 +637,8 @@ module Palette = {
     <div>
       <HueLine hues={picks} selected={selectedHue} />
       <div className="flex flex-row gap-2 py-2">
-        <LchHGamut hues={picks} selected={selectedHue} />
-        <HslSGamut hues={picks} selected={selectedHue} />
+        <LchHGamut hues={picks} selectedHue selectedElement />
+        <HslSGamut hues={picks} selectedHue selectedElement />
       </div>
       <div
         style={{
