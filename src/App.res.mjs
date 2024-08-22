@@ -149,34 +149,6 @@ function App$HueLine(props) {
             });
 }
 
-function makeDefaultPicks(xLen, defaultShades) {
-  var yLenF = defaultShades.length;
-  return mapRange(xLen, (function (x) {
-                var hue = x / xLen * 360 + 1;
-                var hueId = Ulid.ulid();
-                var elements = defaultShades.map(function (shade, y) {
-                      var s = (y + 1) / yLenF;
-                      var hex = Color.RGBToHex(Color.convert([
-                                hue,
-                                s,
-                                1.0
-                              ], Color.OKHSV, Color.sRGB));
-                      return {
-                              id: Ulid.ulid(),
-                              shadeId: shade.id,
-                              hueId: hueId,
-                              hex: hex
-                            };
-                    });
-                return {
-                        id: hueId,
-                        value: hue,
-                        name: hueToName(hue),
-                        elements: elements
-                      };
-              }));
-}
-
 function updateLchHGamutCanvas(canvas, ctx, hue) {
   var xMax = canvas.width;
   var yMax = canvas.height;
@@ -229,11 +201,20 @@ function App$LchHGamut(props) {
               children: [
                 Core__Option.mapOr(hueObj, null, (function (hue) {
                         return hue.elements.map(function (e) {
-                                    var match = Color.convert(Color.hexToRGB(e.hex), Color.sRGB, Color.OKLCH);
+                                    var hsl_0 = hue.value;
+                                    var hsl_1 = e.saturation;
+                                    var hsl_2 = e.lightness;
+                                    var hsl = [
+                                      hsl_0,
+                                      hsl_1,
+                                      hsl_2
+                                    ];
+                                    var match = Color.convert(hsl, Color.OKHSL, Color.OKLCH);
+                                    var hex = Color.RGBToHex(Color.convert(hsl, Color.OKHSL, Color.sRGB));
                                     return JsxRuntime.jsx("div", {
                                                 className: "absolute w-5 h-5 border border-black",
                                                 style: {
-                                                  backgroundColor: e.hex,
+                                                  backgroundColor: hex,
                                                   bottom: (match[1] / 0.36 * 300 | 0).toString() + "px",
                                                   left: (match[0] * 300 | 0).toString() + "px"
                                                 }
@@ -296,18 +277,22 @@ function App$HslSGamut(props) {
   return JsxRuntime.jsxs("div", {
               children: [
                 Core__Option.isNone(selected) ? null : Belt_Array.concatMany(hues.map(function (hue) {
-                              return hue.elements;
-                            })).map(function (e) {
-                        var match = Color.convert(Color.hexToRGB(e.hex), Color.sRGB, Color.OKHSL);
-                        return JsxRuntime.jsx("div", {
-                                    className: "absolute w-5 h-5 border border-black",
-                                    style: {
-                                      backgroundColor: e.hex,
-                                      left: (match[2] * 300 | 0).toString() + "px",
-                                      top: (match[0] / 360 * 300 | 0).toString() + "px"
-                                    }
-                                  });
-                      }),
+                            return hue.elements.map(function (e) {
+                                        var hex = Color.RGBToHex(Color.convert([
+                                                  hue.value,
+                                                  e.saturation,
+                                                  e.lightness
+                                                ], Color.OKHSL, Color.sRGB));
+                                        return JsxRuntime.jsx("div", {
+                                                    className: "absolute w-5 h-5 border border-black",
+                                                    style: {
+                                                      backgroundColor: hex,
+                                                      left: (e.lightness * 300 | 0).toString() + "px",
+                                                      top: (hue.value / 360 * 300 | 0).toString() + "px"
+                                                    }
+                                                  });
+                                      });
+                          })),
                 JsxRuntime.jsx("canvas", {
                       ref: Caml_option.some(canvasRef)
                     })
@@ -316,22 +301,33 @@ function App$HslSGamut(props) {
             });
 }
 
-function adjustLchLofHex(hex, f) {
-  var match = Color.convert(Color.hexToRGB(hex), Color.sRGB, Color.OKLCH);
-  return Color.RGBToHex(Color.convert([
-                  f(match[0]),
-                  match[1],
-                  match[2]
-                ], Color.OKLCH, Color.sRGB));
-}
-
-function adjustLchCofHex(hex, f) {
-  var match = Color.convert(Color.hexToRGB(hex), Color.sRGB, Color.OKLCH);
-  return Color.RGBToHex(Color.convert([
-                  match[0],
-                  f(match[1]),
-                  match[2]
-                ], Color.OKLCH, Color.sRGB));
+function makeDefaultPicks(xLen, defaultShades) {
+  var yLenF = defaultShades.length;
+  return mapRange(xLen, (function (x) {
+                var hue = x / xLen * 360 + 1;
+                var hueId = Ulid.ulid();
+                var elements = defaultShades.map(function (shade, y) {
+                      var s = (y + 1) / yLenF;
+                      var match = Color.convert([
+                            hue,
+                            s,
+                            1.0
+                          ], Color.OKHSV, Color.OKHSL);
+                      return {
+                              id: Ulid.ulid(),
+                              shadeId: shade.id,
+                              hueId: hueId,
+                              lightness: match[2],
+                              saturation: match[1]
+                            };
+                    });
+                return {
+                        id: hueId,
+                        value: hue,
+                        name: hueToName(hue),
+                        elements: elements
+                      };
+              }));
 }
 
 var defaultShades = mapRange(5, (function (i) {
@@ -374,12 +370,7 @@ function App$Palette(props) {
                                               name: hue.name,
                                               elements: hue.elements.map(function (hueElement) {
                                                     if (hueElement.id === e) {
-                                                      return {
-                                                              id: hueElement.id,
-                                                              shadeId: hueElement.shadeId,
-                                                              hueId: hueElement.hueId,
-                                                              hex: f(hueElement.hex)
-                                                            };
+                                                      return f(hueElement);
                                                     } else {
                                                       return hueElement;
                                                     }
@@ -393,34 +384,50 @@ function App$Palette(props) {
           switch (match) {
             case "ArrowDown" :
                 console.log("down");
-                update(function (hex) {
-                      return adjustLchCofHex(hex, (function (c) {
-                                    return Math.max(0.0, c - 0.01 * 0.36);
-                                  }));
+                update(function (el) {
+                      return {
+                              id: el.id,
+                              shadeId: el.shadeId,
+                              hueId: el.hueId,
+                              lightness: el.lightness,
+                              saturation: Math.max(0.0, el.saturation - 0.01)
+                            };
                     });
                 $$event.preventDefault();
                 return ;
             case "ArrowLeft" :
-                update(function (hex) {
-                      return adjustLchLofHex(hex, (function (l) {
-                                    return Math.max(0.0, l - 0.01);
-                                  }));
+                update(function (el) {
+                      return {
+                              id: el.id,
+                              shadeId: el.shadeId,
+                              hueId: el.hueId,
+                              lightness: Math.max(0.0, el.lightness - 0.01),
+                              saturation: el.saturation
+                            };
                     });
                 $$event.preventDefault();
                 return ;
             case "ArrowRight" :
-                update(function (hex) {
-                      return adjustLchLofHex(hex, (function (l) {
-                                    return Math.min(1.0, l + 0.01);
-                                  }));
+                update(function (el) {
+                      return {
+                              id: el.id,
+                              shadeId: el.shadeId,
+                              hueId: el.hueId,
+                              lightness: Math.min(1.0, el.lightness + 0.01),
+                              saturation: el.saturation
+                            };
                     });
                 $$event.preventDefault();
                 return ;
             case "ArrowUp" :
-                update(function (hex) {
-                      return adjustLchCofHex(hex, (function (c) {
-                                    return Math.min(1.0, c + 0.01 * 0.36);
-                                  }));
+                update(function (el) {
+                      return {
+                              id: el.id,
+                              shadeId: el.shadeId,
+                              hueId: el.hueId,
+                              lightness: el.lightness,
+                              saturation: Math.min(1.0, el.saturation + 0.01)
+                            };
                     });
                 $$event.preventDefault();
                 return ;
@@ -439,17 +446,6 @@ function App$Palette(props) {
       });
   var hueLen = picks.length;
   var shadeLen = shades.length;
-  var picksFlat = Belt_Array.concatMany(picks.map(function (pick) {
-            return pick.elements;
-          }));
-  var changeHexHueByHSV = function (hex, hue) {
-    var match = Color.convert(Color.hexToRGB(hex), Color.sRGB, Color.OKHSV);
-    return Color.RGBToHex(Color.convert([
-                    hue,
-                    match[1],
-                    match[2]
-                  ], Color.OKHSV, Color.sRGB));
-  };
   var makeNewHue = function (copy, left, right) {
     var newValue = (left + right) / 2;
     var hueId = Ulid.ulid();
@@ -462,7 +458,8 @@ function App$Palette(props) {
                           id: Ulid.ulid(),
                           shadeId: v.shadeId,
                           hueId: hueId,
-                          hex: changeHexHueByHSV(v.hex, newValue)
+                          lightness: v.lightness,
+                          saturation: v.saturation
                         };
                 })
           };
@@ -495,32 +492,26 @@ function App$Palette(props) {
                               value: v.value,
                               name: v.name,
                               elements: Core__Array.reduceWithIndex(v.elements, [], (function (a, c, i) {
-                                      if (i !== (v.elements.length - 1 | 0)) {
+                                      if (i === (v.elements.length - 1 | 0)) {
+                                        return Belt_Array.concatMany([
+                                                    a,
+                                                    [
+                                                      c,
+                                                      {
+                                                        id: Ulid.ulid(),
+                                                        shadeId: newShadeId,
+                                                        hueId: v.id,
+                                                        lightness: bound(0.0, 1.0, (c.lightness + 1.0) / 2),
+                                                        saturation: bound(0.0, 1.0, (c.saturation + 1.0) / 2)
+                                                      }
+                                                    ]
+                                                  ]);
+                                      } else {
                                         return Belt_Array.concatMany([
                                                     a,
                                                     [c]
                                                   ]);
                                       }
-                                      var match = Color.convert(Color.hexToRGB(c.hex), Color.sRGB, Color.OKHSV);
-                                      var avg = (match[2] + 1.0) / 2;
-                                      var newValue = bound(0.0, 1.0, avg);
-                                      var newHex = Color.RGBToHex(Color.convert([
-                                                match[0],
-                                                match[1],
-                                                newValue
-                                              ], Color.OKHSV, Color.sRGB));
-                                      return Belt_Array.concatMany([
-                                                  a,
-                                                  [
-                                                    c,
-                                                    {
-                                                      id: Ulid.ulid(),
-                                                      shadeId: newShadeId,
-                                                      hueId: v.id,
-                                                      hex: newHex
-                                                    }
-                                                  ]
-                                                ]);
                                     }))
                             };
                     });
@@ -742,19 +733,15 @@ function App$Palette(props) {
                                                                                                                     [c]
                                                                                                                   ]);
                                                                                                       }
-                                                                                                      var left = i === 0 ? 0.0 : (function (x) {
-                                                                                                              return Color.convert(Color.hexToRGB(x.hex), Color.sRGB, Color.OKHSV)[1];
+                                                                                                      var match = i === 0 ? [
+                                                                                                          0.0,
+                                                                                                          0.0
+                                                                                                        ] : (function (x) {
+                                                                                                              return [
+                                                                                                                      x.saturation,
+                                                                                                                      x.lightness
+                                                                                                                    ];
                                                                                                             })(hue.elements[i - 1 | 0]);
-                                                                                                      var match = Color.convert(Color.hexToRGB(c.hex), Color.sRGB, Color.OKHSV);
-                                                                                                      var right = match[1];
-                                                                                                      var avg = (left + right) / 2;
-                                                                                                      var newValue = bound(0.0, 1.0, avg);
-                                                                                                      var newHex = Color.RGBToHex(Color.convert([
-                                                                                                                match[0],
-                                                                                                                newValue,
-                                                                                                                match[2]
-                                                                                                              ], Color.OKHSV, Color.sRGB));
-                                                                                                      console.log(left, right, newValue, newHex);
                                                                                                       return Belt_Array.concatMany([
                                                                                                                   a,
                                                                                                                   [
@@ -762,7 +749,8 @@ function App$Palette(props) {
                                                                                                                       id: Ulid.ulid(),
                                                                                                                       shadeId: newShadeId,
                                                                                                                       hueId: hue.id,
-                                                                                                                      hex: newHex
+                                                                                                                      lightness: bound(0.0, 1.0, (match[1] + c.lightness) / 2),
+                                                                                                                      saturation: bound(0.0, 1.0, (match[0] + c.saturation) / 2)
                                                                                                                     },
                                                                                                                     c
                                                                                                                   ]
@@ -812,25 +800,32 @@ function App$Palette(props) {
                               }
                             }),
                         JsxRuntime.jsx("div", {
-                              children: picksFlat.map(function (element) {
-                                    return JsxRuntime.jsx("div", {
-                                                children: Core__Option.mapOr(selectedElement, false, (function (e) {
-                                                        return e === element.id;
-                                                      })) ? "•" : null,
-                                                className: "w-10 h-10 max-h-10 max-w-10 flex flex-row items-center justify-center text-xl cursor-pointer",
-                                                style: {
-                                                  backgroundColor: element.hex
-                                                },
-                                                onClick: (function (param) {
-                                                    setSelectedElement(function (param) {
-                                                          return element.id;
-                                                        });
-                                                    setSelectedHue(function (param) {
-                                                          return element.hueId;
-                                                        });
-                                                  })
-                                              }, element.id);
-                                  }),
+                              children: Belt_Array.concatMany(picks.map(function (hue) {
+                                        return hue.elements.map(function (element) {
+                                                    var hex = Color.RGBToHex(Color.convert([
+                                                              hue.value,
+                                                              element.saturation,
+                                                              element.lightness
+                                                            ], Color.OKHSL, Color.sRGB));
+                                                    return JsxRuntime.jsx("div", {
+                                                                children: Core__Option.mapOr(selectedElement, false, (function (e) {
+                                                                        return e === element.id;
+                                                                      })) ? "•" : null,
+                                                                className: "w-10 h-10 max-h-10 max-w-10 flex flex-row items-center justify-center text-xl cursor-pointer",
+                                                                style: {
+                                                                  backgroundColor: hex
+                                                                },
+                                                                onClick: (function (param) {
+                                                                    setSelectedElement(function (param) {
+                                                                          return element.id;
+                                                                        });
+                                                                    setSelectedHue(function (param) {
+                                                                          return element.hueId;
+                                                                        });
+                                                                  })
+                                                              }, element.id);
+                                                  });
+                                      })),
                               style: {
                                 display: "grid",
                                 gridColumn: "2 / -2",

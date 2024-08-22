@@ -54,6 +54,7 @@ let hueToName = hue => {
   | _ => "?"
   }
 }
+
 module Gamut = {
   @react.component @module("./other.jsx") external make: unit => React.element = "Gamut"
 }
@@ -64,7 +65,8 @@ type element = {
   id: string,
   shadeId: string,
   hueId: string,
-  hex: string,
+  lightness: float,
+  saturation: float,
 }
 
 type hue = {
@@ -190,37 +192,6 @@ module HueLine = {
   }
 }
 
-let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
-  let xLenF = xLen->Int.toFloat
-  let yLenF = defaultShades->Array.length->Int.toFloat
-
-  Utils.mapRange(xLen, x => {
-    let xF = x->Int.toFloat
-    let hue = xF /. xLenF *. 360. +. 1.
-    let hueId = ulid()
-    let elements = defaultShades->Array.mapWithIndex((shade, y) => {
-      let yF = y->Int.toFloat
-
-      let s = (yF +. 1.) /. yLenF
-      let hex = Texel.rgbToHex(Texel.convert((hue, s, 1.0), Texel.okhsv, Texel.srgb))
-
-      {
-        shadeId: shade.id,
-        hueId,
-        id: ulid(),
-        hex,
-      }
-    })
-
-    {
-      id: hueId,
-      value: hue,
-      name: hue->hueToName,
-      elements,
-    }
-  })
-}
-
 let chromaBound = 0.36
 
 let updateLchHGamutCanvas = (canvas, ctx, hue) => {
@@ -279,12 +250,15 @@ module LchHGamut = {
       {hueObj->Option.mapOr(React.null, hue => {
         hue.elements
         ->Array.map(e => {
-          let (l, c, h) = Texel.convert(e.hex->Texel.hexToRgb, Texel.srgb, Texel.oklch)
+          let hsl = (hue.value, e.saturation, e.lightness)
+          let (l, c, h) = Texel.convert(hsl, Texel.okhsl, Texel.oklch)
+
+          let hex = Texel.convert(hsl, Texel.okhsl, Texel.srgb)->Texel.rgbToHex
 
           <div
             className="absolute w-5 h-5 border border-black"
             style={{
-              backgroundColor: e.hex,
+              backgroundColor: hex,
               bottom: (c /. chromaBound *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
               left: (l *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
             }}
@@ -353,22 +327,28 @@ module HslSGamut = {
         ? React.null
         : {
             hues
-            ->Array.map(hue => hue.elements)
-            ->Belt.Array.concatMany
-            ->Array.map(e => {
-              let (h, _, l) = Texel.convert(e.hex->Texel.hexToRgb, Texel.srgb, Texel.okhsl)
+            ->Array.map(hue =>
+              hue.elements->Array.map(e => {
+                let hex =
+                  Texel.convert(
+                    (hue.value, e.saturation, e.lightness),
+                    Texel.okhsl,
+                    Texel.srgb,
+                  )->Texel.rgbToHex
 
-              <div
-                className="absolute w-5 h-5 border border-black"
-                style={{
-                  backgroundColor: e.hex,
-                  left: (l *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
-                  top: (h /. 360. *. xSize->Int.toFloat)
-                  ->Float.toInt
-                  ->Int.toString ++ "px",
-                }}
-              />
-            })
+                <div
+                  className="absolute w-5 h-5 border border-black"
+                  style={{
+                    backgroundColor: hex,
+                    left: (e.lightness *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+                    top: (hue.value /. 360. *. xSize->Int.toFloat)
+                    ->Float.toInt
+                    ->Int.toString ++ "px",
+                  }}
+                />
+              })
+            )
+            ->Belt.Array.concatMany
             ->React.array
           }}
       <canvas ref={ReactDOM.Ref.domRef(canvasRef)} />
@@ -391,6 +371,39 @@ let adjustLchLofHex = (hex, f) => {
 let adjustLchCofHex = (hex, f) => {
   let (l, c, h) = hex->Texel.hexToRgb->Texel.convert(Texel.srgb, Texel.oklch)
   Texel.convert((l, c->f, h), Texel.oklch, Texel.srgb)->Texel.rgbToHex
+}
+
+let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
+  let xLenF = xLen->Int.toFloat
+  let yLenF = defaultShades->Array.length->Int.toFloat
+
+  Utils.mapRange(xLen, x => {
+    let xF = x->Int.toFloat
+    let hue = xF /. xLenF *. 360. +. 1.
+    let hueId = ulid()
+    let elements = defaultShades->Array.mapWithIndex((shade, y) => {
+      let yF = y->Int.toFloat
+
+      let s = (yF +. 1.) /. yLenF
+
+      let (_, s, l) = Texel.convert((hue, s, 1.0), Texel.okhsv, Texel.okhsl)
+
+      {
+        shadeId: shade.id,
+        hueId,
+        id: ulid(),
+        lightness: l,
+        saturation: s,
+      }
+    })
+
+    {
+      id: hueId,
+      value: hue,
+      name: hue->hueToName,
+      elements,
+    }
+  })
 }
 
 module Palette = {
@@ -419,10 +432,7 @@ module Palette = {
                   elements: hue.elements->Array.map(
                     hueElement => {
                       if hueElement.id == e {
-                        {
-                          ...hueElement,
-                          hex: hueElement.hex->f,
-                        }
+                        hueElement->f
                       } else {
                         hueElement
                       }
@@ -438,26 +448,30 @@ module Palette = {
       switch event->ReactEvent.Keyboard.key {
       | "ArrowDown" =>
         Console.log("down")
-        update(hex => {
-          hex->adjustLchCofHex(c => Math.max(0.0, c -. 0.01 *. chromaBound))
+        update(el => {
+          ...el,
+          saturation: Math.max(0.0, el.saturation -. 0.01),
         })
         event->ReactEvent.Keyboard.preventDefault
 
       | "ArrowUp" =>
-        update(hex => {
-          hex->adjustLchCofHex(c => Math.min(1.0, c +. 0.01 *. chromaBound))
+        update(el => {
+          ...el,
+          saturation: Math.min(1.0, el.saturation +. 0.01),
         })
         event->ReactEvent.Keyboard.preventDefault
 
       | "ArrowLeft" =>
-        update(hex => {
-          hex->adjustLchLofHex(l => Math.max(0.0, l -. 0.01))
+        update(el => {
+          ...el,
+          lightness: Math.max(0.0, el.lightness -. 0.01),
         })
         event->ReactEvent.Keyboard.preventDefault
 
       | "ArrowRight" =>
-        update(hex => {
-          hex->adjustLchLofHex(l => Math.min(1.0, l +. 0.01))
+        update(el => {
+          ...el,
+          lightness: Math.min(1.0, el.lightness +. 0.01),
         })
         event->ReactEvent.Keyboard.preventDefault
 
@@ -474,12 +488,8 @@ module Palette = {
 
     let hueLen = picks->Array.length
     let shadeLen = shades->Array.length
-    let picksFlat =
-      picks
-      ->Array.map(pick => pick.elements)
-      ->Belt.Array.concatMany
 
-    let changeHexHueByHSV = (hex, hue) => {
+    let changeHexHueByHSL = (hex, hue) => {
       let (_, s, v) = Texel.convert(hex->Texel.hexToRgb, Texel.srgb, Texel.okhsv)
       let newHex = Texel.convert((hue, s, v), Texel.okhsv, Texel.srgb)->Texel.rgbToHex
       newHex
@@ -497,7 +507,8 @@ module Palette = {
             id: ulid(),
             hueId,
             shadeId: v.shadeId,
-            hex: changeHexHueByHSV(v.hex, newValue),
+            saturation: v.saturation,
+            lightness: v.lightness,
           }
         }),
       }
@@ -542,19 +553,6 @@ module Palette = {
               (a, c, i) => {
                 i == v.elements->Array.length - 1
                   ? {
-                      let (h, s, left) = Texel.convert(
-                        c.hex->Texel.hexToRgb,
-                        Texel.srgb,
-                        Texel.okhsv,
-                      )
-
-                      let right = 1.0
-                      let avg = (left +. right) /. 2.
-
-                      let newValue = Utils.bound(0.0, 1.0, avg)
-                      let newHex =
-                        Texel.convert((h, s, newValue), Texel.okhsv, Texel.srgb)->Texel.rgbToHex
-
                       [
                         ...a,
                         c,
@@ -562,7 +560,8 @@ module Palette = {
                           id: ulid(),
                           shadeId: newShadeId,
                           hueId: v.id,
-                          hex: newHex,
+                          saturation: Utils.bound(0.0, 1.0, (c.saturation +. 1.0) /. 2.),
+                          lightness: Utils.bound(0.0, 1.0, (c.lightness +. 1.0) /. 2.),
                         },
                       ]
                     }
@@ -601,37 +600,14 @@ module Palette = {
                   ? {
                       // Todo: interpolate value too?
 
-                      let left =
+                      let (leftSaturation, leftLightness) =
                         i == 0
-                          ? 0.0
+                          ? (0.0, 0.0)
                           : hue.elements
                             ->Array.getUnsafe(i - 1)
                             ->{
-                              x => {
-                                let (_, result, _) = Texel.convert(
-                                  x.hex->Texel.hexToRgb,
-                                  Texel.srgb,
-                                  Texel.okhsv,
-                                )
-
-                                result
-                              }
+                              x => (x.saturation, x.lightness)
                             }
-
-                      let (h, right, v) = Texel.convert(
-                        c.hex->Texel.hexToRgb,
-                        Texel.srgb,
-                        Texel.okhsv,
-                      )
-
-                      let avg = (left +. right) /. 2.
-
-                      let newValue = Utils.bound(0.0, 1.0, avg)
-
-                      let newHex =
-                        Texel.convert((h, newValue, v), Texel.okhsv, Texel.srgb)->Texel.rgbToHex
-
-                      Console.log4(left, right, newValue, newHex)
 
                       [
                         ...a,
@@ -639,7 +615,8 @@ module Palette = {
                           id: ulid(),
                           shadeId: newShadeId,
                           hueId: hue.id,
-                          hex: newHex,
+                          saturation: Utils.bound(0.0, 1.0, (leftSaturation +. c.saturation) /. 2.),
+                          lightness: Utils.bound(0.0, 1.0, (leftLightness +. c.lightness) /. 2.),
                         },
                         c,
                       ]
@@ -812,23 +789,32 @@ module Palette = {
             gridTemplateColumns: "subgrid",
             gridTemplateRows: "subgrid",
           }}>
-          {picksFlat
-          ->Array.map(element => {
-            <div
-              key={element.id}
-              className="w-10 h-10 max-h-10 max-w-10 flex flex-row items-center justify-center text-xl cursor-pointer"
-              style={{
-                backgroundColor: element.hex,
-              }}
-              onClick={_ => {
-                setSelectedElement(_ => Some(element.id))
-                setSelectedHue(_ => Some(element.hueId))
-              }}>
-              {selectedElement->Option.mapOr(false, e => e == element.id)
-                ? {"•"->React.string}
-                : React.null}
-            </div>
+          {picks
+          ->Array.map(hue => {
+            hue.elements->Array.map(element => {
+              let hex =
+                Texel.convert(
+                  (hue.value, element.saturation, element.lightness),
+                  Texel.okhsl,
+                  Texel.srgb,
+                )->Texel.rgbToHex
+              <div
+                key={element.id}
+                className="w-10 h-10 max-h-10 max-w-10 flex flex-row items-center justify-center text-xl cursor-pointer"
+                style={{
+                  backgroundColor: hex,
+                }}
+                onClick={_ => {
+                  setSelectedElement(_ => Some(element.id))
+                  setSelectedHue(_ => Some(element.hueId))
+                }}>
+                {selectedElement->Option.mapOr(false, e => e == element.id)
+                  ? {"•"->React.string}
+                  : React.null}
+              </div>
+            })
           })
+          ->Belt.Array.concatMany
           ->React.array}
         </div>
       </div>
