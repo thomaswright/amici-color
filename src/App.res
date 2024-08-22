@@ -13,6 +13,17 @@ module Utils = {
 
 @module("ulid") external ulid: unit => string = "ulid"
 
+module Icons = {
+  module Plus = {
+    @module("react-icons/fi") @react.component
+    external make: unit => React.element = "FiPlus"
+  }
+  module Trash = {
+    @module("react-icons/fi") @react.component
+    external make: unit => React.element = "FiTrash2"
+  }
+}
+
 let hueToName = hue => {
   switch hue {
   | x if x >= 05. && x < 15. => "rose"
@@ -133,14 +144,14 @@ let updateHueLineCanvas = (canvas, ctx) => {
   let xMax = canvas->Canvas.getWidth
   let yMax = canvas->Canvas.getHeight
 
-  for x in 0 to xMax {
+  for y in 0 to yMax {
     let rgb = Texel.convert(
-      (x->Int.toFloat /. xMax->Int.toFloat *. 360., 1.0, 1.0),
+      (y->Int.toFloat /. yMax->Int.toFloat *. 360., 1.0, 1.0),
       Texel.okhsv,
       Texel.srgb,
     )
     ctx->Canvas.setFillStyle(Texel.rgbToHex(rgb))
-    ctx->Canvas.fillRect(~x, ~y=0, ~w=1, ~h=yMax)
+    ctx->Canvas.fillRect(~x=0, ~y, ~w=yMax, ~h=1)
   }
 
   // ctx->Canvas.setFillStyle("#000")
@@ -153,7 +164,7 @@ let updateHueLineCanvas = (canvas, ctx) => {
 }
 
 module HueLine = {
-  let xSize = 500
+  let ySize = 300
   @react.component
   let make = (~hues: array<hue>, ~selected) => {
     let canvasRef = React.useRef(Nullable.null)
@@ -163,8 +174,8 @@ module HueLine = {
       | Value(canvasDom) => {
           let canvas = canvasDom->Obj.magic
           let context = canvas->Canvas.getContext("2d")
-          canvas->Canvas.setWidth(xSize)
-          canvas->Canvas.setHeight(20)
+          canvas->Canvas.setWidth(20)
+          canvas->Canvas.setHeight(ySize)
           updateHueLineCanvas(canvas, context)
         }
       | Null | Undefined => ()
@@ -173,16 +184,17 @@ module HueLine = {
       None
     }, [canvasRef.current])
 
-    <div className="w-fit relative">
+    <div className="w-fit relative h-full">
       {hues
       ->Array.map(hue => {
         <div
           className={[
-            "w-2 h-2 absolute border-black border",
-            selected->Option.mapOr(false, s => s == hue.id) ? "bg-green-500" : "bg-black",
+            "w-3 h-3 absolute border-black rounded-full",
+            selected->Option.mapOr(false, s => s == hue.id) ? "border-4" : "border ",
           ]->Array.join(" ")}
           style={{
-            left: (hue.value /. 360. *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+            left: "0.25rem",
+            top: (hue.value /. 360. *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
           }}
         />
       })
@@ -307,7 +319,6 @@ module HslSGamut = {
   let make = (~hues: array<hue>, ~selectedHue, ~selectedElement) => {
     let canvasRef = React.useRef(Nullable.null)
     let hueObj = selectedHue->Option.flatMap(s => hues->Array.find(v => v.id == s))
-    // Todo: update on hues change
 
     React.useEffect3(() => {
       switch canvasRef.current {
@@ -481,13 +492,14 @@ module Palette = {
       switch event->ReactEvent.Keyboard.key {
       | "j" =>
         updateHue(hue => {
-          let result = hue +. 1.0
-          result > 360. ? result -. 360. : result
-        })
-      | "k" =>
-        updateHue(hue => {
           let result = hue -. 1.0
           result < 0. ? result +. 360. : result
+        })
+
+      | "k" =>
+        updateHue(hue => {
+          let result = hue +. 1.0
+          result > 360. ? result -. 360. : result
         })
 
       | "ArrowDown" =>
@@ -635,8 +647,6 @@ module Palette = {
               (a, c, i) => {
                 c.shadeId == shade.id
                   ? {
-                      // Todo: interpolate value too?
-
                       let (leftSaturation, leftLightness) =
                         i == 0
                           ? (0.0, 0.0)
@@ -667,10 +677,10 @@ module Palette = {
     }
 
     <div>
-      <HueLine hues={picks} selected={selectedHue} />
       <div className="flex flex-row gap-2 py-2">
         <LchHGamut hues={picks} selectedHue selectedElement />
         <HslSGamut hues={picks} selectedHue selectedElement />
+        <HueLine hues={picks} selected={selectedHue} />
       </div>
       <div
         style={{
@@ -685,10 +695,9 @@ module Palette = {
             gridRow: "1 / 2",
             gridColumn: "-1 / -2",
           }}>
-          <button
-            className="w-5 h-5 bg-black rounded-tr-full rounded-tl-full rounded-br-full"
-            onClick={_ => {newEndShade()}}
-          />
+          <button className=" text-black " onClick={_ => {newEndShade()}}>
+            <Icons.Plus />
+          </button>
         </div>
         <div
           className="flex flex-col items-end"
@@ -696,10 +705,9 @@ module Palette = {
             gridRow: "-1 / -2",
             gridColumn: "1 / 2",
           }}>
-          <button
-            className="w-5 h-5 bg-black rounded-bl-full rounded-tl-full rounded-br-full"
-            onClick={_ => newEndHue()}
-          />
+          <button className="text-black " onClick={_ => newEndHue()}>
+            <Icons.Plus />
+          </button>
         </div>
         <div
           className="overflow-hidden"
@@ -713,7 +721,22 @@ module Palette = {
           {picks
           ->Array.map(pick => {
             <div key={pick.id} className=" ">
-              <div className="flex-row flex w-full justify-between">
+              <div className="flex-row flex w-full justify-between items-center gap-2">
+                <button
+                  className="text-red-600"
+                  onClick={_ => {
+                    setPicks(p_ => p_->Array.filter(v => v.id != pick.id))
+                    setSelectedHue(v => v->Option.flatMap(p => p == pick.id ? None : Some(p)))
+                  }}>
+                  <Icons.Trash />
+                </button>
+                <button
+                  className={[
+                    "w-3 h-3 border-gray-500 rounded-full",
+                    selectedHue->Option.mapOr(false, s => s == pick.id) ? "border-4" : "border",
+                  ]->Array.join(" ")}
+                  onClick={_ => setSelectedHue(_ => Some(pick.id))}
+                />
                 <input
                   type_="text"
                   value={pick.name}
@@ -734,29 +757,11 @@ module Palette = {
                   }}
                   className="w-20 h-5"
                 />
-                <button
-                  className="w-5 h-5 bg-black rounded-bl-full rounded-tl-full rounded-br-full"
-                  onClick={_ => {newInterHue(pick)}}
-                />
+                <button className=" text-black " onClick={_ => {newInterHue(pick)}}>
+                  <Icons.Plus />
+                </button>
               </div>
-              <div className="flex flex-row justify-start gap-2 w-full">
-                <button
-                  className={[
-                    "w-3 h-3 border-black border",
-                    selectedHue->Option.mapOr(false, s => s == pick.id)
-                      ? "bg-green-500"
-                      : "bg-black",
-                  ]->Array.join(" ")}
-                  onClick={_ => setSelectedHue(_ => Some(pick.id))}
-                />
-                <button
-                  className="w-3 h-3 bg-red-500"
-                  onClick={_ => {
-                    setPicks(p_ => p_->Array.filter(v => v.id != pick.id))
-                    setSelectedHue(v => v->Option.flatMap(p => p == pick.id ? None : Some(p)))
-                  }}
-                />
-              </div>
+              <div className="flex flex-row justify-start gap-2 w-full" />
             </div>
           })
           ->React.array}
@@ -772,7 +777,24 @@ module Palette = {
           }}>
           {shades
           ->Array.map(shade => {
-            <div key={shade.id} className=" flex flex-col">
+            <div key={shade.id} className=" flex flex-col gap-2">
+              <button
+                className=" text-red-600"
+                onClick={_ => {
+                  setPicks(p_ =>
+                    p_->Array.map(
+                      v => {
+                        {
+                          ...v,
+                          elements: v.elements->Array.filter(e => e.shadeId != shade.id),
+                        }
+                      },
+                    )
+                  )
+                  setShades(s_ => s_->Array.filter(v => v.id != shade.id))
+                }}>
+                <Icons.Trash />
+              </button>
               <input
                 type_="text"
                 onChange={e => {
@@ -793,26 +815,9 @@ module Palette = {
                 className="w-10 h-5"
               />
               <div className="flex flex-row justify-between">
-                <button
-                  className="w-5 h-5 bg-black rounded-tr-full rounded-tl-full rounded-br-full"
-                  onClick={_ => {newInterShade(shade)}}
-                />
-                <button
-                  className="w-3 h-3 bg-red-500"
-                  onClick={_ => {
-                    setPicks(p_ =>
-                      p_->Array.map(
-                        v => {
-                          {
-                            ...v,
-                            elements: v.elements->Array.filter(e => e.shadeId != shade.id),
-                          }
-                        },
-                      )
-                    )
-                    setShades(s_ => s_->Array.filter(v => v.id != shade.id))
-                  }}
-                />
+                <button className=" text-black " onClick={_ => {newInterShade(shade)}}>
+                  <Icons.Plus />
+                </button>
               </div>
             </div>
           })
