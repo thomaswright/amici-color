@@ -10,6 +10,7 @@ import * as Color from "@texel/color";
 import * as Core__Option from "@rescript/core/src/Core__Option.res.mjs";
 import * as Fi from "react-icons/fi";
 import * as JsxRuntime from "react/jsx-runtime";
+import AmiciPrismSvgreact from "./assets/amici-prism.svg?react";
 
 function mapRange(n, f) {
   return Core__Array.make(n, 0).map(function (param, i) {
@@ -20,6 +21,8 @@ function mapRange(n, f) {
 function bound(left, right, v) {
   return Math.max(left, Math.min(right, v));
 }
+
+var make = AmiciPrismSvgreact;
 
 function hueToName(hue) {
   if (hue >= 5 && hue < 15) {
@@ -146,7 +149,7 @@ function App$HueLine(props) {
                       ref: Caml_option.some(canvasRef)
                     })
               ],
-              className: "w-fit relative h-full"
+              className: "w-fit relative h-full rounded-sm overflow-hidden"
             });
 }
 
@@ -235,7 +238,7 @@ function App$LchHGamut(props) {
                       ref: Caml_option.some(canvasRef)
                     })
               ],
-              className: "w-fit relative bg-black"
+              className: "w-fit relative bg-black rounded-sm"
             });
 }
 
@@ -316,7 +319,7 @@ function App$HslSGamut(props) {
                       ref: Caml_option.some(canvasRef)
                     })
               ],
-              className: "w-fit relative border border-black"
+              className: "w-fit relative border border-black rounded-sm"
             });
 }
 
@@ -575,6 +578,16 @@ function App$Palette(props) {
               children: [
                 JsxRuntime.jsxs("div", {
                       children: [
+                        JsxRuntime.jsx("div", {
+                              children: JsxRuntime.jsx(make, {}),
+                              className: "h-12 w-12"
+                            }),
+                        "Amici Color"
+                      ],
+                      className: "font-black text-4xl flex flex-row items-center gap-2"
+                    }),
+                JsxRuntime.jsxs("div", {
+                      children: [
                         JsxRuntime.jsx(App$LchHGamut, {
                               hues: picks,
                               selectedHue: selectedHue,
@@ -659,6 +672,9 @@ function App$Palette(props) {
                                                                     setSelectedHue(function (param) {
                                                                           return pick.id;
                                                                         });
+                                                                    setSelectedElement(function (param) {
+                                                                          
+                                                                        });
                                                                   })
                                                               }),
                                                           JsxRuntime.jsx("input", {
@@ -685,7 +701,7 @@ function App$Palette(props) {
                                                               }),
                                                           JsxRuntime.jsx("button", {
                                                                 children: JsxRuntime.jsx(Fi.FiPlus, {}),
-                                                                className: " text-black ",
+                                                                className: " text-black self-start",
                                                                 onClick: (function (param) {
                                                                     setPicks(function (p_) {
                                                                           return Core__Array.reduceWithIndex(p_, [], (function (acc, cur, i) {
@@ -709,7 +725,7 @@ function App$Palette(props) {
                                                                   })
                                                               })
                                                         ],
-                                                        className: "flex-row flex w-full justify-between items-center gap-2"
+                                                        className: "flex-row flex w-full justify-between items-center gap-2 h-full"
                                                       }),
                                                   JsxRuntime.jsx("div", {
                                                         className: "flex flex-row justify-start gap-2 w-full"
@@ -909,13 +925,13 @@ function App(props) {
               children: JsxRuntime.jsx(App$Palette, {
                     arr: []
                   }),
-              className: "p-6 "
+              className: "p-6 min-h-screen bg-white"
             });
 }
 
-var make = App;
+var make$1 = App;
 
 export {
-  make ,
+  make$1 as make,
 }
-/*  Not a pure module */
+/* make Not a pure module */

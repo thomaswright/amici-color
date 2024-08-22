@@ -24,6 +24,11 @@ module Icons = {
   }
 }
 
+module Logo = {
+  @module("./assets/amici-prism.svg?react") @react.component
+  external make: unit => React.element = "default"
+}
+
 let hueToName = hue => {
   switch hue {
   | x if x >= 05. && x < 15. => "rose"
@@ -184,7 +189,7 @@ module HueLine = {
       None
     }, [canvasRef.current])
 
-    <div className="w-fit relative h-full">
+    <div className="w-fit relative h-full rounded-sm overflow-hidden">
       {hues
       ->Array.map(hue => {
         <div
@@ -262,7 +267,7 @@ module LchHGamut = {
       selectedHue->Option.flatMap(selectedHue_ => hues->Array.find(hue => hue.id == selectedHue_)),
     ))
 
-    <div className="w-fit relative bg-black">
+    <div className="w-fit relative bg-black rounded-sm">
       {hueObj->Option.mapOr(React.null, hue => {
         hue.elements
         ->Array.map(e => {
@@ -344,7 +349,7 @@ module HslSGamut = {
       selectedHue->Option.flatMap(selectedHue_ => hues->Array.find(hue => hue.id == selectedHue_)),
     ))
 
-    <div className="w-fit relative border border-black">
+    <div className="w-fit relative border border-black rounded-sm">
       {selectedHue->Option.isNone
         ? React.null
         : {
@@ -677,6 +682,12 @@ module Palette = {
     }
 
     <div>
+      <div className="font-black text-4xl flex flex-row items-center gap-2">
+        <div className="h-12 w-12">
+          <Logo />
+        </div>
+        {"Amici Color"->React.string}
+      </div>
       <div className="flex flex-row gap-2 py-2">
         <LchHGamut hues={picks} selectedHue selectedElement />
         <HslSGamut hues={picks} selectedHue selectedElement />
@@ -721,7 +732,7 @@ module Palette = {
           {picks
           ->Array.map(pick => {
             <div key={pick.id} className=" ">
-              <div className="flex-row flex w-full justify-between items-center gap-2">
+              <div className="flex-row flex w-full justify-between items-center gap-2 h-full">
                 <button
                   className="text-red-600"
                   onClick={_ => {
@@ -735,7 +746,10 @@ module Palette = {
                     "w-3 h-3 border-gray-500 rounded-full",
                     selectedHue->Option.mapOr(false, s => s == pick.id) ? "border-4" : "border",
                   ]->Array.join(" ")}
-                  onClick={_ => setSelectedHue(_ => Some(pick.id))}
+                  onClick={_ => {
+                    setSelectedHue(_ => Some(pick.id))
+                    setSelectedElement(_ => None)
+                  }}
                 />
                 <input
                   type_="text"
@@ -757,7 +771,7 @@ module Palette = {
                   }}
                   className="w-20 h-5"
                 />
-                <button className=" text-black " onClick={_ => {newInterHue(pick)}}>
+                <button className=" text-black self-start" onClick={_ => {newInterHue(pick)}}>
                   <Icons.Plus />
                 </button>
               </div>
@@ -866,7 +880,7 @@ module Palette = {
 
 @react.component
 let make = () => {
-  <div className="p-6 ">
+  <div className="p-6 min-h-screen bg-white">
     <Palette arr={[]} />
     // <Gamut />
   </div>
