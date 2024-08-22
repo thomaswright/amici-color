@@ -196,7 +196,12 @@ function App$LchHGamut(props) {
           }
         }), [
         canvasRef.current,
-        selectedHue
+        selectedHue,
+        Core__Option.flatMap(selectedHue, (function (selectedHue_) {
+                return hues.find(function (hue) {
+                            return hue.id === selectedHue_;
+                          });
+              }))
       ]);
   return JsxRuntime.jsxs("div", {
               children: [
@@ -277,7 +282,12 @@ function App$HslSGamut(props) {
           }
         }), [
         canvasRef.current,
-        selectedHue
+        selectedHue,
+        Core__Option.flatMap(selectedHue, (function (selectedHue_) {
+                return hues.find(function (hue) {
+                            return hue.id === selectedHue_;
+                          });
+              }))
       ]);
   return JsxRuntime.jsxs("div", {
               children: [
@@ -368,7 +378,7 @@ function App$Palette(props) {
   var setSelectedElement = match$3[1];
   var selectedElement = match$3[0];
   var handleKeydown = React.useCallback((function ($$event) {
-          var update = function (f) {
+          var updateElement = function (f) {
             Core__Option.mapOr(selectedElement, undefined, (function (e) {
                     setPicks(function (p_) {
                           return p_.map(function (hue) {
@@ -388,10 +398,28 @@ function App$Palette(props) {
                         });
                   }));
           };
+          var updateHue = function (f) {
+            Core__Option.mapOr(selectedHue, undefined, (function (selectedHue_) {
+                    setPicks(function (p_) {
+                          return p_.map(function (hue) {
+                                      if (hue.id === selectedHue_) {
+                                        return {
+                                                id: hue.id,
+                                                value: bound(f(hue.value), 0, 360),
+                                                name: hue.name,
+                                                elements: hue.elements
+                                              };
+                                      } else {
+                                        return hue;
+                                      }
+                                    });
+                        });
+                  }));
+          };
           var match = $$event.key;
           switch (match) {
             case "ArrowDown" :
-                update(function (el) {
+                updateElement(function (el) {
                       return {
                               id: el.id,
                               shadeId: el.shadeId,
@@ -403,7 +431,7 @@ function App$Palette(props) {
                 $$event.preventDefault();
                 return ;
             case "ArrowLeft" :
-                update(function (el) {
+                updateElement(function (el) {
                       return {
                               id: el.id,
                               shadeId: el.shadeId,
@@ -415,7 +443,7 @@ function App$Palette(props) {
                 $$event.preventDefault();
                 return ;
             case "ArrowRight" :
-                update(function (el) {
+                updateElement(function (el) {
                       return {
                               id: el.id,
                               shadeId: el.shadeId,
@@ -427,7 +455,7 @@ function App$Palette(props) {
                 $$event.preventDefault();
                 return ;
             case "ArrowUp" :
-                update(function (el) {
+                updateElement(function (el) {
                       return {
                               id: el.id,
                               shadeId: el.shadeId,
@@ -438,6 +466,24 @@ function App$Palette(props) {
                     });
                 $$event.preventDefault();
                 return ;
+            case "j" :
+                return updateHue(function (hue) {
+                            var result = hue + 1.0;
+                            if (result > 360) {
+                              return result - 360;
+                            } else {
+                              return result;
+                            }
+                          });
+            case "k" :
+                return updateHue(function (hue) {
+                            var result = hue - 1.0;
+                            if (result < 0) {
+                              return result + 360;
+                            } else {
+                              return result;
+                            }
+                          });
             default:
               return ;
           }

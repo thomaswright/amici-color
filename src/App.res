@@ -226,7 +226,7 @@ module LchHGamut = {
     let canvasRef = React.useRef(Nullable.null)
     let hueObj = selectedHue->Option.flatMap(s => hues->Array.find(v => v.id == s))
     // Todo: update on hues change
-    React.useEffect2(() => {
+    React.useEffect3(() => {
       switch canvasRef.current {
       | Value(canvasDom) =>
         let canvas = canvasDom->Obj.magic
@@ -244,7 +244,11 @@ module LchHGamut = {
       }
 
       None
-    }, (canvasRef.current, selectedHue))
+    }, (
+      canvasRef.current,
+      selectedHue,
+      selectedHue->Option.flatMap(selectedHue_ => hues->Array.find(hue => hue.id == selectedHue_)),
+    ))
 
     <div className="w-fit relative bg-black">
       {hueObj->Option.mapOr(React.null, hue => {
@@ -305,7 +309,7 @@ module HslSGamut = {
     let hueObj = selectedHue->Option.flatMap(s => hues->Array.find(v => v.id == s))
     // Todo: update on hues change
 
-    React.useEffect2(() => {
+    React.useEffect3(() => {
       switch canvasRef.current {
       | Value(canvasDom) =>
         let canvas = canvasDom->Obj.magic
@@ -323,7 +327,11 @@ module HslSGamut = {
       }
 
       None
-    }, (canvasRef.current, selectedHue))
+    }, (
+      canvasRef.current,
+      selectedHue,
+      selectedHue->Option.flatMap(selectedHue_ => hues->Array.find(hue => hue.id == selectedHue_)),
+    ))
 
     <div className="w-fit relative border border-black">
       {selectedHue->Option.isNone
@@ -428,7 +436,7 @@ module Palette = {
     let (selectedElement, setSelectedElement) = React.useState(() => None)
 
     let handleKeydown = React.useCallback1(event => {
-      let update = f => {
+      let updateElement = f => {
         selectedElement->Option.mapOr((), e =>
           setPicks(
             p_ => {
@@ -451,30 +459,60 @@ module Palette = {
         )
       }
 
+      let updateHue = f => {
+        selectedHue->Option.mapOr((), selectedHue_ =>
+          setPicks(
+            p_ => {
+              p_->Array.map(
+                hue => {
+                  hue.id == selectedHue_
+                    ? {
+                        ...hue,
+                        value: Utils.bound(hue.value->f, 0., 360.),
+                      }
+                    : hue
+                },
+              )
+            },
+          )
+        )
+      }
+
       switch event->ReactEvent.Keyboard.key {
+      | "j" =>
+        updateHue(hue => {
+          let result = hue +. 1.0
+          result > 360. ? result -. 360. : result
+        })
+      | "k" =>
+        updateHue(hue => {
+          let result = hue -. 1.0
+          result < 0. ? result +. 360. : result
+        })
+
       | "ArrowDown" =>
-        update(el => {
+        updateElement(el => {
           ...el,
           saturation: Math.max(0.0, el.saturation -. 0.01),
         })
         event->ReactEvent.Keyboard.preventDefault
 
       | "ArrowUp" =>
-        update(el => {
+        updateElement(el => {
           ...el,
           saturation: Math.min(1.0, el.saturation +. 0.01),
         })
         event->ReactEvent.Keyboard.preventDefault
 
       | "ArrowLeft" =>
-        update(el => {
+        updateElement(el => {
           ...el,
           lightness: Math.max(0.0, el.lightness -. 0.01),
         })
         event->ReactEvent.Keyboard.preventDefault
 
       | "ArrowRight" =>
-        update(el => {
+        updateElement(el => {
           ...el,
           lightness: Math.min(1.0, el.lightness +. 0.01),
         })
@@ -493,12 +531,6 @@ module Palette = {
 
     let hueLen = picks->Array.length
     let shadeLen = shades->Array.length
-
-    let changeHexHueByHSL = (hex, hue) => {
-      let (_, s, v) = Texel.convert(hex->Texel.hexToRgb, Texel.srgb, Texel.okhsv)
-      let newHex = Texel.convert((hue, s, v), Texel.okhsv, Texel.srgb)->Texel.rgbToHex
-      newHex
-    }
 
     let makeNewHue = (copy, left, right) => {
       let newValue = (left +. right) /. 2.
