@@ -495,13 +495,25 @@ module Palette = {
       }
 
       switch event->ReactEvent.Keyboard.key {
-      | "j" =>
+      | "u" =>
+        updateHue(hue => {
+          let result = hue -. 10.0
+          result < 0. ? result +. 360. : result
+        })
+
+      | "d" =>
+        updateHue(hue => {
+          let result = hue +. 10.0
+          result > 360. ? result -. 360. : result
+        })
+
+      | "k" =>
         updateHue(hue => {
           let result = hue -. 1.0
           result < 0. ? result +. 360. : result
         })
 
-      | "k" =>
+      | "j" =>
         updateHue(hue => {
           let result = hue +. 1.0
           result > 360. ? result -. 360. : result

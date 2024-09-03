@@ -470,7 +470,25 @@ function App$Palette(props) {
                     });
                 $$event.preventDefault();
                 return ;
+            case "d" :
+                return updateHue(function (hue) {
+                            var result = hue + 10.0;
+                            if (result > 360) {
+                              return result - 360;
+                            } else {
+                              return result;
+                            }
+                          });
             case "j" :
+                return updateHue(function (hue) {
+                            var result = hue + 1.0;
+                            if (result > 360) {
+                              return result - 360;
+                            } else {
+                              return result;
+                            }
+                          });
+            case "k" :
                 return updateHue(function (hue) {
                             var result = hue - 1.0;
                             if (result < 0) {
@@ -479,11 +497,11 @@ function App$Palette(props) {
                               return result;
                             }
                           });
-            case "k" :
+            case "u" :
                 return updateHue(function (hue) {
-                            var result = hue + 1.0;
-                            if (result > 360) {
-                              return result - 360;
+                            var result = hue - 10.0;
+                            if (result < 0) {
+                              return result + 360;
                             } else {
                               return result;
                             }
