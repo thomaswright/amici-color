@@ -115,6 +115,10 @@ function updateHueLineCanvas(canvas, ctx) {
   }
 }
 
+var xSizeScaled = 20 * window.devicePixelRatio | 0;
+
+var ySizeScaled = 300 * window.devicePixelRatio | 0;
+
 function App$HueLine(props) {
   var selected = props.selected;
   var canvasRef = React.useRef(null);
@@ -124,8 +128,9 @@ function App$HueLine(props) {
             canvasDom === null;
           } else {
             var context = canvasDom.getContext("2d");
-            canvasDom.width = 20;
-            canvasDom.height = 300;
+            context.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
+            canvasDom.width = xSizeScaled;
+            canvasDom.height = ySizeScaled;
             updateHueLineCanvas(canvasDom, context);
           }
         }), [canvasRef.current]);
@@ -146,7 +151,11 @@ function App$HueLine(props) {
                                 });
                     }),
                 JsxRuntime.jsx("canvas", {
-                      ref: Caml_option.some(canvasRef)
+                      ref: Caml_option.some(canvasRef),
+                      style: {
+                        height: (300).toString() + "px",
+                        width: (20).toString() + "px"
+                      }
                     })
               ],
               className: "w-fit relative h-full rounded-sm overflow-hidden"
@@ -174,6 +183,10 @@ function updateLchHGamutCanvas(canvas, ctx, hue) {
   }
 }
 
+var xSizeScaled$1 = 300 * window.devicePixelRatio | 0;
+
+var ySizeScaled$1 = 300 * window.devicePixelRatio | 0;
+
 function App$LchHGamut(props) {
   var selectedElement = props.selectedElement;
   var selectedHue = props.selectedHue;
@@ -191,11 +204,12 @@ function App$LchHGamut(props) {
           } else {
             var context = canvasDom.getContext("2d");
             if (hueObj !== undefined) {
-              canvasDom.width = 300;
-              canvasDom.height = 300;
+              context.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
+              canvasDom.width = xSizeScaled$1;
+              canvasDom.height = ySizeScaled$1;
               updateLchHGamutCanvas(canvasDom, context, hueObj.value);
             } else {
-              context.clearRect(0, 0, 300, 300);
+              context.clearRect(0, 0, xSizeScaled$1, ySizeScaled$1);
             }
           }
         }), [
@@ -235,7 +249,11 @@ function App$LchHGamut(props) {
                                   });
                       })),
                 JsxRuntime.jsx("canvas", {
-                      ref: Caml_option.some(canvasRef)
+                      ref: Caml_option.some(canvasRef),
+                      style: {
+                        height: (300).toString() + "px",
+                        width: (300).toString() + "px"
+                      }
                     })
               ],
               className: "w-fit relative bg-black rounded-sm"
@@ -260,6 +278,10 @@ function updateHslSGamutCanvas(canvas, ctx) {
   }
 }
 
+var xSizeScaled$2 = 300 * window.devicePixelRatio | 0;
+
+var ySizeScaled$2 = 300 * window.devicePixelRatio | 0;
+
 function App$HslSGamut(props) {
   var selectedElement = props.selectedElement;
   var selectedHue = props.selectedHue;
@@ -277,8 +299,9 @@ function App$HslSGamut(props) {
           } else {
             var context = canvasDom.getContext("2d");
             if (hueObj !== undefined) {
-              canvasDom.width = 300;
-              canvasDom.height = 300;
+              context.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
+              canvasDom.width = xSizeScaled$2;
+              canvasDom.height = ySizeScaled$2;
               updateHslSGamutCanvas(canvasDom, context);
             } else {
               context.clearRect(0, 0, 300, 300);
@@ -316,7 +339,11 @@ function App$HslSGamut(props) {
                                       });
                           })),
                 JsxRuntime.jsx("canvas", {
-                      ref: Caml_option.some(canvasRef)
+                      ref: Caml_option.some(canvasRef),
+                      style: {
+                        height: (300).toString() + "px",
+                        width: (300).toString() + "px"
+                      }
                     })
               ],
               className: "w-fit relative border border-black rounded-sm"
@@ -391,11 +418,13 @@ function App$Palette(props) {
                                               value: hue.value,
                                               name: hue.name,
                                               elements: hue.elements.map(function (hueElement) {
-                                                    if (hueElement.id === e) {
-                                                      return f(hueElement);
-                                                    } else {
-                                                      return hueElement;
-                                                    }
+                                                      if (hueElement.id === e) {
+                                                        return f(hueElement);
+                                                      } else {
+                                                        return hueElement;
+                                                      }
+                                                    }).toSorted(function (a, b) {
+                                                    return b.lightness - a.lightness;
                                                   })
                                             };
                                     });

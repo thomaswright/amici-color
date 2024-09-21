@@ -13,6 +13,9 @@ module Utils = {
 
 @module("ulid") external ulid: unit => string = "ulid"
 
+@val @scope("window")
+external devicePixelRatio: float = "devicePixelRatio"
+
 module Icons = {
   module Plus = {
     @module("react-icons/fi") @react.component
@@ -121,6 +124,7 @@ module Canvas = {
   @set external setHeight: (canvas, int) => unit = "height"
   @send external getContext: (canvas, string) => context = "getContext"
   @send external clearRect: (context, ~x: int, ~y: int, ~w: int, ~h: int) => unit = "clearRect"
+  @send external scale: (context, float, float) => unit = "scale"
 }
 
 module NameInspection = {
@@ -169,7 +173,11 @@ let updateHueLineCanvas = (canvas, ctx) => {
 }
 
 module HueLine = {
+  let xSize = 20
   let ySize = 300
+  let xSizeScaled = (xSize->Int.toFloat *. devicePixelRatio)->Float.toInt
+  let ySizeScaled = (ySize->Int.toFloat *. devicePixelRatio)->Float.toInt
+
   @react.component
   let make = (~hues: array<hue>, ~selected) => {
     let canvasRef = React.useRef(Nullable.null)
@@ -179,8 +187,9 @@ module HueLine = {
       | Value(canvasDom) => {
           let canvas = canvasDom->Obj.magic
           let context = canvas->Canvas.getContext("2d")
-          canvas->Canvas.setWidth(20)
-          canvas->Canvas.setHeight(ySize)
+          context->Canvas.scale(1. /. devicePixelRatio, 1. /. devicePixelRatio)
+          canvas->Canvas.setWidth(xSizeScaled)
+          canvas->Canvas.setHeight(ySizeScaled)
           updateHueLineCanvas(canvas, context)
         }
       | Null | Undefined => ()
@@ -204,7 +213,13 @@ module HueLine = {
         />
       })
       ->React.array}
-      <canvas ref={ReactDOM.Ref.domRef(canvasRef)} />
+      <canvas
+        style={{
+          width: xSize->Int.toString ++ "px",
+          height: ySize->Int.toString ++ "px",
+        }}
+        ref={ReactDOM.Ref.domRef(canvasRef)}
+      />
     </div>
   }
 }
@@ -237,6 +252,8 @@ let updateLchHGamutCanvas = (canvas, ctx, hue) => {
 module LchHGamut = {
   let xSize = 300
   let ySize = 300
+  let xSizeScaled = (xSize->Int.toFloat *. devicePixelRatio)->Float.toInt
+  let ySizeScaled = (ySize->Int.toFloat *. devicePixelRatio)->Float.toInt
 
   @react.component
   let make = (~hues: array<hue>, ~selectedHue, ~selectedElement) => {
@@ -251,11 +268,13 @@ module LchHGamut = {
 
         switch hueObj {
         | Some(selectedHue) =>
-          canvas->Canvas.setWidth(xSize)
-          canvas->Canvas.setHeight(ySize)
+          context->Canvas.scale(1. /. devicePixelRatio, 1. /. devicePixelRatio)
+          canvas->Canvas.setWidth(xSizeScaled)
+          canvas->Canvas.setHeight(ySizeScaled)
+
           updateLchHGamutCanvas(canvas, context, selectedHue.value)
 
-        | None => context->Canvas.clearRect(~x=0, ~y=0, ~w=xSize, ~h=ySize)
+        | None => context->Canvas.clearRect(~x=0, ~y=0, ~w=xSizeScaled, ~h=ySizeScaled)
         }
       | Null | Undefined => ()
       }
@@ -290,7 +309,13 @@ module LchHGamut = {
         })
         ->React.array
       })}
-      <canvas ref={ReactDOM.Ref.domRef(canvasRef)} />
+      <canvas
+        style={{
+          width: xSize->Int.toString ++ "px",
+          height: ySize->Int.toString ++ "px",
+        }}
+        ref={ReactDOM.Ref.domRef(canvasRef)}
+      />
     </div>
   }
 }
@@ -319,6 +344,8 @@ let updateHslSGamutCanvas = (canvas, ctx) => {
 module HslSGamut = {
   let xSize = 300
   let ySize = 300
+  let xSizeScaled = (xSize->Int.toFloat *. devicePixelRatio)->Float.toInt
+  let ySizeScaled = (ySize->Int.toFloat *. devicePixelRatio)->Float.toInt
 
   @react.component
   let make = (~hues: array<hue>, ~selectedHue, ~selectedElement) => {
@@ -333,8 +360,9 @@ module HslSGamut = {
 
         switch hueObj {
         | Some(_) =>
-          canvas->Canvas.setWidth(xSize)
-          canvas->Canvas.setHeight(ySize)
+          context->Canvas.scale(1. /. devicePixelRatio, 1. /. devicePixelRatio)
+          canvas->Canvas.setWidth(xSizeScaled)
+          canvas->Canvas.setHeight(ySizeScaled)
           updateHslSGamutCanvas(canvas, context)
 
         | None => context->Canvas.clearRect(~x=0, ~y=0, ~w=xSize, ~h=ySize)
@@ -381,7 +409,13 @@ module HslSGamut = {
             ->Belt.Array.concatMany
             ->React.array
           }}
-      <canvas ref={ReactDOM.Ref.domRef(canvasRef)} />
+      <canvas
+        style={{
+          width: xSize->Int.toString ++ "px",
+          height: ySize->Int.toString ++ "px",
+        }}
+        ref={ReactDOM.Ref.domRef(canvasRef)}
+      />
     </div>
   }
 }
@@ -459,7 +493,8 @@ module Palette = {
               p_->Array.map(
                 hue => {
                   ...hue,
-                  elements: hue.elements->Array.map(
+                  elements: hue.elements
+                  ->Array.map(
                     hueElement => {
                       if hueElement.id == e {
                         hueElement->f
@@ -467,7 +502,8 @@ module Palette = {
                         hueElement
                       }
                     },
-                  ),
+                  )
+                  ->Array.toSorted((a, b) => b.lightness -. a.lightness),
                 },
               )
             },
