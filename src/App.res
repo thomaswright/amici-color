@@ -436,7 +436,16 @@ module Palette = {
           </div>
           <div className="flex flex-col py-2">
             <div className="flex flex-row">
-              <ViewGamut view={view} hues={picks} selectedHue selectedElement setSelectedElement />
+              <ViewGamut
+                view={view}
+                hues={picks}
+                selectedHue
+                selectedElement
+                setSelectedElement
+                onDragTo={(x, y) => {
+                  Console.log2(x, y)
+                }}
+              />
               <YStack
                 view={view}
                 hues={picks}

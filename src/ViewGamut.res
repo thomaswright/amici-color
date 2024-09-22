@@ -82,6 +82,9 @@ module CanvasComp = {
   })
 }
 
+@send
+external getBoundingClientRect: Dom.element => {"left": int, "top": int} = "getBoundingClientRect"
+
 @react.component
 let make = (
   ~hues: array<hue>,
@@ -89,12 +92,62 @@ let make = (
   ~selectedElement,
   ~view: view,
   ~setSelectedElement,
+  ~onDragTo,
 ) => {
   let hueObj = selectedHue->Option.flatMap(s => hues->Array.find(v => v.id == s))
+  let isDragging = ref(false)
+  let dragPos = ref(None)
+  let gamutEl = React.useRef(Nullable.null)
 
-  <div className="p-3 bg-black">
+  let drag = (clientX, clientY) => {
+    switch gamutEl.current {
+    | Value(dom) => {
+        let gamutRect = dom->getBoundingClientRect
+
+        let gamutX = gamutRect["left"]
+        let gamutY = gamutRect["top"]
+
+        let x = clientX - gamutX
+        let y = clientY - gamutY
+
+        onDragTo(x, y)
+      }
+
+    | Null | Undefined => ()
+    }
+  }
+
+  <div className="p-3 bg-black relative">
     <CanvasComp hueObj view />
-    <div className="w-fit relative bg-black rounded-sm">
+    <div
+      ref={ReactDOM.Ref.domRef(gamutEl)}
+      className="absolute top-0 left-0 bg-transparent rounded-sm w-full h-full"
+      onMouseMove={event => {
+        if !isDragging.contents {
+          ()
+        } else {
+          drag(event->ReactEvent.Mouse.clientX, event->ReactEvent.Mouse.clientY)
+        }
+      }}
+      onTouchMove={event => {
+        if !isDragging.contents {
+          ()
+        } else {
+          event
+          ->ReactEvent.Touch.touches
+          ->Obj.magic
+          ->Array.get(0)
+          ->Option.mapOr((), touch => drag(touch["clientX"], touch["clientY"]))
+        }
+      }}
+      onMouseUp={_ => {
+        isDragging := false
+        dragPos := None
+      }}
+      onTouchEnd={_ => {
+        isDragging := false
+        dragPos := None
+      }}>
       {hueObj->Option.mapOr(React.null, hue => {
         hue.elements
         ->Array.map(e => {
@@ -118,6 +171,14 @@ let make = (
           }
 
           <div
+            onMouseDown={_ => {
+              isDragging := true
+              dragPos := None
+            }}
+            onTouchStart={_ => {
+              isDragging := true
+              dragPos := None
+            }}
             onClick={_ => {setSelectedElement(_ => Some(e.id))}}
             className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer"
             style={{

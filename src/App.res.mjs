@@ -479,7 +479,10 @@ function App$Palette(props) {
                                                       selectedHue: selectedHue,
                                                       selectedElement: selectedElement,
                                                       view: view,
-                                                      setSelectedElement: setSelectedElement
+                                                      setSelectedElement: setSelectedElement,
+                                                      onDragTo: (function (x, y) {
+                                                          console.log(x, y);
+                                                        })
                                                     }),
                                                 JsxRuntime.jsx(YStack.make, {
                                                       hues: picks,
