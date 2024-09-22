@@ -1,6 +1,6 @@
 @import "@radix-ui/colors/black-alpha.css";
-@import "@radix-ui/colors/mauve.css";
-@import "@radix-ui/colors/violet.css";
+@import "@radix-ui/colors/blue.css";
+@import "@radix-ui/colors/blue.css";
 
 /* reset */
 button {
@@ -9,7 +9,7 @@ button {
 
 .DropdownMenuContent,
 .DropdownMenuSubContent {
-  min-width: 220px;
+  min-width: 160px;
   background-color: white;
   border-radius: 6px;
   padding: 5px;
@@ -40,37 +40,38 @@ button {
 .DropdownMenuCheckboxItem,
 .DropdownMenuRadioItem,
 .DropdownMenuSubTrigger {
-  @apply rounded flex items-center relative text-blue-800 h-6 select-none outline-none px-2;
+  @apply rounded flex items-center relative h-6 select-none outline-none px-2;
+  color: var(--blue-11);
 }
 .DropdownMenuSubTrigger[data-state="open"] {
-  background-color: var(--violet-4);
-  color: var(--violet-11);
+  background-color: var(--blue-4);
+  color: var(--blue-11);
 }
 .DropdownMenuItem[data-disabled],
 .DropdownMenuCheckboxItem[data-disabled],
 .DropdownMenuRadioItem[data-disabled],
 .DropdownMenuSubTrigger[data-disabled] {
-  color: var(--mauve-8);
+  color: var(--blue-8);
   pointer-events: none;
 }
 .DropdownMenuItem[data-highlighted],
 .DropdownMenuCheckboxItem[data-highlighted],
 .DropdownMenuRadioItem[data-highlighted],
 .DropdownMenuSubTrigger[data-highlighted] {
-  background-color: var(--violet-9);
-  color: var(--violet-1);
+  background-color: var(--blue-3);
+  color: var(--blue-11);
 }
 
 .DropdownMenuLabel {
   padding-left: 25px;
   font-size: 12px;
   line-height: 25px;
-  color: var(--mauve-11);
+  color: var(--blue-11);
 }
 
 .DropdownMenuSeparator {
   height: 1px;
-  background-color: var(--violet-6);
+  background-color: var(--blue-6);
   margin: 5px;
 }
 
@@ -88,10 +89,10 @@ button {
 }
 
 .IconButton {
-  @apply h-8 w-8 rounded-full flex flex-row items-center justify-center;
+  @apply h-8 w-8 rounded-full flex flex-row items-center justify-center m-2;
 }
 .IconButton:hover {
-  background-color: var(--violet-3);
+  background-color: var(--blue-3);
 }
 .IconButton:focus {
   box-shadow: 0 0 0 2px black;
@@ -100,13 +101,13 @@ button {
 .RightSlot {
   margin-left: auto;
   padding-left: 20px;
-  color: var(--mauve-11);
+  color: var(--blue-11);
 }
 [data-highlighted] > .RightSlot {
   color: white;
 }
 [data-disabled] .RightSlot {
-  color: var(--mauve-8);
+  color: var(--blue-8);
 }
 
 @keyframes slideUpAndFade {
