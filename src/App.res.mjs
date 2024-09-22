@@ -452,12 +452,15 @@ function App$Palette(props) {
                                       hues: picks,
                                       selectedHue: selectedHue,
                                       selectedElement: selectedElement,
-                                      view: view
+                                      view: view,
+                                      setSelectedElement: setSelectedElement
                                     }),
                                 JsxRuntime.jsx(YStack.make, {
                                       hues: picks,
                                       selectedElement: selectedElement,
-                                      view: view
+                                      view: view,
+                                      setSelectedElement: setSelectedElement,
+                                      setSelectedHue: setSelectedHue
                                     })
                               ],
                               className: "flex flex-row"
@@ -465,7 +468,9 @@ function App$Palette(props) {
                         JsxRuntime.jsx(XStack.make, {
                               hues: picks,
                               selectedElement: selectedElement,
-                              view: view
+                              view: view,
+                              setSelectedElement: setSelectedElement,
+                              setSelectedHue: setSelectedHue
                             })
                       ],
                       className: "flex flex-col py-2"

@@ -419,10 +419,10 @@ module Palette = {
       </div>
       <div className="flex flex-col py-2">
         <div className="flex flex-row">
-          <ViewGamut view={view} hues={picks} selectedHue selectedElement />
-          <YStack view={view} hues={picks} selectedElement />
+          <ViewGamut view={view} hues={picks} selectedHue selectedElement setSelectedElement />
+          <YStack view={view} hues={picks} selectedElement setSelectedElement setSelectedHue />
         </div>
-        <XStack view={view} hues={picks} selectedElement />
+        <XStack view={view} hues={picks} selectedElement setSelectedElement setSelectedHue />
         // <div className="flex flex-row gap-2 ">
         //   <HslSGamut hues={picks} selectedHue selectedElement />
         //   <HueLine hues={picks} selected={selectedHue} />

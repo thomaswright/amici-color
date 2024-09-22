@@ -35,7 +35,13 @@ let xSizeScaled = (xSize->Int.toFloat *. devicePixelRatio)->Float.toInt
 let ySizeScaled = (ySize->Int.toFloat *. devicePixelRatio)->Float.toInt
 
 @react.component
-let make = (~hues: array<hue>, ~selectedHue, ~selectedElement, ~view: view) => {
+let make = (
+  ~hues: array<hue>,
+  ~selectedHue,
+  ~selectedElement,
+  ~view: view,
+  ~setSelectedElement,
+) => {
   let canvasRef = React.useRef(Nullable.null)
   let hueObj = selectedHue->Option.flatMap(s => hues->Array.find(v => v.id == s))
   // Todo: update on hues change
@@ -90,7 +96,8 @@ let make = (~hues: array<hue>, ~selectedHue, ~selectedElement, ~view: view) => {
           }
 
           <div
-            className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center"
+            onClick={_ => {setSelectedElement(_ => Some(e.id))}}
+            className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer"
             style={{
               backgroundColor: hex,
               transform: "translate(-50%, 50%)",

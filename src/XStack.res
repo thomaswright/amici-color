@@ -3,7 +3,13 @@ open Types
 
 let size = 300
 @react.component
-let make = (~hues: array<hue>, ~selectedElement, ~view: view) => {
+let make = (
+  ~hues: array<hue>,
+  ~selectedElement,
+  ~view: view,
+  ~setSelectedElement,
+  ~setSelectedHue,
+) => {
   <div className="p-3 bg-black w-fit pt-0">
     <div
       className="flex flex-col gap-1 py-1 bg-white rounded"
@@ -34,7 +40,11 @@ let make = (~hues: array<hue>, ~selectedElement, ~view: view) => {
             }
 
             <div
-              className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center"
+              onClick={_ => {
+                setSelectedElement(_ => Some(e.id))
+                setSelectedHue(_ => Some(hue.id))
+              }}
+              className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer"
               style={{
                 backgroundColor: hex,
                 transform: "translate(-50%, 0)",

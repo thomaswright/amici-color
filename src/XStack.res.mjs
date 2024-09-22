@@ -5,6 +5,8 @@ import * as Core__Option from "@rescript/core/src/Core__Option.res.mjs";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function XStack(props) {
+  var setSelectedHue = props.setSelectedHue;
+  var setSelectedElement = props.setSelectedElement;
   var view = props.view;
   var selectedElement = props.selectedElement;
   var tmp;
@@ -48,12 +50,20 @@ function XStack(props) {
                                                           children: Core__Option.mapOr(selectedElement, false, (function (x) {
                                                                   return x === e.id;
                                                                 })) ? "•" : null,
-                                                          className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center",
+                                                          className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer",
                                                           style: {
                                                             backgroundColor: hex,
                                                             left: (percentage * 300 | 0).toString() + "px",
                                                             transform: "translate(-50%, 0)"
-                                                          }
+                                                          },
+                                                          onClick: (function (param) {
+                                                              setSelectedElement(function (param) {
+                                                                    return e.id;
+                                                                  });
+                                                              setSelectedHue(function (param) {
+                                                                    return hue.id;
+                                                                  });
+                                                            })
                                                         });
                                             }),
                                         className: "relative h-5"
