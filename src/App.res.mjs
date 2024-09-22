@@ -47,14 +47,6 @@ function makeDefaultPicks(xLen, defaultShades) {
               }));
 }
 
-function modeName(mode) {
-  if (mode === "HSL_L") {
-    return "OKHSL - L";
-  } else {
-    return "OKLCH - L";
-  }
-}
-
 function viewName(view) {
   switch (view) {
     case "View_LC" :
@@ -78,34 +70,29 @@ var defaultPicks = makeDefaultPicks(5, defaultShades);
 
 function App$Palette(props) {
   var match = React.useState(function () {
-        return "View_LC";
+        return "View_SV";
       });
   var setView = match[1];
   var view = match[0];
   var match$1 = React.useState(function () {
-        return "LCH_L";
-      });
-  var setSelectedMode = match$1[1];
-  var selectedMode = match$1[0];
-  var match$2 = React.useState(function () {
         return defaultPicks;
       });
-  var setPicks = match$2[1];
-  var match$3 = React.useState(function () {
+  var setPicks = match$1[1];
+  var match$2 = React.useState(function () {
         return defaultShades;
       });
-  var setShades = match$3[1];
-  var shades = match$3[0];
+  var setShades = match$2[1];
+  var shades = match$2[0];
+  var match$3 = React.useState(function () {
+        
+      });
+  var setSelectedHue = match$3[1];
+  var selectedHue = match$3[0];
   var match$4 = React.useState(function () {
         
       });
-  var setSelectedHue = match$4[1];
-  var selectedHue = match$4[0];
-  var match$5 = React.useState(function () {
-        
-      });
-  var setSelectedElement = match$5[1];
-  var selectedElement = match$5[0];
+  var setSelectedElement = match$4[1];
+  var selectedElement = match$4[0];
   var handleKeydown = React.useCallback((function ($$event) {
           var updateElement = function (f) {
             Core__Option.mapOr(selectedElement, undefined, (function (e) {
@@ -162,94 +149,146 @@ function App$Palette(props) {
                 $$event.preventDefault();
                 return ;
             case "ArrowLeft" :
-                if (selectedMode === "HSL_L") {
-                  updateElement(function (el, param) {
-                        return {
-                                id: el.id,
-                                shadeId: el.shadeId,
-                                hueId: el.hueId,
-                                lightness: Math.max(0.0, el.lightness - 0.01),
-                                saturation: el.saturation
-                              };
-                      });
-                } else {
-                  updateElement(function (el, hue) {
-                        var match = Color.convert([
-                              hue,
-                              el.saturation,
-                              el.lightness
-                            ], Color.OKHSL, Color.OKLCH);
-                        var newL = Math.max(0.0, match[0] - 0.01);
-                        var match$1 = Color.convert([
-                              newL,
-                              match[1],
-                              match[2]
-                            ], Color.OKLCH, Color.OKHSL);
-                        var outputL = match$1[2];
-                        var outputS = match$1[1];
-                        var rgb = Color.convert([
-                              hue,
-                              outputS,
-                              outputL
-                            ], Color.OKHSL, Color.sRGB);
-                        if (Color.isRGBInGamut(rgb)) {
-                          return {
-                                  id: el.id,
-                                  shadeId: el.shadeId,
-                                  hueId: el.hueId,
-                                  lightness: outputL,
-                                  saturation: outputS
-                                };
-                        } else {
-                          return el;
-                        }
-                      });
+                switch (view) {
+                  case "View_LC" :
+                      updateElement(function (el, hue) {
+                            var match = Color.convert([
+                                  hue,
+                                  el.saturation,
+                                  el.lightness
+                                ], Color.OKHSL, Color.OKLCH);
+                            var newL = Math.max(0.0, match[0] - 0.01);
+                            var match$1 = Color.convert([
+                                  newL,
+                                  match[1],
+                                  match[2]
+                                ], Color.OKLCH, Color.OKHSL);
+                            var outputL = match$1[2];
+                            var outputS = match$1[1];
+                            var rgb = Color.convert([
+                                  hue,
+                                  outputS,
+                                  outputL
+                                ], Color.OKHSL, Color.sRGB);
+                            if (Color.isRGBInGamut(rgb)) {
+                              return {
+                                      id: el.id,
+                                      shadeId: el.shadeId,
+                                      hueId: el.hueId,
+                                      lightness: outputL,
+                                      saturation: outputS
+                                    };
+                            } else {
+                              return el;
+                            }
+                          });
+                      break;
+                  case "View_SV" :
+                      updateElement(function (el, hue) {
+                            var match = Color.convert([
+                                  hue,
+                                  el.saturation,
+                                  el.lightness
+                                ], Color.OKHSL, Color.OKHSV);
+                            var newV = Math.max(0.0, match[2] - 0.01);
+                            var match$1 = Color.convert([
+                                  hue,
+                                  match[1],
+                                  newV
+                                ], Color.OKHSV, Color.OKHSL);
+                            return {
+                                    id: el.id,
+                                    shadeId: el.shadeId,
+                                    hueId: el.hueId,
+                                    lightness: match$1[2],
+                                    saturation: match$1[1]
+                                  };
+                          });
+                      break;
+                  case "View_SL" :
+                      updateElement(function (el, param) {
+                            return {
+                                    id: el.id,
+                                    shadeId: el.shadeId,
+                                    hueId: el.hueId,
+                                    lightness: Math.max(0.0, el.lightness - 0.01),
+                                    saturation: el.saturation
+                                  };
+                          });
+                      break;
+                  
                 }
                 $$event.preventDefault();
                 return ;
             case "ArrowRight" :
-                if (selectedMode === "HSL_L") {
-                  updateElement(function (el, param) {
-                        return {
-                                id: el.id,
-                                shadeId: el.shadeId,
-                                hueId: el.hueId,
-                                lightness: Math.min(1.0, el.lightness + 0.01),
-                                saturation: el.saturation
-                              };
-                      });
-                } else {
-                  updateElement(function (el, hue) {
-                        var match = Color.convert([
-                              hue,
-                              el.saturation,
-                              el.lightness
-                            ], Color.OKHSL, Color.OKLCH);
-                        var newL = Math.min(1.0, match[0] + 0.01);
-                        var match$1 = Color.convert([
-                              newL,
-                              match[1],
-                              match[2]
-                            ], Color.OKLCH, Color.OKHSL);
-                        var outputL = match$1[2];
-                        var outputS = match$1[1];
-                        var rgb = Color.convert([
-                              hue,
-                              outputS,
-                              outputL
-                            ], Color.OKHSL, Color.sRGB);
-                        if (Color.isRGBInGamut(rgb)) {
-                          return {
-                                  id: el.id,
-                                  shadeId: el.shadeId,
-                                  hueId: el.hueId,
-                                  lightness: outputL,
-                                  saturation: outputS
-                                };
-                        } else {
-                          return el;
-                        }
-                      });
+                switch (view) {
+                  case "View_LC" :
+                      updateElement(function (el, hue) {
+                            var match = Color.convert([
+                                  hue,
+                                  el.saturation,
+                                  el.lightness
+                                ], Color.OKHSL, Color.OKLCH);
+                            var newL = Math.min(1.0, match[0] + 0.01);
+                            var match$1 = Color.convert([
+                                  newL,
+                                  match[1],
+                                  match[2]
+                                ], Color.OKLCH, Color.OKHSL);
+                            var outputL = match$1[2];
+                            var outputS = match$1[1];
+                            var rgb = Color.convert([
+                                  hue,
+                                  outputS,
+                                  outputL
+                                ], Color.OKHSL, Color.sRGB);
+                            if (Color.isRGBInGamut(rgb)) {
+                              return {
+                                      id: el.id,
+                                      shadeId: el.shadeId,
+                                      hueId: el.hueId,
+                                      lightness: outputL,
+                                      saturation: outputS
+                                    };
+                            } else {
+                              return el;
+                            }
+                          });
+                      break;
+                  case "View_SV" :
+                      updateElement(function (el, hue) {
+                            var match = Color.convert([
+                                  hue,
+                                  el.saturation,
+                                  el.lightness
+                                ], Color.OKHSL, Color.OKHSV);
+                            var newV = Math.min(1.0, match[2] + 0.01);
+                            var match$1 = Color.convert([
+                                  hue,
+                                  match[1],
+                                  newV
+                                ], Color.OKHSV, Color.OKHSL);
+                            return {
+                                    id: el.id,
+                                    shadeId: el.shadeId,
+                                    hueId: el.hueId,
+                                    lightness: match$1[2],
+                                    saturation: match$1[1]
+                                  };
+                          });
+                      break;
+                  case "View_SL" :
+                      updateElement(function (el, param) {
+                            return {
+                                    id: el.id,
+                                    shadeId: el.shadeId,
+                                    hueId: el.hueId,
+                                    lightness: Math.min(1.0, el.lightness + 0.01),
+                                    saturation: el.saturation
+                                  };
+                          });
+                      break;
+                  
                 }
                 $$event.preventDefault();
                 return ;
@@ -306,7 +345,7 @@ function App$Palette(props) {
           }
         }), [
         selectedElement,
-        selectedMode
+        view
       ]);
   React.useEffect((function () {
           document.addEventListener("keydown", handleKeydown);
@@ -315,9 +354,9 @@ function App$Palette(props) {
                   });
         }), [
         selectedElement,
-        selectedMode
+        view
       ]);
-  var picks = match$2[0].toSorted(function (a, b) {
+  var picks = match$1[0].toSorted(function (a, b) {
         return a.value - b.value;
       });
   var hueLen = picks.length;
@@ -430,27 +469,6 @@ function App$Palette(props) {
                             })
                       ],
                       className: "flex flex-col gap-2 py-2"
-                    }),
-                JsxRuntime.jsx("div", {
-                      children: [
-                          "HSL_L",
-                          "LCH_L"
-                        ].map(function (mode) {
-                            var isSelected = selectedMode === mode;
-                            return JsxRuntime.jsx("button", {
-                                        children: modeName(mode),
-                                        className: [
-                                            "px-2 rounded",
-                                            isSelected ? "bg-blue-600 text-white" : "bg-blue-200"
-                                          ].join(" "),
-                                        onClick: (function (param) {
-                                            setSelectedMode(function (param) {
-                                                  return mode;
-                                                });
-                                          })
-                                      });
-                          }),
-                      className: "flex flex-row gap-2"
                     }),
                 JsxRuntime.jsx("div", {
                       children: [

@@ -69,8 +69,8 @@ module Palette = {
 
   @react.component
   let make = () => {
-    let (view, setView) = React.useState(() => View_LC)
-    let (selectedMode, setSelectedMode) = React.useState(() => LCH_L)
+    let (view, setView) = React.useState(() => View_SV)
+    // let (selectedMode, setSelectedMode) = React.useState(() => LCH_L)
     let (picks_, setPicks) = React.useState(() => defaultPicks)
     let (shades, setShades) = React.useState(() => defaultShades)
     let (selectedHue, setSelectedHue) = React.useState(() => None)
@@ -161,13 +161,34 @@ module Palette = {
         event->ReactEvent.Keyboard.preventDefault
 
       | "ArrowLeft" =>
-        switch selectedMode {
-        | HSL_L =>
+        switch view {
+        | View_SL =>
           updateElement((el, _) => {
             ...el,
             lightness: Math.max(0.0, el.lightness -. 0.01),
           })
-        | LCH_L =>
+        | View_SV =>
+          updateElement((el, hue) => {
+            let (_, hsvS, hsvV) = Texel.convert(
+              (hue, el.saturation, el.lightness),
+              Texel.okhsl,
+              Texel.okhsv,
+            )
+
+            let newV = Math.max(0.0, hsvV -. 0.01)
+            let (_, newSaturation, newLightness) = Texel.convert(
+              (hue, hsvS, newV),
+              Texel.okhsv,
+              Texel.okhsl,
+            )
+
+            {
+              ...el,
+              saturation: newSaturation,
+              lightness: newLightness,
+            }
+          })
+        | View_LC =>
           updateElement((el, hue) => {
             let (l, c, h) = Texel.convert(
               (hue, el.saturation, el.lightness),
@@ -192,13 +213,34 @@ module Palette = {
         event->ReactEvent.Keyboard.preventDefault
 
       | "ArrowRight" =>
-        switch selectedMode {
-        | HSL_L =>
+        switch view {
+        | View_SL =>
           updateElement((el, _) => {
             ...el,
             lightness: Math.min(1.0, el.lightness +. 0.01),
           })
-        | LCH_L =>
+        | View_SV =>
+          updateElement((el, hue) => {
+            let (_, hsvS, hsvV) = Texel.convert(
+              (hue, el.saturation, el.lightness),
+              Texel.okhsl,
+              Texel.okhsv,
+            )
+
+            let newV = Math.min(1.0, hsvV +. 0.01)
+            let (_, newSaturation, newLightness) = Texel.convert(
+              (hue, hsvS, newV),
+              Texel.okhsv,
+              Texel.okhsl,
+            )
+
+            {
+              ...el,
+              saturation: newSaturation,
+              lightness: newLightness,
+            }
+          })
+        | View_LC =>
           updateElement((el, hue) => {
             let (l, c, h) = Texel.convert(
               (hue, el.saturation, el.lightness),
@@ -219,16 +261,17 @@ module Palette = {
             }
           })
         }
+
         event->ReactEvent.Keyboard.preventDefault
 
       | _ => ()
       }
-    }, (selectedElement, selectedMode))
+    }, (selectedElement, view))
 
     React.useEffect2(() => {
       addKeyboardListner("keydown", handleKeydown)
       Some(() => removeKeyboardListner("keydown", handleKeydown))
-    }, (selectedElement, selectedMode))
+    }, (selectedElement, view))
 
     let picks = picks_->Array.toSorted((a, b) => a.value -. b.value)
 
@@ -385,21 +428,21 @@ module Palette = {
         //   <HueLine hues={picks} selected={selectedHue} />
         // </div>
       </div>
-      <div className="flex flex-row gap-2">
-        {[HSL_L, LCH_L]
-        ->Array.map(mode => {
-          let isSelected = selectedMode == mode
-          <button
-            className={[
-              "px-2 rounded",
-              isSelected ? "bg-blue-600 text-white" : "bg-blue-200",
-            ]->Array.join(" ")}
-            onClick={_ => setSelectedMode(_ => mode)}>
-            {mode->modeName->React.string}
-          </button>
-        })
-        ->React.array}
-      </div>
+      // <div className="flex flex-row gap-2">
+      //   {[HSL_L, LCH_L]
+      //   ->Array.map(mode => {
+      //     let isSelected = selectedMode == mode
+      //     <button
+      //       className={[
+      //         "px-2 rounded",
+      //         isSelected ? "bg-blue-600 text-white" : "bg-blue-200",
+      //       ]->Array.join(" ")}
+      //       onClick={_ => setSelectedMode(_ => mode)}>
+      //       {mode->modeName->React.string}
+      //     </button>
+      //   })
+      //   ->React.array}
+      // </div>
       <div className="flex flex-row gap-2">
         {[View_LC, View_SL, View_SV]
         ->Array.map(v => {
