@@ -417,202 +417,211 @@ module Palette = {
         </div>
         {"Amici Color"->React.string}
       </div>
-      <div className="flex flex-row gap-2">
-        {[View_LC, View_SL, View_SV]
-        ->Array.map(v => {
-          let isSelected = view == v
-          <button
-            className={[
-              "px-2 rounded",
-              isSelected ? "bg-blue-600 text-white" : "bg-blue-200",
-            ]->Array.join(" ")}
-            onClick={_ => setView(_ => v)}>
-            {v->viewName->React.string}
-          </button>
-        })
-        ->React.array}
-      </div>
-      <div className="flex flex-col py-2">
-        <div className="flex flex-row">
-          <ViewGamut view={view} hues={picks} selectedHue selectedElement setSelectedElement />
-          <YStack
-            view={view} hues={picks} selectedElement setSelectedElement setSelectedHue selectedHue
-          />
+      <div className="flex flex-row">
+        <div>
+          <div className="flex flex-row gap-2">
+            {[View_LC, View_SL, View_SV]
+            ->Array.map(v => {
+              let isSelected = view == v
+              <button
+                className={[
+                  "px-2 rounded",
+                  isSelected ? "bg-blue-600 text-white" : "bg-blue-200",
+                ]->Array.join(" ")}
+                onClick={_ => setView(_ => v)}>
+                {v->viewName->React.string}
+              </button>
+            })
+            ->React.array}
+          </div>
+          <div className="flex flex-col py-2">
+            <div className="flex flex-row">
+              <ViewGamut view={view} hues={picks} selectedHue selectedElement setSelectedElement />
+              <YStack
+                view={view}
+                hues={picks}
+                selectedElement
+                setSelectedElement
+                setSelectedHue
+                selectedHue
+              />
+            </div>
+            <XStack view={view} hues={picks} selectedElement setSelectedElement setSelectedHue />
+            // <div className="flex flex-row gap-2 ">
+            //   <HslSGamut hues={picks} selectedHue selectedElement />
+            //   <HueLine hues={picks} selected={selectedHue} />
+            // </div>
+          </div>
         </div>
-        <XStack view={view} hues={picks} selectedElement setSelectedElement setSelectedHue />
-        // <div className="flex flex-row gap-2 ">
-        //   <HslSGamut hues={picks} selectedHue selectedElement />
-        //   <HueLine hues={picks} selected={selectedHue} />
+        // <div className="flex flex-row gap-2">
+        //   {[HSL_L, LCH_L]
+        //   ->Array.map(mode => {
+        //     let isSelected = selectedMode == mode
+        //     <button
+        //       className={[
+        //         "px-2 rounded",
+        //         isSelected ? "bg-blue-600 text-white" : "bg-blue-200",
+        //       ]->Array.join(" ")}
+        //       onClick={_ => setSelectedMode(_ => mode)}>
+        //       {mode->modeName->React.string}
+        //     </button>
+        //   })
+        //   ->React.array}
         // </div>
-      </div>
-      // <div className="flex flex-row gap-2">
-      //   {[HSL_L, LCH_L]
-      //   ->Array.map(mode => {
-      //     let isSelected = selectedMode == mode
-      //     <button
-      //       className={[
-      //         "px-2 rounded",
-      //         isSelected ? "bg-blue-600 text-white" : "bg-blue-200",
-      //       ]->Array.join(" ")}
-      //       onClick={_ => setSelectedMode(_ => mode)}>
-      //       {mode->modeName->React.string}
-      //     </button>
-      //   })
-      //   ->React.array}
-      // </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: `auto repeat(${shadeLen->Int.toString}, 3rem)`,
-          gridTemplateRows: `auto repeat(${hueLen->Int.toString}, 3rem)`,
-        }}
-        className="py-6 w-fit">
         <div
-          className="overflow-hidden"
           style={{
             display: "grid",
-            gridRow: "2 / -1",
-            gridColumn: "1 / 2",
-            gridTemplateRows: "subgrid",
-            gridTemplateColumns: "subgrid",
-          }}>
-          {picks
-          ->Array.mapWithIndex((pick, i) => {
-            let isLastRow = i == picks->Array.length - 1
-            let onDelete = () => {
-              setPicks(p_ => p_->Array.filter(v => v.id != pick.id))
-              setSelectedHue(v => v->Option.flatMap(p => p == pick.id ? None : Some(p)))
-            }
+            gridTemplateColumns: `auto repeat(${shadeLen->Int.toString}, 3rem)`,
+            gridTemplateRows: `auto repeat(${hueLen->Int.toString}, 3rem)`,
+          }}
+          className="py-6 w-fit h-fit">
+          <div
+            className="overflow-hidden"
+            style={{
+              display: "grid",
+              gridRow: "2 / -1",
+              gridColumn: "1 / 2",
+              gridTemplateRows: "subgrid",
+              gridTemplateColumns: "subgrid",
+            }}>
+            {picks
+            ->Array.mapWithIndex((pick, i) => {
+              let isLastRow = i == picks->Array.length - 1
+              let onDelete = () => {
+                setPicks(p_ => p_->Array.filter(v => v.id != pick.id))
+                setSelectedHue(v => v->Option.flatMap(p => p == pick.id ? None : Some(p)))
+              }
 
-            let onAdd = () => {newInterHue(pick)}
+              let onAdd = () => {newInterHue(pick)}
 
-            <div key={pick.id} className=" ">
-              <div className="flex-row flex w-full justify-between items-center gap-2 h-full">
+              <div key={pick.id} className=" ">
+                <div className="flex-row flex w-full justify-between items-center gap-2 h-full">
+                  <DropdownMenu
+                    items={[("Add Row Before", onAdd)]
+                    ->Array.concat(isLastRow ? [("Add Row After", _ => newEndHue())] : [])
+                    ->Array.concat([("Delete Row", onDelete)])}
+                  />
+                  <input
+                    type_="text"
+                    value={pick.name}
+                    onChange={e => {
+                      let value = (e->ReactEvent.Form.target)["value"]
+                      setPicks(cur => {
+                        cur->Array.map(
+                          v => {
+                            v.id == pick.id
+                              ? {
+                                  ...v,
+                                  name: value,
+                                }
+                              : v
+                          },
+                        )
+                      })
+                    }}
+                    className="w-20 h-5"
+                  />
+                </div>
+                <div className="flex flex-row justify-start gap-2 w-full" />
+              </div>
+            })
+            ->React.array}
+          </div>
+          <div
+            className="overflow-hidden"
+            style={{
+              display: "grid",
+              gridRow: "1 / 2",
+              gridColumn: "2 / -1",
+              gridTemplateRows: "subgrid",
+              gridTemplateColumns: "subgrid",
+            }}>
+            {shades
+            ->Array.mapWithIndex((shade, i) => {
+              let isLastColumn = i == picks->Array.length - 1
+
+              let onDelete = () => {
+                setPicks(p_ =>
+                  p_->Array.map(
+                    v => {
+                      {
+                        ...v,
+                        elements: v.elements->Array.filter(e => e.shadeId != shade.id),
+                      }
+                    },
+                  )
+                )
+                setShades(s_ => s_->Array.filter(v => v.id != shade.id))
+              }
+
+              let onAdd = () => newInterShade(shade)
+
+              <div key={shade.id} className=" flex flex-col gap-2">
                 <DropdownMenu
-                  items={[("Add Row Before", onAdd)]
-                  ->Array.concat(isLastRow ? [("Add Row After", _ => newEndHue())] : [])
-                  ->Array.concat([("Delete Row", onDelete)])}
+                  items={[("Add Column Before", onAdd)]
+                  ->Array.concat(isLastColumn ? [("Add Column After", _ => newEndShade())] : [])
+                  ->Array.concat([("Delete Column", onDelete)])}
                 />
                 <input
                   type_="text"
-                  value={pick.name}
                   onChange={e => {
                     let value = (e->ReactEvent.Form.target)["value"]
-                    setPicks(cur => {
+                    setShades(cur =>
                       cur->Array.map(
-                        v => {
-                          v.id == pick.id
+                        v =>
+                          v.id == shade.id
                             ? {
                                 ...v,
                                 name: value,
                               }
-                            : v
-                        },
+                            : v,
                       )
-                    })
+                    )
                   }}
-                  className="w-20 h-5"
+                  value={shade.name}
+                  className="w-10 h-5"
                 />
               </div>
-              <div className="flex flex-row justify-start gap-2 w-full" />
-            </div>
-          })
-          ->React.array}
-        </div>
-        <div
-          className="overflow-hidden"
-          style={{
-            display: "grid",
-            gridRow: "1 / 2",
-            gridColumn: "2 / -1",
-            gridTemplateRows: "subgrid",
-            gridTemplateColumns: "subgrid",
-          }}>
-          {shades
-          ->Array.mapWithIndex((shade, i) => {
-            let isLastColumn = i == picks->Array.length - 1
-
-            let onDelete = () => {
-              setPicks(p_ =>
-                p_->Array.map(
-                  v => {
-                    {
-                      ...v,
-                      elements: v.elements->Array.filter(e => e.shadeId != shade.id),
-                    }
-                  },
-                )
-              )
-              setShades(s_ => s_->Array.filter(v => v.id != shade.id))
-            }
-
-            let onAdd = () => newInterShade(shade)
-
-            <div key={shade.id} className=" flex flex-col gap-2">
-              <DropdownMenu
-                items={[("Add Column Before", onAdd)]
-                ->Array.concat(isLastColumn ? [("Add Column After", _ => newEndShade())] : [])
-                ->Array.concat([("Delete Column", onDelete)])}
-              />
-              <input
-                type_="text"
-                onChange={e => {
-                  let value = (e->ReactEvent.Form.target)["value"]
-                  setShades(cur =>
-                    cur->Array.map(
-                      v =>
-                        v.id == shade.id
-                          ? {
-                              ...v,
-                              name: value,
-                            }
-                          : v,
-                    )
-                  )
-                }}
-                value={shade.name}
-                className="w-10 h-5"
-              />
-            </div>
-          })
-          ->React.array}
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridRow: "2 / -1",
-            gridColumn: "2 / -1",
-            gridTemplateColumns: "subgrid",
-            gridTemplateRows: "subgrid",
-          }}>
-          {picks
-          ->Array.map(hue => {
-            hue.elements->Array.map(element => {
-              let hex =
-                Texel.convert(
-                  (hue.value, element.saturation, element.lightness),
-                  Texel.okhsl,
-                  Texel.srgb,
-                )->Texel.rgbToHex
-              <div
-                key={element.id}
-                className="w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center cursor-pointer"
-                style={{
-                  backgroundColor: hex,
-                }}
-                onClick={_ => {
-                  setSelectedElement(_ => Some(element.id))
-                  setSelectedHue(_ => Some(element.hueId))
-                }}>
-                {selectedElement->Option.mapOr(false, e => e == element.id)
-                  ? {"•"->React.string}
-                  : React.null}
-              </div>
             })
-          })
-          ->Belt.Array.concatMany
-          ->React.array}
+            ->React.array}
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridRow: "2 / -1",
+              gridColumn: "2 / -1",
+              gridTemplateColumns: "subgrid",
+              gridTemplateRows: "subgrid",
+            }}>
+            {picks
+            ->Array.map(hue => {
+              hue.elements->Array.map(element => {
+                let hex =
+                  Texel.convert(
+                    (hue.value, element.saturation, element.lightness),
+                    Texel.okhsl,
+                    Texel.srgb,
+                  )->Texel.rgbToHex
+                <div
+                  key={element.id}
+                  className="w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center cursor-pointer"
+                  style={{
+                    backgroundColor: hex,
+                  }}
+                  onClick={_ => {
+                    setSelectedElement(_ => Some(element.id))
+                    setSelectedHue(_ => Some(element.hueId))
+                  }}>
+                  {selectedElement->Option.mapOr(false, e => e == element.id)
+                    ? {"•"->React.string}
+                    : React.null}
+                </div>
+              })
+            })
+            ->Belt.Array.concatMany
+            ->React.array}
+          </div>
         </div>
       </div>
     </div>
