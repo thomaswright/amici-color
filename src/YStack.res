@@ -1,12 +1,12 @@
 open Common
 open Types
 
-let ySize = 300
+let size = 300
 @react.component
-let make = (~hues: array<hue>, ~selectedElement) => {
+let make = (~hues: array<hue>, ~selectedElement, ~view: view) => {
   <div
     className="flex flex-row gap-1 border-black border"
-    style={{height: ySize->Int.toString ++ "px"}}>
+    style={{height: size->Int.toString ++ "px"}}>
     {hues
     ->Array.map(hue =>
       <div className="relative w-5">
@@ -19,16 +19,24 @@ let make = (~hues: array<hue>, ~selectedElement) => {
               Texel.srgb,
             )->Texel.rgbToHex
 
-          let (_, chroma, _) = Texel.convert(
-            (hue.value, e.saturation, e.lightness),
-            Texel.okhsl,
-            Texel.oklch,
-          )
+          let percentage = switch view {
+          | View_LC => {
+              let (_, chroma, _) = Texel.convert(
+                (hue.value, e.saturation, e.lightness),
+                Texel.okhsl,
+                Texel.oklch,
+              )
+              chroma /. chromaBound
+            }
+          | View_SV => e.saturation
+          | View_SL => e.saturation
+          }
+
           <div
             className="absolute w-5 h-5 border border-black flex flex-col items-center justify-center"
             style={{
               backgroundColor: hex,
-              bottom: (chroma /. chromaBound *. ySize->Int.toFloat)
+              bottom: (percentage *. size->Int.toFloat)
               ->Float.toInt
               ->Int.toString ++ "px",
             }}>

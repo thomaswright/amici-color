@@ -40,6 +40,10 @@ module Types = {
     name: string,
     elements: array<element>,
   }
+
+  type adjustmentMode = | @as("HSL_L") HSL_L | @as("LCH_L") LCH_L
+
+  type view = View_LC | View_SV | View_SL
 }
 
 let hueToName = hue => {

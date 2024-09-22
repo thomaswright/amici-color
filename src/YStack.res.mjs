@@ -5,7 +5,8 @@ import * as Color from "@texel/color";
 import * as Core__Option from "@rescript/core/src/Core__Option.res.mjs";
 import * as JsxRuntime from "react/jsx-runtime";
 
-function ChromaStack(props) {
+function YStack(props) {
+  var view = props.view;
   var selectedElement = props.selectedElement;
   return JsxRuntime.jsx("div", {
               children: props.hues.map(function (hue) {
@@ -16,11 +17,22 @@ function ChromaStack(props) {
                                                 e.saturation,
                                                 e.lightness
                                               ], Color.OKHSL, Color.sRGB));
-                                      var match = Color.convert([
-                                            hue.value,
-                                            e.saturation,
-                                            e.lightness
-                                          ], Color.OKHSL, Color.OKLCH);
+                                      var percentage;
+                                      switch (view) {
+                                        case "View_LC" :
+                                            var match = Color.convert([
+                                                  hue.value,
+                                                  e.saturation,
+                                                  e.lightness
+                                                ], Color.OKHSL, Color.OKLCH);
+                                            percentage = match[1] / Common.chromaBound;
+                                            break;
+                                        case "View_SV" :
+                                        case "View_SL" :
+                                            percentage = e.saturation;
+                                            break;
+                                        
+                                      }
                                       return JsxRuntime.jsx("div", {
                                                   children: Core__Option.mapOr(selectedElement, false, (function (x) {
                                                           return x === e.id;
@@ -28,7 +40,7 @@ function ChromaStack(props) {
                                                   className: "absolute w-5 h-5 border border-black flex flex-col items-center justify-center",
                                                   style: {
                                                     backgroundColor: hex,
-                                                    bottom: (match[1] / Common.chromaBound * 300 | 0).toString() + "px"
+                                                    bottom: (percentage * 300 | 0).toString() + "px"
                                                   }
                                                 });
                                     }),
@@ -42,12 +54,12 @@ function ChromaStack(props) {
             });
 }
 
-var ySize = 300;
+var size = 300;
 
-var make = ChromaStack;
+var make = YStack;
 
 export {
-  ySize ,
+  size ,
   make ,
 }
 /* @texel/color Not a pure module */

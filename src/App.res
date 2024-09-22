@@ -46,12 +46,17 @@ let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
   })
 }
 
-type adjustmentMode = | @as("HSL_L") HSL_L | @as("LCH_L") LCH_L
-
 let modeName = mode =>
   switch mode {
   | HSL_L => "OKHSL - L"
   | LCH_L => "OKLCH - L"
+  }
+
+let viewName = view =>
+  switch view {
+  | View_LC => "View - LC"
+  | View_SV => "View - SV"
+  | View_SL => "View - SL"
   }
 
 module Palette = {
@@ -64,7 +69,8 @@ module Palette = {
 
   @react.component
   let make = () => {
-    let (selectedMode, setSelectedMode) = React.useState(() => HSL_L)
+    let (view, setView) = React.useState(() => View_LC)
+    let (selectedMode, setSelectedMode) = React.useState(() => LCH_L)
     let (picks_, setPicks) = React.useState(() => defaultPicks)
     let (shades, setShades) = React.useState(() => defaultShades)
     let (selectedHue, setSelectedHue) = React.useState(() => None)
@@ -371,9 +377,9 @@ module Palette = {
       <div className="flex flex-col gap-2 py-2">
         <div className="flex flex-row gap-2">
           <LchHGamut hues={picks} selectedHue selectedElement />
-          <ChromaStack hues={picks} selectedElement />
+          <YStack view={view} hues={picks} selectedElement />
         </div>
-        <LightnessStack hues={picks} selectedElement />
+        <XStack view={view} hues={picks} selectedElement />
         // <div className="flex flex-row gap-2 ">
         //   <HslSGamut hues={picks} selectedHue selectedElement />
         //   <HueLine hues={picks} selected={selectedHue} />
@@ -390,6 +396,21 @@ module Palette = {
             ]->Array.join(" ")}
             onClick={_ => setSelectedMode(_ => mode)}>
             {mode->modeName->React.string}
+          </button>
+        })
+        ->React.array}
+      </div>
+      <div className="flex flex-row gap-2">
+        {[View_LC, View_SL, View_SV]
+        ->Array.map(v => {
+          let isSelected = view == v
+          <button
+            className={[
+              "px-2 rounded",
+              isSelected ? "bg-blue-600 text-white" : "bg-blue-200",
+            ]->Array.join(" ")}
+            onClick={_ => setView(_ => v)}>
+            {v->viewName->React.string}
           </button>
         })
         ->React.array}

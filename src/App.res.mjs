@@ -3,14 +3,14 @@
 import * as Ulid from "ulid";
 import * as React from "react";
 import * as Common from "./Common.res.mjs";
+import * as XStack from "./XStack.res.mjs";
+import * as YStack from "./YStack.res.mjs";
 import * as LchHGamut from "./LchHGamut.res.mjs";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
-import * as ChromaStack from "./ChromaStack.res.mjs";
 import * as Core__Array from "@rescript/core/src/Core__Array.res.mjs";
 import * as Color from "@texel/color";
 import * as Core__Option from "@rescript/core/src/Core__Option.res.mjs";
 import DropdownJsx from "./Dropdown.jsx";
-import * as LightnessStack from "./LightnessStack.res.mjs";
 import * as JsxRuntime from "react/jsx-runtime";
 import AmiciPrismSvgreact from "./assets/amici-prism.svg?react";
 
@@ -55,6 +55,18 @@ function modeName(mode) {
   }
 }
 
+function viewName(view) {
+  switch (view) {
+    case "View_LC" :
+        return "View - LC";
+    case "View_SV" :
+        return "View - SV";
+    case "View_SL" :
+        return "View - SL";
+    
+  }
+}
+
 var defaultShades = Common.Utils.mapRange(5, (function (i) {
         return {
                 id: Ulid.ulid(),
@@ -66,29 +78,34 @@ var defaultPicks = makeDefaultPicks(5, defaultShades);
 
 function App$Palette(props) {
   var match = React.useState(function () {
-        return "HSL_L";
+        return "View_LC";
       });
-  var setSelectedMode = match[1];
-  var selectedMode = match[0];
+  var setView = match[1];
+  var view = match[0];
   var match$1 = React.useState(function () {
+        return "LCH_L";
+      });
+  var setSelectedMode = match$1[1];
+  var selectedMode = match$1[0];
+  var match$2 = React.useState(function () {
         return defaultPicks;
       });
-  var setPicks = match$1[1];
-  var match$2 = React.useState(function () {
+  var setPicks = match$2[1];
+  var match$3 = React.useState(function () {
         return defaultShades;
       });
-  var setShades = match$2[1];
-  var shades = match$2[0];
-  var match$3 = React.useState(function () {
-        
-      });
-  var setSelectedHue = match$3[1];
-  var selectedHue = match$3[0];
+  var setShades = match$3[1];
+  var shades = match$3[0];
   var match$4 = React.useState(function () {
         
       });
-  var setSelectedElement = match$4[1];
-  var selectedElement = match$4[0];
+  var setSelectedHue = match$4[1];
+  var selectedHue = match$4[0];
+  var match$5 = React.useState(function () {
+        
+      });
+  var setSelectedElement = match$5[1];
+  var selectedElement = match$5[0];
   var handleKeydown = React.useCallback((function ($$event) {
           var updateElement = function (f) {
             Core__Option.mapOr(selectedElement, undefined, (function (e) {
@@ -300,7 +317,7 @@ function App$Palette(props) {
         selectedElement,
         selectedMode
       ]);
-  var picks = match$1[0].toSorted(function (a, b) {
+  var picks = match$2[0].toSorted(function (a, b) {
         return a.value - b.value;
       });
   var hueLen = picks.length;
@@ -397,16 +414,18 @@ function App$Palette(props) {
                                       selectedHue: selectedHue,
                                       selectedElement: selectedElement
                                     }),
-                                JsxRuntime.jsx(ChromaStack.make, {
+                                JsxRuntime.jsx(YStack.make, {
                                       hues: picks,
-                                      selectedElement: selectedElement
+                                      selectedElement: selectedElement,
+                                      view: view
                                     })
                               ],
                               className: "flex flex-row gap-2"
                             }),
-                        JsxRuntime.jsx(LightnessStack.make, {
+                        JsxRuntime.jsx(XStack.make, {
                               hues: picks,
-                              selectedElement: selectedElement
+                              selectedElement: selectedElement,
+                              view: view
                             })
                       ],
                       className: "flex flex-col gap-2 py-2"
@@ -426,6 +445,28 @@ function App$Palette(props) {
                                         onClick: (function (param) {
                                             setSelectedMode(function (param) {
                                                   return mode;
+                                                });
+                                          })
+                                      });
+                          }),
+                      className: "flex flex-row gap-2"
+                    }),
+                JsxRuntime.jsx("div", {
+                      children: [
+                          "View_LC",
+                          "View_SL",
+                          "View_SV"
+                        ].map(function (v) {
+                            var isSelected = view === v;
+                            return JsxRuntime.jsx("button", {
+                                        children: viewName(v),
+                                        className: [
+                                            "px-2 rounded",
+                                            isSelected ? "bg-blue-600 text-white" : "bg-blue-200"
+                                          ].join(" "),
+                                        onClick: (function (param) {
+                                            setView(function (param) {
+                                                  return v;
                                                 });
                                           })
                                       });
