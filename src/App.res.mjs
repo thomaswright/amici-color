@@ -104,63 +104,72 @@ function hueToName(hue) {
 
 var make$1 = DropdownJsx;
 
-function updateHueLineCanvas(canvas, ctx) {
-  var yMax = canvas.height;
-  for(var y = 0; y <= yMax; ++y){
-    var rgb = Color.convert([
-          y / yMax * 360,
-          1.0,
-          1.0
-        ], Color.OKHSV, Color.sRGB);
-    ctx.fillStyle = Color.RGBToHex(rgb);
-    ctx.fillRect(0, y, yMax, 1);
-  }
+function App$LightnessStack(props) {
+  var selectedElement = props.selectedElement;
+  return JsxRuntime.jsx("div", {
+              children: props.hues.map(function (hue) {
+                    return JsxRuntime.jsx("div", {
+                                children: hue.elements.map(function (e) {
+                                      var hex = Color.RGBToHex(Color.convert([
+                                                hue.value,
+                                                e.saturation,
+                                                e.lightness
+                                              ], Color.OKHSL, Color.sRGB));
+                                      return JsxRuntime.jsx("div", {
+                                                  children: Core__Option.mapOr(selectedElement, false, (function (x) {
+                                                          return x === e.id;
+                                                        })) ? "•" : null,
+                                                  className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center",
+                                                  style: {
+                                                    backgroundColor: hex,
+                                                    left: (e.lightness * 300 | 0).toString() + "px"
+                                                  }
+                                                });
+                                    }),
+                                className: "relative h-5"
+                              });
+                  }),
+              className: "flex flex-col gap-1 border-black border",
+              style: {
+                width: (300).toString() + "px"
+              }
+            });
 }
 
-var xSizeScaled = 20 * window.devicePixelRatio | 0;
-
-var ySizeScaled = 300 * window.devicePixelRatio | 0;
-
-function App$HueLine(props) {
-  var selected = props.selected;
-  var canvasRef = React.useRef(null);
-  React.useEffect((function () {
-          var canvasDom = canvasRef.current;
-          if (canvasDom === null || canvasDom === undefined) {
-            canvasDom === null;
-          } else {
-            var context = canvasDom.getContext("2d");
-            context.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
-            canvasDom.width = xSizeScaled;
-            canvasDom.height = ySizeScaled;
-            updateHueLineCanvas(canvasDom, context);
-          }
-        }), [canvasRef.current]);
-  return JsxRuntime.jsxs("div", {
-              children: [
-                props.hues.map(function (hue) {
-                      return JsxRuntime.jsx("div", {
-                                  className: [
-                                      "w-3 h-3 absolute border-black rounded-full",
-                                      Core__Option.mapOr(selected, false, (function (s) {
-                                              return s === hue.id;
-                                            })) ? "border-4" : "border "
-                                    ].join(" "),
-                                  style: {
-                                    left: "0.25rem",
-                                    top: (hue.value / 360 * 300 | 0).toString() + "px"
-                                  }
-                                });
-                    }),
-                JsxRuntime.jsx("canvas", {
-                      ref: Caml_option.some(canvasRef),
-                      style: {
-                        height: (300).toString() + "px",
-                        width: (20).toString() + "px"
-                      }
-                    })
-              ],
-              className: "w-fit relative h-full rounded-sm overflow-hidden"
+function App$ChromaStack(props) {
+  var selectedElement = props.selectedElement;
+  return JsxRuntime.jsx("div", {
+              children: props.hues.map(function (hue) {
+                    return JsxRuntime.jsx("div", {
+                                children: hue.elements.map(function (e) {
+                                      var hex = Color.RGBToHex(Color.convert([
+                                                hue.value,
+                                                e.saturation,
+                                                e.lightness
+                                              ], Color.OKHSL, Color.sRGB));
+                                      var match = Color.convert([
+                                            hue.value,
+                                            e.saturation,
+                                            e.lightness
+                                          ], Color.OKHSL, Color.OKLCH);
+                                      return JsxRuntime.jsx("div", {
+                                                  children: Core__Option.mapOr(selectedElement, false, (function (x) {
+                                                          return x === e.id;
+                                                        })) ? "•" : null,
+                                                  className: "absolute w-5 h-5 border border-black flex flex-col items-center justify-center",
+                                                  style: {
+                                                    backgroundColor: hex,
+                                                    bottom: (match[1] / 0.36 * 300 | 0).toString() + "px"
+                                                  }
+                                                });
+                                    }),
+                                className: "relative w-5"
+                              });
+                  }),
+              className: "flex flex-row gap-1 border-black border",
+              style: {
+                height: (300).toString() + "px"
+              }
             });
 }
 
@@ -185,9 +194,9 @@ function updateLchHGamutCanvas(canvas, ctx, hue) {
   }
 }
 
-var xSizeScaled$1 = 300 * window.devicePixelRatio | 0;
+var xSizeScaled = 300 * window.devicePixelRatio | 0;
 
-var ySizeScaled$1 = 300 * window.devicePixelRatio | 0;
+var ySizeScaled = 300 * window.devicePixelRatio | 0;
 
 function App$LchHGamut(props) {
   var selectedElement = props.selectedElement;
@@ -207,11 +216,11 @@ function App$LchHGamut(props) {
             var context = canvasDom.getContext("2d");
             if (hueObj !== undefined) {
               context.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
-              canvasDom.width = xSizeScaled$1;
-              canvasDom.height = ySizeScaled$1;
+              canvasDom.width = xSizeScaled;
+              canvasDom.height = ySizeScaled;
               updateLchHGamutCanvas(canvasDom, context, hueObj.value);
             } else {
-              context.clearRect(0, 0, xSizeScaled$1, ySizeScaled$1);
+              context.clearRect(0, 0, xSizeScaled, ySizeScaled);
             }
           }
         }), [
@@ -259,96 +268,6 @@ function App$LchHGamut(props) {
                     })
               ],
               className: "w-fit relative bg-black rounded-sm"
-            });
-}
-
-function updateHslSGamutCanvas(canvas, ctx) {
-  var xMax = canvas.width;
-  var yMax = canvas.height;
-  for(var x = 0; x <= xMax; ++x){
-    for(var y = 0; y <= yMax; ++y){
-      var h = y / yMax * 360;
-      var l = x / xMax;
-      var rgb = Color.convert([
-            h,
-            0.0,
-            l
-          ], Color.OKHSL, Color.sRGB);
-      ctx.fillStyle = Color.RGBToHex(rgb);
-      ctx.fillRect(x, y, 1, 1);
-    }
-  }
-}
-
-var xSizeScaled$2 = 300 * window.devicePixelRatio | 0;
-
-var ySizeScaled$2 = 300 * window.devicePixelRatio | 0;
-
-function App$HslSGamut(props) {
-  var selectedElement = props.selectedElement;
-  var selectedHue = props.selectedHue;
-  var hues = props.hues;
-  var canvasRef = React.useRef(null);
-  var hueObj = Core__Option.flatMap(selectedHue, (function (s) {
-          return hues.find(function (v) {
-                      return v.id === s;
-                    });
-        }));
-  React.useEffect((function () {
-          var canvasDom = canvasRef.current;
-          if (canvasDom === null || canvasDom === undefined) {
-            canvasDom === null;
-          } else {
-            var context = canvasDom.getContext("2d");
-            if (hueObj !== undefined) {
-              context.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
-              canvasDom.width = xSizeScaled$2;
-              canvasDom.height = ySizeScaled$2;
-              updateHslSGamutCanvas(canvasDom, context);
-            } else {
-              context.clearRect(0, 0, 300, 300);
-            }
-          }
-        }), [
-        canvasRef.current,
-        selectedHue,
-        Core__Option.flatMap(selectedHue, (function (selectedHue_) {
-                return hues.find(function (hue) {
-                            return hue.id === selectedHue_;
-                          });
-              }))
-      ]);
-  return JsxRuntime.jsxs("div", {
-              children: [
-                Core__Option.isNone(selectedHue) ? null : Belt_Array.concatMany(hues.map(function (hue) {
-                            return hue.elements.map(function (e) {
-                                        var hex = Color.RGBToHex(Color.convert([
-                                                  hue.value,
-                                                  e.saturation,
-                                                  e.lightness
-                                                ], Color.OKHSL, Color.sRGB));
-                                        return JsxRuntime.jsx("div", {
-                                                    children: Core__Option.mapOr(selectedElement, false, (function (x) {
-                                                            return x === e.id;
-                                                          })) ? "•" : null,
-                                                    className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center",
-                                                    style: {
-                                                      backgroundColor: hex,
-                                                      left: (e.lightness * 300 | 0).toString() + "px",
-                                                      top: (hue.value / 360 * 300 | 0).toString() + "px"
-                                                    }
-                                                  });
-                                      });
-                          })),
-                JsxRuntime.jsx("canvas", {
-                      ref: Caml_option.some(canvasRef),
-                      style: {
-                        height: (300).toString() + "px",
-                        width: (300).toString() + "px"
-                      }
-                    })
-              ],
-              className: "w-fit relative border border-black rounded-sm"
             });
 }
 
@@ -724,22 +643,26 @@ function App$Palette(props) {
                     }),
                 JsxRuntime.jsxs("div", {
                       children: [
-                        JsxRuntime.jsx(App$LchHGamut, {
-                              hues: picks,
-                              selectedHue: selectedHue,
-                              selectedElement: selectedElement
+                        JsxRuntime.jsxs("div", {
+                              children: [
+                                JsxRuntime.jsx(App$LchHGamut, {
+                                      hues: picks,
+                                      selectedHue: selectedHue,
+                                      selectedElement: selectedElement
+                                    }),
+                                JsxRuntime.jsx(App$ChromaStack, {
+                                      hues: picks,
+                                      selectedElement: selectedElement
+                                    })
+                              ],
+                              className: "flex flex-row gap-2"
                             }),
-                        JsxRuntime.jsx(App$HslSGamut, {
+                        JsxRuntime.jsx(App$LightnessStack, {
                               hues: picks,
-                              selectedHue: selectedHue,
                               selectedElement: selectedElement
-                            }),
-                        JsxRuntime.jsx(App$HueLine, {
-                              hues: picks,
-                              selected: selectedHue
                             })
                       ],
-                      className: "flex flex-row gap-2 py-2"
+                      className: "flex flex-col gap-2 py-2"
                     }),
                 JsxRuntime.jsx("div", {
                       children: [

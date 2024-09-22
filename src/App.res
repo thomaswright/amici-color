@@ -132,6 +132,8 @@ module Canvas = {
   @send external scale: (context, float, float) => unit = "scale"
 }
 
+let chromaBound = 0.36
+
 module NameInspection = {
   @react.component
   let make = () => {
@@ -150,6 +152,89 @@ module NameInspection = {
           {hue->hueToName->React.string}
         </div>
       })->React.array}
+    </div>
+  }
+}
+
+module LightnessStack = {
+  let ySize = 300
+  @react.component
+  let make = (~hues: array<hue>, ~selectedElement) => {
+    <div
+      className="flex flex-col gap-1 border-black border"
+      style={{width: ySize->Int.toString ++ "px"}}>
+      {hues
+      ->Array.map(hue =>
+        <div className="relative h-5">
+          {hue.elements
+          ->Array.map(e => {
+            let hex =
+              Texel.convert(
+                (hue.value, e.saturation, e.lightness),
+                Texel.okhsl,
+                Texel.srgb,
+              )->Texel.rgbToHex
+
+            <div
+              className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center"
+              style={{
+                backgroundColor: hex,
+                left: (e.lightness *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+              }}>
+              {selectedElement->Option.mapOr(false, x => x == e.id)
+                ? {"•"->React.string}
+                : React.null}
+            </div>
+          })
+          ->React.array}
+        </div>
+      )
+      ->React.array}
+    </div>
+  }
+}
+
+module ChromaStack = {
+  let ySize = 300
+  @react.component
+  let make = (~hues: array<hue>, ~selectedElement) => {
+    <div
+      className="flex flex-row gap-1 border-black border"
+      style={{height: ySize->Int.toString ++ "px"}}>
+      {hues
+      ->Array.map(hue =>
+        <div className="relative w-5">
+          {hue.elements
+          ->Array.map(e => {
+            let hex =
+              Texel.convert(
+                (hue.value, e.saturation, e.lightness),
+                Texel.okhsl,
+                Texel.srgb,
+              )->Texel.rgbToHex
+
+            let (_, chroma, _) = Texel.convert(
+              (hue.value, e.saturation, e.lightness),
+              Texel.okhsl,
+              Texel.oklch,
+            )
+            <div
+              className="absolute w-5 h-5 border border-black flex flex-col items-center justify-center"
+              style={{
+                backgroundColor: hex,
+                bottom: (chroma /. chromaBound *. ySize->Int.toFloat)
+                ->Float.toInt
+                ->Int.toString ++ "px",
+              }}>
+              {selectedElement->Option.mapOr(false, x => x == e.id)
+                ? {"•"->React.string}
+                : React.null}
+            </div>
+          })
+          ->React.array}
+        </div>
+      )
+      ->React.array}
     </div>
   }
 }
@@ -228,8 +313,6 @@ module HueLine = {
     </div>
   }
 }
-
-let chromaBound = 0.36
 
 let updateLchHGamutCanvas = (canvas, ctx, hue) => {
   let xMax = canvas->Canvas.getWidth
@@ -797,10 +880,16 @@ module Palette = {
         </div>
         {"Amici Color"->React.string}
       </div>
-      <div className="flex flex-row gap-2 py-2">
-        <LchHGamut hues={picks} selectedHue selectedElement />
-        <HslSGamut hues={picks} selectedHue selectedElement />
-        <HueLine hues={picks} selected={selectedHue} />
+      <div className="flex flex-col gap-2 py-2">
+        <div className="flex flex-row gap-2">
+          <LchHGamut hues={picks} selectedHue selectedElement />
+          <ChromaStack hues={picks} selectedElement />
+        </div>
+        <LightnessStack hues={picks} selectedElement />
+        // <div className="flex flex-row gap-2 ">
+        //   <HslSGamut hues={picks} selectedHue selectedElement />
+        //   <HueLine hues={picks} selected={selectedHue} />
+        // </div>
       </div>
       <div className="flex flex-row gap-2">
         {[HSL_L, LCH_L]
