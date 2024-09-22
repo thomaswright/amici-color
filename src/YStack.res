@@ -4,7 +4,7 @@ open Types
 let size = 300
 @react.component
 let make = (~hues: array<hue>, ~selectedElement, ~view: view) => {
-  <div className="p-3 bg-black pl-0">
+  <div className="p-3 bg-black pl-0 flex flex-row">
     <div
       className="flex flex-row gap-1 px-1 bg-white rounded"
       style={{height: size->Int.toString ++ "px"}}>
@@ -58,6 +58,13 @@ let make = (~hues: array<hue>, ~selectedElement, ~view: view) => {
         </div>
       )
       ->React.array}
+    </div>
+    <div className="text-white w-3 font-medium text-center" style={{writingMode: "vertical-lr"}}>
+      {switch view {
+      | View_LC => "chroma"
+      | View_SL => "saturation"
+      | View_SV => "saturation"
+      }->React.string}
     </div>
   </div>
 }

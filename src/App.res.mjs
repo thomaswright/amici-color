@@ -50,11 +50,11 @@ function makeDefaultPicks(xLen, defaultShades) {
 function viewName(view) {
   switch (view) {
     case "View_LC" :
-        return "View - LC";
+        return "oklch";
     case "View_SV" :
-        return "View - SV";
+        return "okhsv";
     case "View_SL" :
-        return "View - SL";
+        return "okhsl";
     
   }
 }

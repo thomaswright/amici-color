@@ -50,5 +50,12 @@ let make = (~hues: array<hue>, ~selectedElement, ~view: view) => {
       )
       ->React.array}
     </div>
+    <div className="text-white h-4 font-medium text-center">
+      {switch view {
+      | View_LC => "lightness"
+      | View_SL => "lightness"
+      | View_SV => "value"
+      }->React.string}
+    </div>
   </div>
 }

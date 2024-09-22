@@ -54,9 +54,9 @@ let modeName = mode =>
 
 let viewName = view =>
   switch view {
-  | View_LC => "View - LC"
-  | View_SV => "View - SV"
-  | View_SL => "View - SL"
+  | View_LC => "oklch"
+  | View_SV => "okhsv"
+  | View_SL => "okhsl"
   }
 
 module Palette = {
