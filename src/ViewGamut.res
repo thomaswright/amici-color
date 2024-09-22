@@ -34,6 +34,54 @@ let ySize = 300
 let xSizeScaled = (xSize->Int.toFloat *. devicePixelRatio)->Float.toInt
 let ySizeScaled = (ySize->Int.toFloat *. devicePixelRatio)->Float.toInt
 
+module CanvasComp = {
+  @react.component
+  let make = (~hueObj, ~view) => {
+    Console.log("Render Canvas")
+    let canvasRef = React.useRef(Nullable.null)
+
+    // Todo: update on hues change
+    React.useEffect3(() => {
+      switch canvasRef.current {
+      | Value(canvasDom) =>
+        let canvas = canvasDom->Obj.magic
+        let context = canvas->Canvas.getContext("2d")
+
+        switch hueObj {
+        | Some(selectedHue) =>
+          context->Canvas.scale(1. /. devicePixelRatio, 1. /. devicePixelRatio)
+          canvas->Canvas.setWidth(xSizeScaled)
+          canvas->Canvas.setHeight(ySizeScaled)
+
+          updateCanvas(canvas, context, selectedHue.value, view)
+
+        | None => context->Canvas.clearRect(~x=0, ~y=0, ~w=xSizeScaled, ~h=ySizeScaled)
+        }
+      | Null | Undefined => ()
+      }
+
+      None
+    }, (view, canvasRef.current, hueObj->Option.mapOr(0., v => v.value)))
+
+    <canvas
+      style={{
+        width: xSize->Int.toString ++ "px",
+        height: ySize->Int.toString ++ "px",
+      }}
+      ref={ReactDOM.Ref.domRef(canvasRef)}
+    />
+  }
+
+  let make = React.memoCustomCompareProps(make, (a, b) => {
+    a.view == b.view &&
+      switch (a.hueObj, b.hueObj) {
+      | (Some(a_), Some(b_)) => a_.id == b_.id && a_.value == b_.value
+      | (None, None) => true
+      | _ => false
+      }
+  })
+}
+
 @react.component
 let make = (
   ~hues: array<hue>,
@@ -42,34 +90,10 @@ let make = (
   ~view: view,
   ~setSelectedElement,
 ) => {
-  let canvasRef = React.useRef(Nullable.null)
   let hueObj = selectedHue->Option.flatMap(s => hues->Array.find(v => v.id == s))
 
-  let selectedHueUnwrapped =
-    selectedHue->Option.flatMap(selectedHue_ => hues->Array.find(hue => hue.id == selectedHue_))
-  // Todo: update on hues change
-  React.useEffect3(() => {
-    switch canvasRef.current {
-    | Value(canvasDom) =>
-      let canvas = canvasDom->Obj.magic
-      let context = canvas->Canvas.getContext("2d")
-
-      switch hueObj {
-      | Some(selectedHue) =>
-        context->Canvas.scale(1. /. devicePixelRatio, 1. /. devicePixelRatio)
-        canvas->Canvas.setWidth(xSizeScaled)
-        canvas->Canvas.setHeight(ySizeScaled)
-
-        updateCanvas(canvas, context, selectedHue.value, view)
-
-      | None => context->Canvas.clearRect(~x=0, ~y=0, ~w=xSizeScaled, ~h=ySizeScaled)
-      }
-    | Null | Undefined => ()
-    }
-
-    None
-  }, (view, canvasRef.current, selectedHueUnwrapped))
   <div className="p-3 bg-black">
+    <CanvasComp hueObj view />
     <div className="w-fit relative bg-black rounded-sm">
       {hueObj->Option.mapOr(React.null, hue => {
         hue.elements
@@ -109,13 +133,6 @@ let make = (
         })
         ->React.array
       })}
-      <canvas
-        style={{
-          width: xSize->Int.toString ++ "px",
-          height: ySize->Int.toString ++ "px",
-        }}
-        ref={ReactDOM.Ref.domRef(canvasRef)}
-      />
     </div>
   </div>
 }

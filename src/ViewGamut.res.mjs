@@ -52,23 +52,11 @@ var xSizeScaled = 300 * window.devicePixelRatio | 0;
 
 var ySizeScaled = 300 * window.devicePixelRatio | 0;
 
-function ViewGamut(props) {
-  var setSelectedElement = props.setSelectedElement;
+function ViewGamut$CanvasComp(props) {
   var view = props.view;
-  var selectedElement = props.selectedElement;
-  var selectedHue = props.selectedHue;
-  var hues = props.hues;
+  var hueObj = props.hueObj;
+  console.log("Render Canvas");
   var canvasRef = React.useRef(null);
-  var hueObj = Core__Option.flatMap(selectedHue, (function (s) {
-          return hues.find(function (v) {
-                      return v.id === s;
-                    });
-        }));
-  var selectedHueUnwrapped = Core__Option.flatMap(selectedHue, (function (selectedHue_) {
-          return hues.find(function (hue) {
-                      return hue.id === selectedHue_;
-                    });
-        }));
   React.useEffect((function () {
           var canvasDom = canvasRef.current;
           if (canvasDom === null || canvasDom === undefined) {
@@ -87,12 +75,58 @@ function ViewGamut(props) {
         }), [
         view,
         canvasRef.current,
-        selectedHueUnwrapped
+        Core__Option.mapOr(hueObj, 0, (function (v) {
+                return v.value;
+              }))
       ]);
-  return JsxRuntime.jsx("div", {
-              children: JsxRuntime.jsxs("div", {
-                    children: [
-                      Core__Option.mapOr(hueObj, null, (function (hue) {
+  return JsxRuntime.jsx("canvas", {
+              ref: Caml_option.some(canvasRef),
+              style: {
+                height: (300).toString() + "px",
+                width: (300).toString() + "px"
+              }
+            });
+}
+
+var make = React.memo(ViewGamut$CanvasComp, (function (a, b) {
+        if (a.view !== b.view) {
+          return false;
+        }
+        var match = a.hueObj;
+        var match$1 = b.hueObj;
+        if (match !== undefined) {
+          if (match$1 !== undefined && match.id === match$1.id) {
+            return match.value === match$1.value;
+          } else {
+            return false;
+          }
+        } else {
+          return match$1 === undefined;
+        }
+      }));
+
+var CanvasComp = {
+  make: make
+};
+
+function ViewGamut(props) {
+  var setSelectedElement = props.setSelectedElement;
+  var view = props.view;
+  var selectedElement = props.selectedElement;
+  var hues = props.hues;
+  var hueObj = Core__Option.flatMap(props.selectedHue, (function (s) {
+          return hues.find(function (v) {
+                      return v.id === s;
+                    });
+        }));
+  return JsxRuntime.jsxs("div", {
+              children: [
+                JsxRuntime.jsx(make, {
+                      hueObj: hueObj,
+                      view: view
+                    }),
+                JsxRuntime.jsx("div", {
+                      children: Core__Option.mapOr(hueObj, null, (function (hue) {
                               return hue.elements.map(function (e) {
                                           var hsl_0 = hue.value;
                                           var hsl_1 = e.saturation;
@@ -150,16 +184,9 @@ function ViewGamut(props) {
                                                     });
                                         });
                             })),
-                      JsxRuntime.jsx("canvas", {
-                            ref: Caml_option.some(canvasRef),
-                            style: {
-                              height: (300).toString() + "px",
-                              width: (300).toString() + "px"
-                            }
-                          })
-                    ],
-                    className: "w-fit relative bg-black rounded-sm"
-                  }),
+                      className: "w-fit relative bg-black rounded-sm"
+                    })
+              ],
               className: "p-3 bg-black"
             });
 }
@@ -168,7 +195,7 @@ var xSize = 300;
 
 var ySize = 300;
 
-var make = ViewGamut;
+var make$1 = ViewGamut;
 
 export {
   updateCanvas ,
@@ -176,6 +203,7 @@ export {
   ySize ,
   xSizeScaled ,
   ySizeScaled ,
-  make ,
+  CanvasComp ,
+  make$1 as make,
 }
 /* xSizeScaled Not a pure module */
