@@ -2,278 +2,25 @@
 
 import * as Ulid from "ulid";
 import * as React from "react";
+import * as Common from "./Common.res.mjs";
+import * as LchHGamut from "./LchHGamut.res.mjs";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
-import * as OtherJsx from "./other.jsx";
-import * as Caml_option from "rescript/lib/es6/caml_option.js";
+import * as ChromaStack from "./ChromaStack.res.mjs";
 import * as Core__Array from "@rescript/core/src/Core__Array.res.mjs";
 import * as Color from "@texel/color";
 import * as Core__Option from "@rescript/core/src/Core__Option.res.mjs";
 import DropdownJsx from "./Dropdown.jsx";
+import * as LightnessStack from "./LightnessStack.res.mjs";
 import * as JsxRuntime from "react/jsx-runtime";
 import AmiciPrismSvgreact from "./assets/amici-prism.svg?react";
 
-function mapRange(n, f) {
-  return Core__Array.make(n, 0).map(function (param, i) {
-              return f(i);
-            });
-}
-
-function bound(left, right, v) {
-  return Math.max(left, Math.min(right, v));
-}
-
 var make = AmiciPrismSvgreact;
-
-function hueToName(hue) {
-  if (hue >= 5 && hue < 15) {
-    return "rose";
-  } else if (hue >= 15 && hue < 25) {
-    return "crimson";
-  } else if (hue >= 25 && hue < 35) {
-    return "red";
-  } else if (hue >= 35 && hue < 45) {
-    return "vermillion";
-  } else if (hue >= 45 && hue < 55) {
-    return "persimmon";
-  } else if (hue >= 55 && hue < 65) {
-    return "orange";
-  } else if (hue >= 65 && hue < 75) {
-    return "pumpkin";
-  } else if (hue >= 75 && hue < 85) {
-    return "mango";
-  } else if (hue >= 85 && hue < 95) {
-    return "amber";
-  } else if (hue >= 95 && hue < 105) {
-    return "gold";
-  } else if (hue >= 105 && hue < 115) {
-    return "yellow";
-  } else if (hue >= 115 && hue < 125) {
-    return "citron";
-  } else if (hue >= 125 && hue < 135) {
-    return "pear";
-  } else if (hue >= 135 && hue < 145) {
-    return "chartreuse";
-  } else if (hue >= 145 && hue < 155) {
-    return "lime";
-  } else if (hue >= 155 && hue < 165) {
-    return "green";
-  } else if (hue >= 165 && hue < 175) {
-    return "emerald";
-  } else if (hue >= 175 && hue < 185) {
-    return "mint";
-  } else if (hue >= 185 && hue < 195) {
-    return "sea";
-  } else if (hue >= 195 && hue < 205) {
-    return "teal";
-  } else if (hue >= 205 && hue < 215) {
-    return "cyan";
-  } else if (hue >= 215 && hue < 225) {
-    return "pacific";
-  } else if (hue >= 225 && hue < 235) {
-    return "cerulean";
-  } else if (hue >= 235 && hue < 245) {
-    return "capri";
-  } else if (hue >= 245 && hue < 255) {
-    return "sky";
-  } else if (hue >= 255 && hue < 265) {
-    return "blue";
-  } else if (hue >= 265 && hue < 275) {
-    return "sapphire";
-  } else if (hue >= 275 && hue < 285) {
-    return "indigo";
-  } else if (hue >= 285 && hue < 295) {
-    return "veronica";
-  } else if (hue >= 295 && hue < 305) {
-    return "violet";
-  } else if (hue >= 305 && hue < 315) {
-    return "amethyst";
-  } else if (hue >= 315 && hue < 325) {
-    return "purple";
-  } else if (hue >= 325 && hue < 335) {
-    return "plum";
-  } else if (hue >= 335 && hue < 345) {
-    return "fuchsia";
-  } else if (hue >= 345 && hue < 355) {
-    return "magenta";
-  } else if (hue >= 355 || hue < 5) {
-    return "pink";
-  } else {
-    return "?";
-  }
-}
 
 var make$1 = DropdownJsx;
 
-function App$LightnessStack(props) {
-  var selectedElement = props.selectedElement;
-  return JsxRuntime.jsx("div", {
-              children: props.hues.map(function (hue) {
-                    return JsxRuntime.jsx("div", {
-                                children: hue.elements.map(function (e) {
-                                      var hex = Color.RGBToHex(Color.convert([
-                                                hue.value,
-                                                e.saturation,
-                                                e.lightness
-                                              ], Color.OKHSL, Color.sRGB));
-                                      return JsxRuntime.jsx("div", {
-                                                  children: Core__Option.mapOr(selectedElement, false, (function (x) {
-                                                          return x === e.id;
-                                                        })) ? "•" : null,
-                                                  className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center",
-                                                  style: {
-                                                    backgroundColor: hex,
-                                                    left: (e.lightness * 300 | 0).toString() + "px"
-                                                  }
-                                                });
-                                    }),
-                                className: "relative h-5"
-                              });
-                  }),
-              className: "flex flex-col gap-1 border-black border",
-              style: {
-                width: (300).toString() + "px"
-              }
-            });
-}
-
-function App$ChromaStack(props) {
-  var selectedElement = props.selectedElement;
-  return JsxRuntime.jsx("div", {
-              children: props.hues.map(function (hue) {
-                    return JsxRuntime.jsx("div", {
-                                children: hue.elements.map(function (e) {
-                                      var hex = Color.RGBToHex(Color.convert([
-                                                hue.value,
-                                                e.saturation,
-                                                e.lightness
-                                              ], Color.OKHSL, Color.sRGB));
-                                      var match = Color.convert([
-                                            hue.value,
-                                            e.saturation,
-                                            e.lightness
-                                          ], Color.OKHSL, Color.OKLCH);
-                                      return JsxRuntime.jsx("div", {
-                                                  children: Core__Option.mapOr(selectedElement, false, (function (x) {
-                                                          return x === e.id;
-                                                        })) ? "•" : null,
-                                                  className: "absolute w-5 h-5 border border-black flex flex-col items-center justify-center",
-                                                  style: {
-                                                    backgroundColor: hex,
-                                                    bottom: (match[1] / 0.36 * 300 | 0).toString() + "px"
-                                                  }
-                                                });
-                                    }),
-                                className: "relative w-5"
-                              });
-                  }),
-              className: "flex flex-row gap-1 border-black border",
-              style: {
-                height: (300).toString() + "px"
-              }
-            });
-}
-
-function updateLchHGamutCanvas(canvas, ctx, hue) {
-  var xMax = canvas.width;
-  var yMax = canvas.height;
-  for(var x = 0; x <= xMax; ++x){
-    for(var y = 0; y <= yMax; ++y){
-      var l = x / xMax;
-      var c = y / yMax * 0.36;
-      var rgb = Color.convert([
-            l,
-            c,
-            hue
-          ], Color.OKLCH, Color.sRGB);
-      if (Color.isRGBInGamut(rgb)) {
-        ctx.fillStyle = Color.RGBToHex(rgb);
-        ctx.fillRect(x, yMax - y | 0, 1, 1);
-      }
-      
-    }
-  }
-}
-
-var xSizeScaled = 300 * window.devicePixelRatio | 0;
-
-var ySizeScaled = 300 * window.devicePixelRatio | 0;
-
-function App$LchHGamut(props) {
-  var selectedElement = props.selectedElement;
-  var selectedHue = props.selectedHue;
-  var hues = props.hues;
-  var canvasRef = React.useRef(null);
-  var hueObj = Core__Option.flatMap(selectedHue, (function (s) {
-          return hues.find(function (v) {
-                      return v.id === s;
-                    });
-        }));
-  React.useEffect((function () {
-          var canvasDom = canvasRef.current;
-          if (canvasDom === null || canvasDom === undefined) {
-            canvasDom === null;
-          } else {
-            var context = canvasDom.getContext("2d");
-            if (hueObj !== undefined) {
-              context.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
-              canvasDom.width = xSizeScaled;
-              canvasDom.height = ySizeScaled;
-              updateLchHGamutCanvas(canvasDom, context, hueObj.value);
-            } else {
-              context.clearRect(0, 0, xSizeScaled, ySizeScaled);
-            }
-          }
-        }), [
-        canvasRef.current,
-        selectedHue,
-        Core__Option.flatMap(selectedHue, (function (selectedHue_) {
-                return hues.find(function (hue) {
-                            return hue.id === selectedHue_;
-                          });
-              }))
-      ]);
-  return JsxRuntime.jsxs("div", {
-              children: [
-                Core__Option.mapOr(hueObj, null, (function (hue) {
-                        return hue.elements.map(function (e) {
-                                    var hsl_0 = hue.value;
-                                    var hsl_1 = e.saturation;
-                                    var hsl_2 = e.lightness;
-                                    var hsl = [
-                                      hsl_0,
-                                      hsl_1,
-                                      hsl_2
-                                    ];
-                                    var match = Color.convert(hsl, Color.OKHSL, Color.OKLCH);
-                                    var hex = Color.RGBToHex(Color.convert(hsl, Color.OKHSL, Color.sRGB));
-                                    return JsxRuntime.jsx("div", {
-                                                children: Core__Option.mapOr(selectedElement, false, (function (x) {
-                                                        return x === e.id;
-                                                      })) ? "•" : null,
-                                                className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center",
-                                                style: {
-                                                  backgroundColor: hex,
-                                                  bottom: (match[1] / 0.36 * 300 | 0).toString() + "px",
-                                                  left: (match[0] * 300 | 0).toString() + "px"
-                                                }
-                                              });
-                                  });
-                      })),
-                JsxRuntime.jsx("canvas", {
-                      ref: Caml_option.some(canvasRef),
-                      style: {
-                        height: (300).toString() + "px",
-                        width: (300).toString() + "px"
-                      }
-                    })
-              ],
-              className: "w-fit relative bg-black rounded-sm"
-            });
-}
-
 function makeDefaultPicks(xLen, defaultShades) {
   var yLenF = defaultShades.length;
-  return mapRange(xLen, (function (x) {
+  return Common.Utils.mapRange(xLen, (function (x) {
                 var hue = x / xLen * 360 + 1;
                 var hueId = Ulid.ulid();
                 var elements = defaultShades.map(function (shade, y) {
@@ -294,7 +41,7 @@ function makeDefaultPicks(xLen, defaultShades) {
                 return {
                         id: hueId,
                         value: hue,
-                        name: hueToName(hue),
+                        name: Common.hueToName(hue),
                         elements: elements
                       };
               }));
@@ -308,7 +55,7 @@ function modeName(mode) {
   }
 }
 
-var defaultShades = mapRange(5, (function (i) {
+var defaultShades = Common.Utils.mapRange(5, (function (i) {
         return {
                 id: Ulid.ulid(),
                 name: Math.imul(i + 1 | 0, 100).toString()
@@ -372,7 +119,7 @@ function App$Palette(props) {
                                       if (hue.id === selectedHue_) {
                                         return {
                                                 id: hue.id,
-                                                value: bound(f(hue.value), 0, 360),
+                                                value: Common.Utils.bound(f(hue.value), 0, 360),
                                                 name: hue.name,
                                                 elements: hue.elements
                                               };
@@ -564,7 +311,7 @@ function App$Palette(props) {
     return {
             id: hueId,
             value: newValue,
-            name: hueToName(newValue),
+            name: Common.hueToName(newValue),
             elements: copy.elements.map(function (v) {
                   return {
                           id: Ulid.ulid(),
@@ -613,8 +360,8 @@ function App$Palette(props) {
                                                         id: Ulid.ulid(),
                                                         shadeId: newShadeId,
                                                         hueId: v.id,
-                                                        lightness: bound(0.0, 1.0, (c.lightness + 1.0) / 2),
-                                                        saturation: bound(0.0, 1.0, (c.saturation + 1.0) / 2)
+                                                        lightness: Common.Utils.bound(0.0, 1.0, (c.lightness + 1.0) / 2),
+                                                        saturation: Common.Utils.bound(0.0, 1.0, (c.saturation + 1.0) / 2)
                                                       }
                                                     ]
                                                   ]);
@@ -645,19 +392,19 @@ function App$Palette(props) {
                       children: [
                         JsxRuntime.jsxs("div", {
                               children: [
-                                JsxRuntime.jsx(App$LchHGamut, {
+                                JsxRuntime.jsx(LchHGamut.make, {
                                       hues: picks,
                                       selectedHue: selectedHue,
                                       selectedElement: selectedElement
                                     }),
-                                JsxRuntime.jsx(App$ChromaStack, {
+                                JsxRuntime.jsx(ChromaStack.make, {
                                       hues: picks,
                                       selectedElement: selectedElement
                                     })
                               ],
                               className: "flex flex-row gap-2"
                             }),
-                        JsxRuntime.jsx(App$LightnessStack, {
+                        JsxRuntime.jsx(LightnessStack.make, {
                               hues: picks,
                               selectedElement: selectedElement
                             })
@@ -860,8 +607,8 @@ function App$Palette(props) {
                                                                                         id: Ulid.ulid(),
                                                                                         shadeId: newShadeId,
                                                                                         hueId: hue.id,
-                                                                                        lightness: bound(0.0, 1.0, (match[1] + c.lightness) / 2),
-                                                                                        saturation: bound(0.0, 1.0, (match[0] + c.saturation) / 2)
+                                                                                        lightness: Common.Utils.bound(0.0, 1.0, (match[1] + c.lightness) / 2),
+                                                                                        saturation: Common.Utils.bound(0.0, 1.0, (match[0] + c.saturation) / 2)
                                                                                       },
                                                                                       c
                                                                                     ]
@@ -969,9 +716,7 @@ function App$Palette(props) {
 
 function App(props) {
   return JsxRuntime.jsx("div", {
-              children: JsxRuntime.jsx(App$Palette, {
-                    arr: []
-                  }),
+              children: JsxRuntime.jsx(App$Palette, {}),
               className: "p-6 min-h-screen bg-white"
             });
 }
