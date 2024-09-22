@@ -475,6 +475,14 @@ let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
   })
 }
 
+type adjustmentMode = | @as("HSL_L") HSL_L | @as("LCH_L") LCH_L
+
+let modeName = mode =>
+  switch mode {
+  | HSL_L => "OKHSL - L"
+  | LCH_L => "OKLCH - L"
+  }
+
 module Palette = {
   let defaultShades = Utils.mapRange(5, i => {
     id: ulid(),
@@ -485,12 +493,13 @@ module Palette = {
 
   @react.component
   let make = (~arr) => {
+    let (selectedMode, setSelectedMode) = React.useState(() => HSL_L)
     let (picks_, setPicks) = React.useState(() => defaultPicks)
     let (shades, setShades) = React.useState(() => defaultShades)
     let (selectedHue, setSelectedHue) = React.useState(() => None)
     let (selectedElement, setSelectedElement) = React.useState(() => None)
 
-    let handleKeydown = React.useCallback1(event => {
+    let handleKeydown = React.useCallback2(event => {
       let updateElement = f => {
         selectedElement->Option.mapOr((), e =>
           setPicks(
@@ -502,7 +511,7 @@ module Palette = {
                   ->Array.map(
                     hueElement => {
                       if hueElement.id == e {
-                        hueElement->f
+                        f(hueElement, hue.value)
                       } else {
                         hueElement
                       }
@@ -561,41 +570,88 @@ module Palette = {
         })
 
       | "ArrowDown" =>
-        updateElement(el => {
+        updateElement((el, _) => {
           ...el,
           saturation: Math.max(0.0, el.saturation -. 0.01),
         })
         event->ReactEvent.Keyboard.preventDefault
 
       | "ArrowUp" =>
-        updateElement(el => {
+        updateElement((el, _) => {
           ...el,
           saturation: Math.min(1.0, el.saturation +. 0.01),
         })
         event->ReactEvent.Keyboard.preventDefault
 
       | "ArrowLeft" =>
-        updateElement(el => {
-          ...el,
-          lightness: Math.max(0.0, el.lightness -. 0.01),
-        })
+        switch selectedMode {
+        | HSL_L =>
+          updateElement((el, _) => {
+            ...el,
+            lightness: Math.max(0.0, el.lightness -. 0.01),
+          })
+        | LCH_L =>
+          updateElement((el, hue) => {
+            let (l, c, h) = Texel.convert(
+              (hue, el.saturation, el.lightness),
+              Texel.okhsl,
+              Texel.oklch,
+            )
+            let newL = Math.max(0.0, l -. 0.01)
+            let (_, outputS, outputL) = Texel.convert((newL, c, h), Texel.oklch, Texel.okhsl)
+            let rgb = Texel.convert((hue, outputS, outputL), Texel.okhsl, Texel.srgb)
+            if rgb->Texel.isRGBInGamut {
+              {
+                ...el,
+                saturation: outputS,
+                lightness: outputL,
+              }
+            } else {
+              el
+            }
+          })
+        }
+
         event->ReactEvent.Keyboard.preventDefault
 
       | "ArrowRight" =>
-        updateElement(el => {
-          ...el,
-          lightness: Math.min(1.0, el.lightness +. 0.01),
-        })
+        switch selectedMode {
+        | HSL_L =>
+          updateElement((el, _) => {
+            ...el,
+            lightness: Math.min(1.0, el.lightness +. 0.01),
+          })
+        | LCH_L =>
+          updateElement((el, hue) => {
+            let (l, c, h) = Texel.convert(
+              (hue, el.saturation, el.lightness),
+              Texel.okhsl,
+              Texel.oklch,
+            )
+            let newL = Math.min(1.0, l +. 0.01)
+            let (_, outputS, outputL) = Texel.convert((newL, c, h), Texel.oklch, Texel.okhsl)
+            let rgb = Texel.convert((hue, outputS, outputL), Texel.okhsl, Texel.srgb)
+            if rgb->Texel.isRGBInGamut {
+              {
+                ...el,
+                saturation: outputS,
+                lightness: outputL,
+              }
+            } else {
+              el
+            }
+          })
+        }
         event->ReactEvent.Keyboard.preventDefault
 
       | _ => ()
       }
-    }, [selectedElement])
+    }, (selectedElement, selectedMode))
 
-    React.useEffect1(() => {
+    React.useEffect2(() => {
       addKeyboardListner("keydown", handleKeydown)
       Some(() => removeKeyboardListner("keydown", handleKeydown))
-    }, [selectedElement])
+    }, (selectedElement, selectedMode))
 
     let picks = picks_->Array.toSorted((a, b) => a.value -. b.value)
 
@@ -746,11 +802,26 @@ module Palette = {
         <HslSGamut hues={picks} selectedHue selectedElement />
         <HueLine hues={picks} selected={selectedHue} />
       </div>
+      <div className="flex flex-row gap-2">
+        {[HSL_L, LCH_L]
+        ->Array.map(mode => {
+          let isSelected = selectedMode == mode
+          <button
+            className={[
+              "px-2 rounded",
+              isSelected ? "bg-blue-600 text-white" : "bg-blue-200",
+            ]->Array.join(" ")}
+            onClick={_ => setSelectedMode(_ => mode)}>
+            {mode->modeName->React.string}
+          </button>
+        })
+        ->React.array}
+      </div>
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: `auto repeat(${shadeLen->Int.toString}, 2.5rem) 2.5rem`,
-          gridTemplateRows: `auto repeat(${hueLen->Int.toString}, 2.5rem) 2.5rem`,
+          gridTemplateColumns: `auto repeat(${shadeLen->Int.toString}, 3rem) 3rem`,
+          gridTemplateRows: `auto repeat(${hueLen->Int.toString}, 3rem) 3rem`,
         }}
         className="py-6 w-fit">
         <div
@@ -882,7 +953,7 @@ module Palette = {
                 )->Texel.rgbToHex
               <div
                 key={element.id}
-                className="w-10 h-10 max-h-10 max-w-10 flex flex-row items-center justify-center cursor-pointer"
+                className="w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center cursor-pointer"
                 style={{
                   backgroundColor: hex,
                 }}

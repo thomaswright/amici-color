@@ -381,6 +381,14 @@ function makeDefaultPicks(xLen, defaultShades) {
               }));
 }
 
+function modeName(mode) {
+  if (mode === "HSL_L") {
+    return "OKHSL - L";
+  } else {
+    return "OKLCH - L";
+  }
+}
+
 var defaultShades = mapRange(5, (function (i) {
         return {
                 id: Ulid.ulid(),
@@ -392,24 +400,29 @@ var defaultPicks = makeDefaultPicks(5, defaultShades);
 
 function App$Palette(props) {
   var match = React.useState(function () {
+        return "HSL_L";
+      });
+  var setSelectedMode = match[1];
+  var selectedMode = match[0];
+  var match$1 = React.useState(function () {
         return defaultPicks;
       });
-  var setPicks = match[1];
-  var match$1 = React.useState(function () {
+  var setPicks = match$1[1];
+  var match$2 = React.useState(function () {
         return defaultShades;
       });
-  var setShades = match$1[1];
-  var shades = match$1[0];
-  var match$2 = React.useState(function () {
-        
-      });
-  var setSelectedHue = match$2[1];
-  var selectedHue = match$2[0];
+  var setShades = match$2[1];
+  var shades = match$2[0];
   var match$3 = React.useState(function () {
         
       });
-  var setSelectedElement = match$3[1];
-  var selectedElement = match$3[0];
+  var setSelectedHue = match$3[1];
+  var selectedHue = match$3[0];
+  var match$4 = React.useState(function () {
+        
+      });
+  var setSelectedElement = match$4[1];
+  var selectedElement = match$4[0];
   var handleKeydown = React.useCallback((function ($$event) {
           var updateElement = function (f) {
             Core__Option.mapOr(selectedElement, undefined, (function (e) {
@@ -421,7 +434,7 @@ function App$Palette(props) {
                                               name: hue.name,
                                               elements: hue.elements.map(function (hueElement) {
                                                       if (hueElement.id === e) {
-                                                        return f(hueElement);
+                                                        return f(hueElement, hue.value);
                                                       } else {
                                                         return hueElement;
                                                       }
@@ -454,7 +467,7 @@ function App$Palette(props) {
           var match = $$event.key;
           switch (match) {
             case "ArrowDown" :
-                updateElement(function (el) {
+                updateElement(function (el, param) {
                       return {
                               id: el.id,
                               shadeId: el.shadeId,
@@ -466,31 +479,99 @@ function App$Palette(props) {
                 $$event.preventDefault();
                 return ;
             case "ArrowLeft" :
-                updateElement(function (el) {
-                      return {
-                              id: el.id,
-                              shadeId: el.shadeId,
-                              hueId: el.hueId,
-                              lightness: Math.max(0.0, el.lightness - 0.01),
-                              saturation: el.saturation
-                            };
-                    });
+                if (selectedMode === "HSL_L") {
+                  updateElement(function (el, param) {
+                        return {
+                                id: el.id,
+                                shadeId: el.shadeId,
+                                hueId: el.hueId,
+                                lightness: Math.max(0.0, el.lightness - 0.01),
+                                saturation: el.saturation
+                              };
+                      });
+                } else {
+                  updateElement(function (el, hue) {
+                        var match = Color.convert([
+                              hue,
+                              el.saturation,
+                              el.lightness
+                            ], Color.OKHSL, Color.OKLCH);
+                        var newL = Math.max(0.0, match[0] - 0.01);
+                        var match$1 = Color.convert([
+                              newL,
+                              match[1],
+                              match[2]
+                            ], Color.OKLCH, Color.OKHSL);
+                        var outputL = match$1[2];
+                        var outputS = match$1[1];
+                        var rgb = Color.convert([
+                              hue,
+                              outputS,
+                              outputL
+                            ], Color.OKHSL, Color.sRGB);
+                        if (Color.isRGBInGamut(rgb)) {
+                          return {
+                                  id: el.id,
+                                  shadeId: el.shadeId,
+                                  hueId: el.hueId,
+                                  lightness: outputL,
+                                  saturation: outputS
+                                };
+                        } else {
+                          return el;
+                        }
+                      });
+                }
                 $$event.preventDefault();
                 return ;
             case "ArrowRight" :
-                updateElement(function (el) {
-                      return {
-                              id: el.id,
-                              shadeId: el.shadeId,
-                              hueId: el.hueId,
-                              lightness: Math.min(1.0, el.lightness + 0.01),
-                              saturation: el.saturation
-                            };
-                    });
+                if (selectedMode === "HSL_L") {
+                  updateElement(function (el, param) {
+                        return {
+                                id: el.id,
+                                shadeId: el.shadeId,
+                                hueId: el.hueId,
+                                lightness: Math.min(1.0, el.lightness + 0.01),
+                                saturation: el.saturation
+                              };
+                      });
+                } else {
+                  updateElement(function (el, hue) {
+                        var match = Color.convert([
+                              hue,
+                              el.saturation,
+                              el.lightness
+                            ], Color.OKHSL, Color.OKLCH);
+                        var newL = Math.min(1.0, match[0] + 0.01);
+                        var match$1 = Color.convert([
+                              newL,
+                              match[1],
+                              match[2]
+                            ], Color.OKLCH, Color.OKHSL);
+                        var outputL = match$1[2];
+                        var outputS = match$1[1];
+                        var rgb = Color.convert([
+                              hue,
+                              outputS,
+                              outputL
+                            ], Color.OKHSL, Color.sRGB);
+                        if (Color.isRGBInGamut(rgb)) {
+                          return {
+                                  id: el.id,
+                                  shadeId: el.shadeId,
+                                  hueId: el.hueId,
+                                  lightness: outputL,
+                                  saturation: outputS
+                                };
+                        } else {
+                          return el;
+                        }
+                      });
+                }
                 $$event.preventDefault();
                 return ;
             case "ArrowUp" :
-                updateElement(function (el) {
+                updateElement(function (el, param) {
                       return {
                               id: el.id,
                               shadeId: el.shadeId,
@@ -540,14 +621,20 @@ function App$Palette(props) {
             default:
               return ;
           }
-        }), [selectedElement]);
+        }), [
+        selectedElement,
+        selectedMode
+      ]);
   React.useEffect((function () {
           document.addEventListener("keydown", handleKeydown);
           return (function () {
                     document.removeEventListener("keydown", handleKeydown);
                   });
-        }), [selectedElement]);
-  var picks = match[0].toSorted(function (a, b) {
+        }), [
+        selectedElement,
+        selectedMode
+      ]);
+  var picks = match$1[0].toSorted(function (a, b) {
         return a.value - b.value;
       });
   var hueLen = picks.length;
@@ -653,6 +740,27 @@ function App$Palette(props) {
                             })
                       ],
                       className: "flex flex-row gap-2 py-2"
+                    }),
+                JsxRuntime.jsx("div", {
+                      children: [
+                          "HSL_L",
+                          "LCH_L"
+                        ].map(function (mode) {
+                            var isSelected = selectedMode === mode;
+                            return JsxRuntime.jsx("button", {
+                                        children: modeName(mode),
+                                        className: [
+                                            "px-2 rounded",
+                                            isSelected ? "bg-blue-600 text-white" : "bg-blue-200"
+                                          ].join(" "),
+                                        onClick: (function (param) {
+                                            setSelectedMode(function (param) {
+                                                  return mode;
+                                                });
+                                          })
+                                      });
+                          }),
+                      className: "flex flex-row gap-2"
                     }),
                 JsxRuntime.jsxs("div", {
                       children: [
@@ -901,7 +1009,7 @@ function App$Palette(props) {
                                                                 children: Core__Option.mapOr(selectedElement, false, (function (e) {
                                                                         return e === element.id;
                                                                       })) ? "•" : null,
-                                                                className: "w-10 h-10 max-h-10 max-w-10 flex flex-row items-center justify-center cursor-pointer",
+                                                                className: "w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center cursor-pointer",
                                                                 style: {
                                                                   backgroundColor: hex
                                                                 },
@@ -928,8 +1036,8 @@ function App$Palette(props) {
                       className: "py-6 w-fit",
                       style: {
                         display: "grid",
-                        gridTemplateColumns: "auto repeat(" + shadeLen.toString() + ", 2.5rem) 2.5rem",
-                        gridTemplateRows: "auto repeat(" + hueLen.toString() + ", 2.5rem) 2.5rem"
+                        gridTemplateColumns: "auto repeat(" + shadeLen.toString() + ", 3rem) 3rem",
+                        gridTemplateRows: "auto repeat(" + hueLen.toString() + ", 3rem) 3rem"
                       }
                     })
               ]
