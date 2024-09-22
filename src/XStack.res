@@ -35,6 +35,7 @@ let make = (~hues: array<hue>, ~selectedElement, ~view: view) => {
             className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center"
             style={{
               backgroundColor: hex,
+              transform: "translate(-50%, 0)",
               left: (percentage *. size->Int.toFloat)->Float.toInt->Int.toString ++ "px",
             }}>
             {selectedElement->Option.mapOr(false, x => x == e.id)

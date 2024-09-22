@@ -376,7 +376,7 @@ module Palette = {
       </div>
       <div className="flex flex-col gap-2 py-2">
         <div className="flex flex-row gap-2">
-          <LchHGamut hues={picks} selectedHue selectedElement />
+          <ViewGamut view={view} hues={picks} selectedHue selectedElement />
           <YStack view={view} hues={picks} selectedElement />
         </div>
         <XStack view={view} hues={picks} selectedElement />

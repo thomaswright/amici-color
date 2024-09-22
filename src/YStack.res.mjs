@@ -28,6 +28,12 @@ function YStack(props) {
                                             percentage = match[1] / Common.chromaBound;
                                             break;
                                         case "View_SV" :
+                                            percentage = Color.convert([
+                                                    hue.value,
+                                                    e.saturation,
+                                                    e.lightness
+                                                  ], Color.OKHSL, Color.OKHSV)[1];
+                                            break;
                                         case "View_SL" :
                                             percentage = e.saturation;
                                             break;
@@ -40,7 +46,8 @@ function YStack(props) {
                                                   className: "absolute w-5 h-5 border border-black flex flex-col items-center justify-center",
                                                   style: {
                                                     backgroundColor: hex,
-                                                    bottom: (percentage * 300 | 0).toString() + "px"
+                                                    bottom: (percentage * 300 | 0).toString() + "px",
+                                                    transform: "translate(0, 50%)"
                                                   }
                                                 });
                                     }),

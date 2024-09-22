@@ -5,7 +5,7 @@ import * as React from "react";
 import * as Common from "./Common.res.mjs";
 import * as XStack from "./XStack.res.mjs";
 import * as YStack from "./YStack.res.mjs";
-import * as LchHGamut from "./LchHGamut.res.mjs";
+import * as ViewGamut from "./ViewGamut.res.mjs";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as Core__Array from "@rescript/core/src/Core__Array.res.mjs";
 import * as Color from "@texel/color";
@@ -409,10 +409,11 @@ function App$Palette(props) {
                       children: [
                         JsxRuntime.jsxs("div", {
                               children: [
-                                JsxRuntime.jsx(LchHGamut.make, {
+                                JsxRuntime.jsx(ViewGamut.make, {
                                       hues: picks,
                                       selectedHue: selectedHue,
-                                      selectedElement: selectedElement
+                                      selectedElement: selectedElement,
+                                      view: view
                                     }),
                                 JsxRuntime.jsx(YStack.make, {
                                       hues: picks,

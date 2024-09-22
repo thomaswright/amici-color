@@ -43,7 +43,7 @@ module Types = {
 
   type adjustmentMode = | @as("HSL_L") HSL_L | @as("LCH_L") LCH_L
 
-  type view = View_LC | View_SV | View_SL
+  type view = | @as("View_LC") View_LC | @as("View_SV") View_SV | @as("View_SL") View_SL
 }
 
 let hueToName = hue => {
