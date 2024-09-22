@@ -8,7 +8,7 @@ import * as Caml_option from "rescript/lib/es6/caml_option.js";
 import * as Core__Array from "@rescript/core/src/Core__Array.res.mjs";
 import * as Color from "@texel/color";
 import * as Core__Option from "@rescript/core/src/Core__Option.res.mjs";
-import * as Fi from "react-icons/fi";
+import DropdownJsx from "./Dropdown.jsx";
 import * as JsxRuntime from "react/jsx-runtime";
 import AmiciPrismSvgreact from "./assets/amici-prism.svg?react";
 
@@ -101,6 +101,8 @@ function hueToName(hue) {
     return "?";
   }
 }
+
+var make$1 = DropdownJsx;
 
 function updateHueLineCanvas(canvas, ctx) {
   var yMax = canvas.height;
@@ -655,74 +657,62 @@ function App$Palette(props) {
                 JsxRuntime.jsxs("div", {
                       children: [
                         JsxRuntime.jsx("div", {
-                              children: JsxRuntime.jsx("button", {
-                                    children: JsxRuntime.jsx(Fi.FiPlus, {}),
-                                    className: " text-black ",
-                                    onClick: (function (param) {
-                                        newEndShade();
-                                      })
-                                  }),
-                              className: "flex flex-col justify-end",
-                              style: {
-                                gridColumn: "-1 / -2",
-                                gridRow: "1 / 2"
-                              }
-                            }),
-                        JsxRuntime.jsx("div", {
-                              children: JsxRuntime.jsx("button", {
-                                    children: JsxRuntime.jsx(Fi.FiPlus, {}),
-                                    className: "text-black ",
-                                    onClick: (function (param) {
-                                        newEndHue();
-                                      })
-                                  }),
-                              className: "flex flex-col items-end",
-                              style: {
-                                gridColumn: "1 / 2",
-                                gridRow: "-1 / -2"
-                              }
-                            }),
-                        JsxRuntime.jsx("div", {
-                              children: picks.map(function (pick) {
+                              children: picks.map(function (pick, i) {
+                                    var isLastRow = i === (picks.length - 1 | 0);
+                                    var onDelete = function () {
+                                      setPicks(function (p_) {
+                                            return p_.filter(function (v) {
+                                                        return v.id !== pick.id;
+                                                      });
+                                          });
+                                      setSelectedHue(function (v) {
+                                            return Core__Option.flatMap(v, (function (p) {
+                                                          if (p === pick.id) {
+                                                            return ;
+                                                          } else {
+                                                            return p;
+                                                          }
+                                                        }));
+                                          });
+                                    };
+                                    var onAdd = function () {
+                                      setPicks(function (p_) {
+                                            return Core__Array.reduceWithIndex(p_, [], (function (acc, cur, i) {
+                                                          var leftValue = i === 0 ? 0 : p_[i - 1 | 0].value;
+                                                          if (cur.id === pick.id) {
+                                                            return Belt_Array.concatMany([
+                                                                        acc,
+                                                                        [
+                                                                          makeNewHue(cur, leftValue, cur.value),
+                                                                          cur
+                                                                        ]
+                                                                      ]);
+                                                          } else {
+                                                            return Belt_Array.concatMany([
+                                                                        acc,
+                                                                        [cur]
+                                                                      ]);
+                                                          }
+                                                        }));
+                                          });
+                                    };
                                     return JsxRuntime.jsxs("div", {
                                                 children: [
                                                   JsxRuntime.jsxs("div", {
                                                         children: [
-                                                          JsxRuntime.jsx("button", {
-                                                                children: JsxRuntime.jsx(Fi.FiTrash2, {}),
-                                                                className: "text-red-600",
-                                                                onClick: (function (param) {
-                                                                    setPicks(function (p_) {
-                                                                          return p_.filter(function (v) {
-                                                                                      return v.id !== pick.id;
-                                                                                    });
-                                                                        });
-                                                                    setSelectedHue(function (v) {
-                                                                          return Core__Option.flatMap(v, (function (p) {
-                                                                                        if (p === pick.id) {
-                                                                                          return ;
-                                                                                        } else {
-                                                                                          return p;
-                                                                                        }
-                                                                                      }));
-                                                                        });
-                                                                  })
-                                                              }),
-                                                          JsxRuntime.jsx("button", {
-                                                                className: [
-                                                                    "w-3 h-3 border-gray-500 rounded-full",
-                                                                    Core__Option.mapOr(selectedHue, false, (function (s) {
-                                                                            return s === pick.id;
-                                                                          })) ? "border-4" : "border"
-                                                                  ].join(" "),
-                                                                onClick: (function (param) {
-                                                                    setSelectedHue(function (param) {
-                                                                          return pick.id;
-                                                                        });
-                                                                    setSelectedElement(function (param) {
-                                                                          
-                                                                        });
-                                                                  })
+                                                          JsxRuntime.jsx(make$1, {
+                                                                items: [[
+                                                                        "Add Row Before",
+                                                                        onAdd
+                                                                      ]].concat(isLastRow ? [[
+                                                                            "Add Row After",
+                                                                            (function () {
+                                                                                newEndHue();
+                                                                              })
+                                                                          ]] : []).concat([[
+                                                                        "Delete Row",
+                                                                        onDelete
+                                                                      ]])
                                                               }),
                                                           JsxRuntime.jsx("input", {
                                                                 className: "w-20 h-5",
@@ -743,31 +733,6 @@ function App$Palette(props) {
                                                                                         return v;
                                                                                       }
                                                                                     });
-                                                                        });
-                                                                  })
-                                                              }),
-                                                          JsxRuntime.jsx("button", {
-                                                                children: JsxRuntime.jsx(Fi.FiPlus, {}),
-                                                                className: " text-black self-start",
-                                                                onClick: (function (param) {
-                                                                    setPicks(function (p_) {
-                                                                          return Core__Array.reduceWithIndex(p_, [], (function (acc, cur, i) {
-                                                                                        var leftValue = i === 0 ? 0 : p_[i - 1 | 0].value;
-                                                                                        if (cur.id === pick.id) {
-                                                                                          return Belt_Array.concatMany([
-                                                                                                      acc,
-                                                                                                      [
-                                                                                                        makeNewHue(cur, leftValue, cur.value),
-                                                                                                        cur
-                                                                                                      ]
-                                                                                                    ]);
-                                                                                        } else {
-                                                                                          return Belt_Array.concatMany([
-                                                                                                      acc,
-                                                                                                      [cur]
-                                                                                                    ]);
-                                                                                        }
-                                                                                      }));
                                                                         });
                                                                   })
                                                               })
@@ -791,31 +756,105 @@ function App$Palette(props) {
                               }
                             }),
                         JsxRuntime.jsx("div", {
-                              children: shades.map(function (shade) {
+                              children: shades.map(function (shade, i) {
+                                    var isLastColumn = i === (picks.length - 1 | 0);
+                                    var onDelete = function () {
+                                      setPicks(function (p_) {
+                                            return p_.map(function (v) {
+                                                        return {
+                                                                id: v.id,
+                                                                value: v.value,
+                                                                name: v.name,
+                                                                elements: v.elements.filter(function (e) {
+                                                                      return e.shadeId !== shade.id;
+                                                                    })
+                                                              };
+                                                      });
+                                          });
+                                      setShades(function (s_) {
+                                            return s_.filter(function (v) {
+                                                        return v.id !== shade.id;
+                                                      });
+                                          });
+                                    };
+                                    var onAdd = function () {
+                                      var newShadeId = Ulid.ulid();
+                                      setShades(function (s_) {
+                                            return Core__Array.reduce(s_, [], (function (a, c) {
+                                                          if (c.id === shade.id) {
+                                                            return Belt_Array.concatMany([
+                                                                        a,
+                                                                        [
+                                                                          {
+                                                                            id: newShadeId,
+                                                                            name: "New"
+                                                                          },
+                                                                          c
+                                                                        ]
+                                                                      ]);
+                                                          } else {
+                                                            return Belt_Array.concatMany([
+                                                                        a,
+                                                                        [c]
+                                                                      ]);
+                                                          }
+                                                        }));
+                                          });
+                                      setPicks(function (p_) {
+                                            return p_.map(function (hue) {
+                                                        return {
+                                                                id: hue.id,
+                                                                value: hue.value,
+                                                                name: hue.name,
+                                                                elements: Core__Array.reduceWithIndex(hue.elements, [], (function (a, c, i) {
+                                                                        if (c.shadeId !== shade.id) {
+                                                                          return Belt_Array.concatMany([
+                                                                                      a,
+                                                                                      [c]
+                                                                                    ]);
+                                                                        }
+                                                                        var match = i === 0 ? [
+                                                                            0.0,
+                                                                            0.0
+                                                                          ] : (function (x) {
+                                                                                return [
+                                                                                        x.saturation,
+                                                                                        x.lightness
+                                                                                      ];
+                                                                              })(hue.elements[i - 1 | 0]);
+                                                                        return Belt_Array.concatMany([
+                                                                                    a,
+                                                                                    [
+                                                                                      {
+                                                                                        id: Ulid.ulid(),
+                                                                                        shadeId: newShadeId,
+                                                                                        hueId: hue.id,
+                                                                                        lightness: bound(0.0, 1.0, (match[1] + c.lightness) / 2),
+                                                                                        saturation: bound(0.0, 1.0, (match[0] + c.saturation) / 2)
+                                                                                      },
+                                                                                      c
+                                                                                    ]
+                                                                                  ]);
+                                                                      }))
+                                                              };
+                                                      });
+                                          });
+                                    };
                                     return JsxRuntime.jsxs("div", {
                                                 children: [
-                                                  JsxRuntime.jsx("button", {
-                                                        children: JsxRuntime.jsx(Fi.FiTrash2, {}),
-                                                        className: " text-red-600",
-                                                        onClick: (function (param) {
-                                                            setPicks(function (p_) {
-                                                                  return p_.map(function (v) {
-                                                                              return {
-                                                                                      id: v.id,
-                                                                                      value: v.value,
-                                                                                      name: v.name,
-                                                                                      elements: v.elements.filter(function (e) {
-                                                                                            return e.shadeId !== shade.id;
-                                                                                          })
-                                                                                    };
-                                                                            });
-                                                                });
-                                                            setShades(function (s_) {
-                                                                  return s_.filter(function (v) {
-                                                                              return v.id !== shade.id;
-                                                                            });
-                                                                });
-                                                          })
+                                                  JsxRuntime.jsx(make$1, {
+                                                        items: [[
+                                                                "Add Column Before",
+                                                                onAdd
+                                                              ]].concat(isLastColumn ? [[
+                                                                    "Add Column After",
+                                                                    (function () {
+                                                                        newEndShade();
+                                                                      })
+                                                                  ]] : []).concat([[
+                                                                "Delete Column",
+                                                                onDelete
+                                                              ]])
                                                       }),
                                                   JsxRuntime.jsx("input", {
                                                         className: "w-10 h-5",
@@ -836,76 +875,6 @@ function App$Palette(props) {
                                                                             });
                                                                 });
                                                           })
-                                                      }),
-                                                  JsxRuntime.jsx("div", {
-                                                        children: JsxRuntime.jsx("button", {
-                                                              children: JsxRuntime.jsx(Fi.FiPlus, {}),
-                                                              className: " text-black ",
-                                                              onClick: (function (param) {
-                                                                  var newShadeId = Ulid.ulid();
-                                                                  setShades(function (s_) {
-                                                                        return Core__Array.reduce(s_, [], (function (a, c) {
-                                                                                      if (c.id === shade.id) {
-                                                                                        return Belt_Array.concatMany([
-                                                                                                    a,
-                                                                                                    [
-                                                                                                      {
-                                                                                                        id: newShadeId,
-                                                                                                        name: "New"
-                                                                                                      },
-                                                                                                      c
-                                                                                                    ]
-                                                                                                  ]);
-                                                                                      } else {
-                                                                                        return Belt_Array.concatMany([
-                                                                                                    a,
-                                                                                                    [c]
-                                                                                                  ]);
-                                                                                      }
-                                                                                    }));
-                                                                      });
-                                                                  setPicks(function (p_) {
-                                                                        return p_.map(function (hue) {
-                                                                                    return {
-                                                                                            id: hue.id,
-                                                                                            value: hue.value,
-                                                                                            name: hue.name,
-                                                                                            elements: Core__Array.reduceWithIndex(hue.elements, [], (function (a, c, i) {
-                                                                                                    if (c.shadeId !== shade.id) {
-                                                                                                      return Belt_Array.concatMany([
-                                                                                                                  a,
-                                                                                                                  [c]
-                                                                                                                ]);
-                                                                                                    }
-                                                                                                    var match = i === 0 ? [
-                                                                                                        0.0,
-                                                                                                        0.0
-                                                                                                      ] : (function (x) {
-                                                                                                            return [
-                                                                                                                    x.saturation,
-                                                                                                                    x.lightness
-                                                                                                                  ];
-                                                                                                          })(hue.elements[i - 1 | 0]);
-                                                                                                    return Belt_Array.concatMany([
-                                                                                                                a,
-                                                                                                                [
-                                                                                                                  {
-                                                                                                                    id: Ulid.ulid(),
-                                                                                                                    shadeId: newShadeId,
-                                                                                                                    hueId: hue.id,
-                                                                                                                    lightness: bound(0.0, 1.0, (match[1] + c.lightness) / 2),
-                                                                                                                    saturation: bound(0.0, 1.0, (match[0] + c.saturation) / 2)
-                                                                                                                  },
-                                                                                                                  c
-                                                                                                                ]
-                                                                                                              ]);
-                                                                                                  }))
-                                                                                          };
-                                                                                  });
-                                                                      });
-                                                                })
-                                                            }),
-                                                        className: "flex flex-row justify-between"
                                                       })
                                                 ],
                                                 className: " flex flex-col gap-2"
@@ -932,7 +901,7 @@ function App$Palette(props) {
                                                                 children: Core__Option.mapOr(selectedElement, false, (function (e) {
                                                                         return e === element.id;
                                                                       })) ? "•" : null,
-                                                                className: "w-10 h-10 max-h-10 max-w-10 flex flex-row items-center justify-center text-xl cursor-pointer",
+                                                                className: "w-10 h-10 max-h-10 max-w-10 flex flex-row items-center justify-center cursor-pointer",
                                                                 style: {
                                                                   backgroundColor: hex
                                                                 },
@@ -976,9 +945,9 @@ function App(props) {
             });
 }
 
-var make$1 = App;
+var make$2 = App;
 
 export {
-  make$1 as make,
+  make$2 as make,
 }
 /* make Not a pure module */

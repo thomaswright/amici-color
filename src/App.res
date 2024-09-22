@@ -74,6 +74,11 @@ let hueToName = hue => {
   }
 }
 
+module DropdownMenu = {
+  @react.component @module("./Dropdown.jsx")
+  external make: (~items: array<(string, unit => unit)>) => React.element = "default"
+}
+
 module Gamut = {
   @react.component @module("./other.jsx") external make: unit => React.element = "Gamut"
 }
@@ -749,26 +754,6 @@ module Palette = {
         }}
         className="py-6 w-fit">
         <div
-          className="flex flex-col justify-end"
-          style={{
-            gridRow: "1 / 2",
-            gridColumn: "-1 / -2",
-          }}>
-          <button className=" text-black " onClick={_ => {newEndShade()}}>
-            <Icons.Plus />
-          </button>
-        </div>
-        <div
-          className="flex flex-col items-end"
-          style={{
-            gridRow: "-1 / -2",
-            gridColumn: "1 / 2",
-          }}>
-          <button className="text-black " onClick={_ => newEndHue()}>
-            <Icons.Plus />
-          </button>
-        </div>
-        <div
           className="overflow-hidden"
           style={{
             display: "grid",
@@ -778,26 +763,21 @@ module Palette = {
             gridTemplateColumns: "subgrid",
           }}>
           {picks
-          ->Array.map(pick => {
+          ->Array.mapWithIndex((pick, i) => {
+            let isLastRow = i == picks->Array.length - 1
+            let onDelete = () => {
+              setPicks(p_ => p_->Array.filter(v => v.id != pick.id))
+              setSelectedHue(v => v->Option.flatMap(p => p == pick.id ? None : Some(p)))
+            }
+
+            let onAdd = () => {newInterHue(pick)}
+
             <div key={pick.id} className=" ">
               <div className="flex-row flex w-full justify-between items-center gap-2 h-full">
-                <button
-                  className="text-red-600"
-                  onClick={_ => {
-                    setPicks(p_ => p_->Array.filter(v => v.id != pick.id))
-                    setSelectedHue(v => v->Option.flatMap(p => p == pick.id ? None : Some(p)))
-                  }}>
-                  <Icons.Trash />
-                </button>
-                <button
-                  className={[
-                    "w-3 h-3 border-gray-500 rounded-full",
-                    selectedHue->Option.mapOr(false, s => s == pick.id) ? "border-4" : "border",
-                  ]->Array.join(" ")}
-                  onClick={_ => {
-                    setSelectedHue(_ => Some(pick.id))
-                    setSelectedElement(_ => None)
-                  }}
+                <DropdownMenu
+                  items={[("Add Row Before", onAdd)]
+                  ->Array.concat(isLastRow ? [("Add Row After", _ => newEndHue())] : [])
+                  ->Array.concat([("Delete Row", onDelete)])}
                 />
                 <input
                   type_="text"
@@ -819,9 +799,6 @@ module Palette = {
                   }}
                   className="w-20 h-5"
                 />
-                <button className=" text-black self-start" onClick={_ => {newInterHue(pick)}}>
-                  <Icons.Plus />
-                </button>
               </div>
               <div className="flex flex-row justify-start gap-2 w-full" />
             </div>
@@ -838,25 +815,31 @@ module Palette = {
             gridTemplateColumns: "subgrid",
           }}>
           {shades
-          ->Array.map(shade => {
+          ->Array.mapWithIndex((shade, i) => {
+            let isLastColumn = i == picks->Array.length - 1
+
+            let onDelete = () => {
+              setPicks(p_ =>
+                p_->Array.map(
+                  v => {
+                    {
+                      ...v,
+                      elements: v.elements->Array.filter(e => e.shadeId != shade.id),
+                    }
+                  },
+                )
+              )
+              setShades(s_ => s_->Array.filter(v => v.id != shade.id))
+            }
+
+            let onAdd = () => newInterShade(shade)
+
             <div key={shade.id} className=" flex flex-col gap-2">
-              <button
-                className=" text-red-600"
-                onClick={_ => {
-                  setPicks(p_ =>
-                    p_->Array.map(
-                      v => {
-                        {
-                          ...v,
-                          elements: v.elements->Array.filter(e => e.shadeId != shade.id),
-                        }
-                      },
-                    )
-                  )
-                  setShades(s_ => s_->Array.filter(v => v.id != shade.id))
-                }}>
-                <Icons.Trash />
-              </button>
+              <DropdownMenu
+                items={[("Add Column Before", onAdd)]
+                ->Array.concat(isLastColumn ? [("Add Column After", _ => newEndShade())] : [])
+                ->Array.concat([("Delete Column", onDelete)])}
+              />
               <input
                 type_="text"
                 onChange={e => {
@@ -876,11 +859,6 @@ module Palette = {
                 value={shade.name}
                 className="w-10 h-5"
               />
-              <div className="flex flex-row justify-between">
-                <button className=" text-black " onClick={_ => {newInterShade(shade)}}>
-                  <Icons.Plus />
-                </button>
-              </div>
             </div>
           })
           ->React.array}
@@ -904,7 +882,7 @@ module Palette = {
                 )->Texel.rgbToHex
               <div
                 key={element.id}
-                className="w-10 h-10 max-h-10 max-w-10 flex flex-row items-center justify-center text-xl cursor-pointer"
+                className="w-10 h-10 max-h-10 max-w-10 flex flex-row items-center justify-center cursor-pointer"
                 style={{
                   backgroundColor: hex,
                 }}
