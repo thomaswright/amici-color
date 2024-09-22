@@ -460,7 +460,7 @@ function App$Palette(props) {
                                       view: view
                                     })
                               ],
-                              className: "flex flex-row gap-2"
+                              className: "flex flex-row"
                             }),
                         JsxRuntime.jsx(XStack.make, {
                               hues: picks,
@@ -468,7 +468,7 @@ function App$Palette(props) {
                               view: view
                             })
                       ],
-                      className: "flex flex-col gap-2 py-2"
+                      className: "flex flex-col py-2"
                     }),
                 JsxRuntime.jsx("div", {
                       children: [

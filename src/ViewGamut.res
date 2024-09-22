@@ -65,51 +65,52 @@ let make = (~hues: array<hue>, ~selectedHue, ~selectedElement, ~view: view) => {
     selectedHue,
     selectedHue->Option.flatMap(selectedHue_ => hues->Array.find(hue => hue.id == selectedHue_)),
   ))
+  <div className="p-3 bg-black">
+    <div className="w-fit relative bg-black rounded-sm">
+      {hueObj->Option.mapOr(React.null, hue => {
+        hue.elements
+        ->Array.map(e => {
+          let hsl = (hue.value, e.saturation, e.lightness)
 
-  <div className="w-fit relative bg-black rounded-sm">
-    {hueObj->Option.mapOr(React.null, hue => {
-      hue.elements
-      ->Array.map(e => {
-        let hsl = (hue.value, e.saturation, e.lightness)
-
-        let hex = Texel.convert(hsl, Texel.okhsl, Texel.srgb)->Texel.rgbToHex
-        let (xPer, yPer) = switch view {
-        | View_LC => {
-            let (l, c, _h) = Texel.convert(hsl, Texel.okhsl, Texel.oklch)
-            (l, c /. chromaBound)
+          let hex = Texel.convert(hsl, Texel.okhsl, Texel.srgb)->Texel.rgbToHex
+          let (xPer, yPer) = switch view {
+          | View_LC => {
+              let (l, c, _h) = Texel.convert(hsl, Texel.okhsl, Texel.oklch)
+              (l, c /. chromaBound)
+            }
+          | View_SL => (e.lightness, e.saturation)
+          | View_SV => {
+              let (_, s, v) = Texel.convert(
+                (hue.value, e.saturation, e.lightness),
+                Texel.okhsl,
+                Texel.okhsv,
+              )
+              (v, s)
+            }
           }
-        | View_SL => (e.lightness, e.saturation)
-        | View_SV => {
-            let (_, s, v) = Texel.convert(
-              (hue.value, e.saturation, e.lightness),
-              Texel.okhsl,
-              Texel.okhsv,
-            )
-            (v, s)
-          }
-        }
 
-        <div
-          className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center"
-          style={{
-            backgroundColor: hex,
-            transform: "translate(-50%, 50%)",
-            left: (xPer *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
-            bottom: (yPer *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
-          }}>
-          {selectedElement->Option.mapOr(false, x => x == e.id)
-            ? {"•"->React.string}
-            : React.null}
-        </div>
-      })
-      ->React.array
-    })}
-    <canvas
-      style={{
-        width: xSize->Int.toString ++ "px",
-        height: ySize->Int.toString ++ "px",
-      }}
-      ref={ReactDOM.Ref.domRef(canvasRef)}
-    />
+          <div
+            className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center"
+            style={{
+              backgroundColor: hex,
+              transform: "translate(-50%, 50%)",
+              left: (xPer *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+              bottom: (yPer *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+            }}>
+            {selectedElement->Option.mapOr(false, x => x == e.id)
+              ? {"•"->React.string}
+              : React.null}
+          </div>
+        })
+        ->React.array
+      })}
+      <canvas
+        style={{
+          width: xSize->Int.toString ++ "px",
+          height: ySize->Int.toString ++ "px",
+        }}
+        ref={ReactDOM.Ref.domRef(canvasRef)}
+      />
+    </div>
   </div>
 }

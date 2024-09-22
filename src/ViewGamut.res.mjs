@@ -88,70 +88,73 @@ function ViewGamut(props) {
                           });
               }))
       ]);
-  return JsxRuntime.jsxs("div", {
-              children: [
-                Core__Option.mapOr(hueObj, null, (function (hue) {
-                        return hue.elements.map(function (e) {
-                                    var hsl_0 = hue.value;
-                                    var hsl_1 = e.saturation;
-                                    var hsl_2 = e.lightness;
-                                    var hsl = [
-                                      hsl_0,
-                                      hsl_1,
-                                      hsl_2
-                                    ];
-                                    var hex = Color.RGBToHex(Color.convert(hsl, Color.OKHSL, Color.sRGB));
-                                    var match;
-                                    switch (view) {
-                                      case "View_LC" :
-                                          var match$1 = Color.convert(hsl, Color.OKHSL, Color.OKLCH);
-                                          match = [
-                                            match$1[0],
-                                            match$1[1] / Common.chromaBound
+  return JsxRuntime.jsx("div", {
+              children: JsxRuntime.jsxs("div", {
+                    children: [
+                      Core__Option.mapOr(hueObj, null, (function (hue) {
+                              return hue.elements.map(function (e) {
+                                          var hsl_0 = hue.value;
+                                          var hsl_1 = e.saturation;
+                                          var hsl_2 = e.lightness;
+                                          var hsl = [
+                                            hsl_0,
+                                            hsl_1,
+                                            hsl_2
                                           ];
-                                          break;
-                                      case "View_SV" :
-                                          var match$2 = Color.convert([
-                                                hue.value,
-                                                e.saturation,
-                                                e.lightness
-                                              ], Color.OKHSL, Color.OKHSV);
-                                          match = [
-                                            match$2[2],
-                                            match$2[1]
-                                          ];
-                                          break;
-                                      case "View_SL" :
-                                          match = [
-                                            e.lightness,
-                                            e.saturation
-                                          ];
-                                          break;
-                                      
-                                    }
-                                    return JsxRuntime.jsx("div", {
-                                                children: Core__Option.mapOr(selectedElement, false, (function (x) {
-                                                        return x === e.id;
-                                                      })) ? "•" : null,
-                                                className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center",
-                                                style: {
-                                                  backgroundColor: hex,
-                                                  bottom: (match[1] * 300 | 0).toString() + "px",
-                                                  left: (match[0] * 300 | 0).toString() + "px",
-                                                  transform: "translate(-50%, 50%)"
-                                                }
-                                              });
-                                  });
-                      })),
-                JsxRuntime.jsx("canvas", {
-                      ref: Caml_option.some(canvasRef),
-                      style: {
-                        height: (300).toString() + "px",
-                        width: (300).toString() + "px"
-                      }
-                    })
-              ],
-              className: "w-fit relative bg-black rounded-sm"
+                                          var hex = Color.RGBToHex(Color.convert(hsl, Color.OKHSL, Color.sRGB));
+                                          var match;
+                                          switch (view) {
+                                            case "View_LC" :
+                                                var match$1 = Color.convert(hsl, Color.OKHSL, Color.OKLCH);
+                                                match = [
+                                                  match$1[0],
+                                                  match$1[1] / Common.chromaBound
+                                                ];
+                                                break;
+                                            case "View_SV" :
+                                                var match$2 = Color.convert([
+                                                      hue.value,
+                                                      e.saturation,
+                                                      e.lightness
+                                                    ], Color.OKHSL, Color.OKHSV);
+                                                match = [
+                                                  match$2[2],
+                                                  match$2[1]
+                                                ];
+                                                break;
+                                            case "View_SL" :
+                                                match = [
+                                                  e.lightness,
+                                                  e.saturation
+                                                ];
+                                                break;
+                                            
+                                          }
+                                          return JsxRuntime.jsx("div", {
+                                                      children: Core__Option.mapOr(selectedElement, false, (function (x) {
+                                                              return x === e.id;
+                                                            })) ? "•" : null,
+                                                      className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center",
+                                                      style: {
+                                                        backgroundColor: hex,
+                                                        bottom: (match[1] * 300 | 0).toString() + "px",
+                                                        left: (match[0] * 300 | 0).toString() + "px",
+                                                        transform: "translate(-50%, 50%)"
+                                                      }
+                                                    });
+                                        });
+                            })),
+                      JsxRuntime.jsx("canvas", {
+                            ref: Caml_option.some(canvasRef),
+                            style: {
+                              height: (300).toString() + "px",
+                              width: (300).toString() + "px"
+                            }
+                          })
+                    ],
+                    className: "w-fit relative bg-black rounded-sm"
+                  }),
+              className: "p-3 bg-black"
             });
 }
 
