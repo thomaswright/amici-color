@@ -397,15 +397,15 @@ module Palette = {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: `auto repeat(${shadeLen->Int.toString}, 3rem) 3rem`,
-          gridTemplateRows: `auto repeat(${hueLen->Int.toString}, 3rem) 3rem`,
+          gridTemplateColumns: `auto repeat(${shadeLen->Int.toString}, 3rem)`,
+          gridTemplateRows: `auto repeat(${hueLen->Int.toString}, 3rem)`,
         }}
         className="py-6 w-fit">
         <div
           className="overflow-hidden"
           style={{
             display: "grid",
-            gridRow: "2 / -2",
+            gridRow: "2 / -1",
             gridColumn: "1 / 2",
             gridTemplateRows: "subgrid",
             gridTemplateColumns: "subgrid",
@@ -458,7 +458,7 @@ module Palette = {
           style={{
             display: "grid",
             gridRow: "1 / 2",
-            gridColumn: "2 / -2",
+            gridColumn: "2 / -1",
             gridTemplateRows: "subgrid",
             gridTemplateColumns: "subgrid",
           }}>
@@ -514,8 +514,8 @@ module Palette = {
         <div
           style={{
             display: "grid",
-            gridRow: "2 / -2",
-            gridColumn: "2 / -2",
+            gridRow: "2 / -1",
+            gridColumn: "2 / -1",
             gridTemplateColumns: "subgrid",
             gridTemplateRows: "subgrid",
           }}>

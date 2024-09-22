@@ -528,7 +528,7 @@ function App$Palette(props) {
                               style: {
                                 display: "grid",
                                 gridColumn: "1 / 2",
-                                gridRow: "2 / -2",
+                                gridRow: "2 / -1",
                                 gridTemplateColumns: "subgrid",
                                 gridTemplateRows: "subgrid"
                               }
@@ -661,7 +661,7 @@ function App$Palette(props) {
                               className: "overflow-hidden",
                               style: {
                                 display: "grid",
-                                gridColumn: "2 / -2",
+                                gridColumn: "2 / -1",
                                 gridRow: "1 / 2",
                                 gridTemplateColumns: "subgrid",
                                 gridTemplateRows: "subgrid"
@@ -696,8 +696,8 @@ function App$Palette(props) {
                                       })),
                               style: {
                                 display: "grid",
-                                gridColumn: "2 / -2",
-                                gridRow: "2 / -2",
+                                gridColumn: "2 / -1",
+                                gridRow: "2 / -1",
                                 gridTemplateColumns: "subgrid",
                                 gridTemplateRows: "subgrid"
                               }
@@ -706,8 +706,8 @@ function App$Palette(props) {
                       className: "py-6 w-fit",
                       style: {
                         display: "grid",
-                        gridTemplateColumns: "auto repeat(" + shadeLen.toString() + ", 3rem) 3rem",
-                        gridTemplateRows: "auto repeat(" + hueLen.toString() + ", 3rem) 3rem"
+                        gridTemplateColumns: "auto repeat(" + shadeLen.toString() + ", 3rem)",
+                        gridTemplateRows: "auto repeat(" + hueLen.toString() + ", 3rem)"
                       }
                     })
               ]
