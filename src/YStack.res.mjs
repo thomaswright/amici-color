@@ -94,12 +94,12 @@ function YStack(props) {
             });
 }
 
-var size = 300;
+var ySize = 300;
 
 var make = YStack;
 
 export {
-  size ,
+  ySize ,
   make ,
 }
 /* @texel/color Not a pure module */

@@ -442,38 +442,7 @@ function App$Palette(props) {
                             }),
                         "Amici Color"
                       ],
-                      className: "font-black text-4xl flex flex-row items-center gap-2"
-                    }),
-                JsxRuntime.jsxs("div", {
-                      children: [
-                        JsxRuntime.jsxs("div", {
-                              children: [
-                                JsxRuntime.jsx(ViewGamut.make, {
-                                      hues: picks,
-                                      selectedHue: selectedHue,
-                                      selectedElement: selectedElement,
-                                      view: view,
-                                      setSelectedElement: setSelectedElement
-                                    }),
-                                JsxRuntime.jsx(YStack.make, {
-                                      hues: picks,
-                                      selectedElement: selectedElement,
-                                      view: view,
-                                      setSelectedElement: setSelectedElement,
-                                      setSelectedHue: setSelectedHue
-                                    })
-                              ],
-                              className: "flex flex-row"
-                            }),
-                        JsxRuntime.jsx(XStack.make, {
-                              hues: picks,
-                              selectedElement: selectedElement,
-                              view: view,
-                              setSelectedElement: setSelectedElement,
-                              setSelectedHue: setSelectedHue
-                            })
-                      ],
-                      className: "flex flex-col py-2"
+                      className: "font-black text-4xl flex flex-row items-center gap-2 pb-4"
                     }),
                 JsxRuntime.jsx("div", {
                       children: [
@@ -496,6 +465,38 @@ function App$Palette(props) {
                                       });
                           }),
                       className: "flex flex-row gap-2"
+                    }),
+                JsxRuntime.jsxs("div", {
+                      children: [
+                        JsxRuntime.jsxs("div", {
+                              children: [
+                                JsxRuntime.jsx(ViewGamut.make, {
+                                      hues: picks,
+                                      selectedHue: selectedHue,
+                                      selectedElement: selectedElement,
+                                      view: view,
+                                      setSelectedElement: setSelectedElement
+                                    }),
+                                JsxRuntime.jsx(YStack.make, {
+                                      hues: picks,
+                                      selectedElement: selectedElement,
+                                      view: view,
+                                      setSelectedElement: setSelectedElement,
+                                      setSelectedHue: setSelectedHue,
+                                      selectedHue: selectedHue
+                                    })
+                              ],
+                              className: "flex flex-row"
+                            }),
+                        JsxRuntime.jsx(XStack.make, {
+                              hues: picks,
+                              selectedElement: selectedElement,
+                              view: view,
+                              setSelectedElement: setSelectedElement,
+                              setSelectedHue: setSelectedHue
+                            })
+                      ],
+                      className: "flex flex-col py-2"
                     }),
                 JsxRuntime.jsxs("div", {
                       children: [

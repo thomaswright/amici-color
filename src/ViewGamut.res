@@ -44,8 +44,11 @@ let make = (
 ) => {
   let canvasRef = React.useRef(Nullable.null)
   let hueObj = selectedHue->Option.flatMap(s => hues->Array.find(v => v.id == s))
+
+  let selectedHueUnwrapped =
+    selectedHue->Option.flatMap(selectedHue_ => hues->Array.find(hue => hue.id == selectedHue_))
   // Todo: update on hues change
-  React.useEffect4(() => {
+  React.useEffect3(() => {
     switch canvasRef.current {
     | Value(canvasDom) =>
       let canvas = canvasDom->Obj.magic
@@ -65,12 +68,7 @@ let make = (
     }
 
     None
-  }, (
-    view,
-    canvasRef.current,
-    selectedHue,
-    selectedHue->Option.flatMap(selectedHue_ => hues->Array.find(hue => hue.id == selectedHue_)),
-  ))
+  }, (view, canvasRef.current, selectedHueUnwrapped))
   <div className="p-3 bg-black">
     <div className="w-fit relative bg-black rounded-sm">
       {hueObj->Option.mapOr(React.null, hue => {

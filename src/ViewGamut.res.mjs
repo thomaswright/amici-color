@@ -64,6 +64,11 @@ function ViewGamut(props) {
                       return v.id === s;
                     });
         }));
+  var selectedHueUnwrapped = Core__Option.flatMap(selectedHue, (function (selectedHue_) {
+          return hues.find(function (hue) {
+                      return hue.id === selectedHue_;
+                    });
+        }));
   React.useEffect((function () {
           var canvasDom = canvasRef.current;
           if (canvasDom === null || canvasDom === undefined) {
@@ -82,12 +87,7 @@ function ViewGamut(props) {
         }), [
         view,
         canvasRef.current,
-        selectedHue,
-        Core__Option.flatMap(selectedHue, (function (selectedHue_) {
-                return hues.find(function (hue) {
-                            return hue.id === selectedHue_;
-                          });
-              }))
+        selectedHueUnwrapped
       ]);
   return JsxRuntime.jsx("div", {
               children: JsxRuntime.jsxs("div", {

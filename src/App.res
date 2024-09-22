@@ -411,16 +411,33 @@ module Palette = {
     }
 
     <div>
-      <div className="font-black text-4xl flex flex-row items-center gap-2">
+      <div className="font-black text-4xl flex flex-row items-center gap-2 pb-4">
         <div className="h-12 w-12">
           <Logo />
         </div>
         {"Amici Color"->React.string}
       </div>
+      <div className="flex flex-row gap-2">
+        {[View_LC, View_SL, View_SV]
+        ->Array.map(v => {
+          let isSelected = view == v
+          <button
+            className={[
+              "px-2 rounded",
+              isSelected ? "bg-blue-600 text-white" : "bg-blue-200",
+            ]->Array.join(" ")}
+            onClick={_ => setView(_ => v)}>
+            {v->viewName->React.string}
+          </button>
+        })
+        ->React.array}
+      </div>
       <div className="flex flex-col py-2">
         <div className="flex flex-row">
           <ViewGamut view={view} hues={picks} selectedHue selectedElement setSelectedElement />
-          <YStack view={view} hues={picks} selectedElement setSelectedElement setSelectedHue />
+          <YStack
+            view={view} hues={picks} selectedElement setSelectedElement setSelectedHue selectedHue
+          />
         </div>
         <XStack view={view} hues={picks} selectedElement setSelectedElement setSelectedHue />
         // <div className="flex flex-row gap-2 ">
@@ -443,21 +460,7 @@ module Palette = {
       //   })
       //   ->React.array}
       // </div>
-      <div className="flex flex-row gap-2">
-        {[View_LC, View_SL, View_SV]
-        ->Array.map(v => {
-          let isSelected = view == v
-          <button
-            className={[
-              "px-2 rounded",
-              isSelected ? "bg-blue-600 text-white" : "bg-blue-200",
-            ]->Array.join(" ")}
-            onClick={_ => setView(_ => v)}>
-            {v->viewName->React.string}
-          </button>
-        })
-        ->React.array}
-      </div>
+
       <div
         style={{
           display: "grid",
