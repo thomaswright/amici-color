@@ -37,7 +37,7 @@ let make = (
   ~view: view,
   ~setSelectedElement,
   ~setSelectedHue,
-  ~selectedHue,
+  ~selectedHue as _,
   ~onDragTo,
 ) => {
   // let canvasRef = React.useRef(Nullable.null)
@@ -158,7 +158,7 @@ let make = (
                 chroma /. chromaBound
               }
             | View_SV => {
-                let (_, s, v) = Texel.convert(
+                let (_, s, _) = Texel.convert(
                   (hue.value, e.saturation, e.lightness),
                   Texel.okhsl,
                   Texel.okhsv,

@@ -21,7 +21,7 @@ let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
     let xF = x->Int.toFloat
     let hue = xF /. xLenF *. 360. +. 1.
     let hueId = ulid()
-    let elements = defaultShades->Array.mapWithIndex((shade, y) => {
+    let elements = defaultShades->Array.mapWithIndex((_, y) => {
       let yF = y->Int.toFloat
 
       let s = (yF +. 1.) /. yLenF
@@ -29,7 +29,7 @@ let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
       let (_, s, l) = Texel.convert((hue, s, 1.0), Texel.okhsv, Texel.okhsl)
 
       {
-        shadeId: shade.id,
+        // shadeId: shade.id,
         hueId,
         id: ulid(),
         lightness: l,
@@ -328,7 +328,7 @@ module Palette = {
                     {
                       id: ulid(),
                       hueId,
-                      shadeId: v.shadeId,
+                      // shadeId: v.shadeId,
                       saturation: s,
                       lightness: l,
                     }
@@ -363,7 +363,7 @@ module Palette = {
                     {
                       id: ulid(),
                       hueId,
-                      shadeId: v.shadeId,
+                      // shadeId: v.shadeId,
                       saturation: s,
                       lightness: l,
                     }
@@ -397,7 +397,7 @@ module Palette = {
                     {
                       id: ulid(),
                       hueId,
-                      shadeId: v.shadeId,
+                      // shadeId: v.shadeId,
                       saturation: s,
                       lightness: l,
                     }
@@ -476,7 +476,7 @@ module Palette = {
                   let newElement = {
                     id: ulid(),
                     hueId: hue.id,
-                    shadeId: newShadeId,
+                    // shadeId: newShadeId,
                     saturation: s,
                     lightness: l,
                   }
@@ -526,7 +526,7 @@ module Palette = {
                   let newElement = {
                     id: ulid(),
                     hueId: hue.id,
-                    shadeId: newShadeId,
+                    // shadeId: newShadeId,
                     saturation: s,
                     lightness: l,
                   }
@@ -576,7 +576,7 @@ module Palette = {
                   let newElement = {
                     id: ulid(),
                     hueId: hue.id,
-                    shadeId: newShadeId,
+                    // shadeId: newShadeId,
                     saturation: s,
                     lightness: l,
                   }
@@ -928,14 +928,14 @@ module Palette = {
               gridTemplateColumns: "subgrid",
             }}>
             {shades
-            ->Array.map(shade => {
+            ->Array.mapWithIndex((shade, i) => {
               let onDelete = () => {
                 setPicks(p_ =>
                   p_->Array.map(
                     v => {
                       {
                         ...v,
-                        elements: v.elements->Array.filter(e => e.shadeId != shade.id),
+                        elements: v.elements->Array.filterWithIndex((_, ei) => ei != i),
                       }
                     },
                   )

@@ -23,7 +23,7 @@ function makeDefaultPicks(xLen, defaultShades) {
   return Common.Utils.mapRange(xLen, (function (x) {
                 var hue = x / xLen * 360 + 1;
                 var hueId = Ulid.ulid();
-                var elements = defaultShades.map(function (shade, y) {
+                var elements = defaultShades.map(function (param, y) {
                       var s = (y + 1) / yLenF;
                       var match = Color.convert([
                             hue,
@@ -32,7 +32,6 @@ function makeDefaultPicks(xLen, defaultShades) {
                           ], Color.OKHSV, Color.OKHSL);
                       return {
                               id: Ulid.ulid(),
-                              shadeId: shade.id,
                               hueId: hueId,
                               lightness: match[2],
                               saturation: match[1]
@@ -140,7 +139,6 @@ function App$Palette(props) {
                 updateElement(function (el, param) {
                       return {
                               id: el.id,
-                              shadeId: el.shadeId,
                               hueId: el.hueId,
                               lightness: el.lightness,
                               saturation: Math.max(0.0, el.saturation - 0.01)
@@ -173,7 +171,6 @@ function App$Palette(props) {
                             if (Color.isRGBInGamut(rgb)) {
                               return {
                                       id: el.id,
-                                      shadeId: el.shadeId,
                                       hueId: el.hueId,
                                       lightness: outputL,
                                       saturation: outputS
@@ -198,7 +195,6 @@ function App$Palette(props) {
                                 ], Color.OKHSV, Color.OKHSL);
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: match$1[2],
                                     saturation: match$1[1]
@@ -209,7 +205,6 @@ function App$Palette(props) {
                       updateElement(function (el, param) {
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: Math.max(0.0, el.lightness - 0.01),
                                     saturation: el.saturation
@@ -245,7 +240,6 @@ function App$Palette(props) {
                             if (Color.isRGBInGamut(rgb)) {
                               return {
                                       id: el.id,
-                                      shadeId: el.shadeId,
                                       hueId: el.hueId,
                                       lightness: outputL,
                                       saturation: outputS
@@ -270,7 +264,6 @@ function App$Palette(props) {
                                 ], Color.OKHSV, Color.OKHSL);
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: match$1[2],
                                     saturation: match$1[1]
@@ -281,7 +274,6 @@ function App$Palette(props) {
                       updateElement(function (el, param) {
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: Math.min(1.0, el.lightness + 0.01),
                                     saturation: el.saturation
@@ -296,7 +288,6 @@ function App$Palette(props) {
                 updateElement(function (el, param) {
                       return {
                               id: el.id,
-                              shadeId: el.shadeId,
                               hueId: el.hueId,
                               lightness: el.lightness,
                               saturation: Math.min(1.0, el.saturation + 0.01)
@@ -410,7 +401,6 @@ function App$Palette(props) {
                                       ], Color.OKHSV, Color.OKHSL);
                                   return {
                                           id: Ulid.ulid(),
-                                          shadeId: v.shadeId,
                                           hueId: hueId,
                                           lightness: match$1[2],
                                           saturation: match$1[1]
@@ -441,7 +431,6 @@ function App$Palette(props) {
                                     ], Color.OKHSV, Color.OKHSL);
                                 return {
                                         id: Ulid.ulid(),
-                                        shadeId: v.shadeId,
                                         hueId: hueId$1,
                                         lightness: match$1[2],
                                         saturation: match$1[1]
@@ -475,7 +464,6 @@ function App$Palette(props) {
                                   ], Color.OKHSV, Color.OKHSL);
                               return {
                                       id: Ulid.ulid(),
-                                      shadeId: v.shadeId,
                                       hueId: hueId$2,
                                       lightness: match$1[2],
                                       saturation: match$1[1]
@@ -550,7 +538,6 @@ function App$Palette(props) {
                                         var newElement_saturation = match$2[1];
                                         var newElement = {
                                           id: newElement_id,
-                                          shadeId: newShadeId,
                                           hueId: newElement_hueId,
                                           lightness: newElement_lightness,
                                           saturation: newElement_saturation
@@ -589,7 +576,6 @@ function App$Palette(props) {
                                         var newElement_saturation = match$1[1];
                                         var newElement = {
                                           id: newElement_id,
-                                          shadeId: newShadeId,
                                           hueId: newElement_hueId,
                                           lightness: newElement_lightness,
                                           saturation: newElement_saturation
@@ -629,7 +615,6 @@ function App$Palette(props) {
                                       var newElement_saturation = match$1[1];
                                       var newElement = {
                                         id: newElement_id,
-                                        shadeId: newShadeId,
                                         hueId: newElement_hueId,
                                         lightness: newElement_lightness,
                                         saturation: newElement_saturation
@@ -683,7 +668,6 @@ function App$Palette(props) {
                             var match = Color.convert(lch, Color.OKLCH, Color.OKHSL);
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: match[2],
                                     saturation: match[1]
@@ -698,7 +682,6 @@ function App$Palette(props) {
                                 ], Color.OKHSV, Color.OKHSL);
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: match[2],
                                     saturation: x === 0 ? 1 - y : match[1]
@@ -708,7 +691,6 @@ function App$Palette(props) {
                 return adjust(function (el, _hue) {
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: x,
                                     saturation: 1 - y
@@ -758,7 +740,6 @@ function App$Palette(props) {
                             var match$1 = Color.convert(lch, Color.OKLCH, Color.OKHSL);
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: match$1[2],
                                     saturation: match$1[1]
@@ -779,7 +760,6 @@ function App$Palette(props) {
                                 ], Color.OKHSV, Color.OKHSL);
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: match$1[2],
                                     saturation: el.lightness === 0 ? oldS : match$1[1]
@@ -789,7 +769,6 @@ function App$Palette(props) {
                 return adjust(function (el, _hue) {
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: x,
                                     saturation: el.saturation
@@ -840,7 +819,6 @@ function App$Palette(props) {
                             var match$1 = Color.convert(lch, Color.OKLCH, Color.OKHSL);
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: match$1[2],
                                     saturation: match$1[1]
@@ -860,7 +838,6 @@ function App$Palette(props) {
                                 ], Color.OKHSV, Color.OKHSL);
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: match$1[2],
                                     saturation: el.lightness === 0 ? 1 - y : match$1[1]
@@ -870,7 +847,6 @@ function App$Palette(props) {
                 return adjust(function (el, _hue) {
                             return {
                                     id: el.id,
-                                    shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: el.lightness,
                                     saturation: 1 - y
@@ -1040,7 +1016,7 @@ function App$Palette(props) {
                                       }
                                     }),
                                 JsxRuntime.jsx("div", {
-                                      children: shades.map(function (shade) {
+                                      children: shades.map(function (shade, i) {
                                             var onDelete = function () {
                                               setPicks(function (p_) {
                                                     return p_.map(function (v) {
@@ -1048,8 +1024,8 @@ function App$Palette(props) {
                                                                         id: v.id,
                                                                         value: v.value,
                                                                         name: v.name,
-                                                                        elements: v.elements.filter(function (e) {
-                                                                              return e.shadeId !== shade.id;
+                                                                        elements: v.elements.filter(function (param, ei) {
+                                                                              return ei !== i;
                                                                             })
                                                                       };
                                                               });

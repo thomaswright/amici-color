@@ -43,7 +43,7 @@ module Types = {
 
   type element = {
     id: string,
-    shadeId: string,
+    // shadeId: string,
     hueId: string,
     lightness: float,
     saturation: float,
