@@ -313,12 +313,24 @@ module Palette = {
                 value: newHueValue,
                 elements: (isAfter ? b.elements : a.elements)->Array.map(
                   v => {
+                    let hueRef = isAfter ? b.value : a.value
+                    let (_, hsvs, hsvv) = Texel.convert(
+                      (hueRef, v.saturation, v.lightness),
+                      Texel.okhsl,
+                      Texel.okhsv,
+                    )
+                    let (_, s, l) = Texel.convert(
+                      (newHueValue, hsvs, hsvv),
+                      Texel.okhsv,
+                      Texel.okhsl,
+                    )
+
                     {
                       id: ulid(),
                       hueId,
                       shadeId: v.shadeId,
-                      saturation: v.saturation,
-                      lightness: v.lightness,
+                      saturation: s,
+                      lightness: l,
                     }
                   },
                 ),
@@ -337,12 +349,23 @@ module Palette = {
                 value: newHueValue,
                 elements: b.elements->Array.map(
                   v => {
+                    let (_, hsvs, hsvv) = Texel.convert(
+                      (b.value, v.saturation, v.lightness),
+                      Texel.okhsl,
+                      Texel.okhsv,
+                    )
+                    let (_, s, l) = Texel.convert(
+                      (newHueValue, hsvs, hsvv),
+                      Texel.okhsv,
+                      Texel.okhsl,
+                    )
+
                     {
                       id: ulid(),
                       hueId,
                       shadeId: v.shadeId,
-                      saturation: v.saturation,
-                      lightness: v.lightness,
+                      saturation: s,
+                      lightness: l,
                     }
                   },
                 ),
@@ -361,12 +384,22 @@ module Palette = {
                 value: newHueValue,
                 elements: a.elements->Array.map(
                   v => {
+                    let (_, hsvs, hsvv) = Texel.convert(
+                      (a.value, v.saturation, v.lightness),
+                      Texel.okhsl,
+                      Texel.okhsv,
+                    )
+                    let (_, s, l) = Texel.convert(
+                      (newHueValue, hsvs, hsvv),
+                      Texel.okhsv,
+                      Texel.okhsl,
+                    )
                     {
                       id: ulid(),
                       hueId,
                       shadeId: v.shadeId,
-                      saturation: v.saturation,
-                      lightness: v.lightness,
+                      saturation: s,
+                      lightness: l,
                     }
                   },
                 ),
@@ -423,13 +456,29 @@ module Palette = {
                 hue => {
                   let b = hue.elements->Array.getUnsafe(bi)
                   let a = hue.elements->Array.getUnsafe(ai)
+                  let (_, hsvsB, hsvvB) = Texel.convert(
+                    (hue.value, b.saturation, b.lightness),
+                    Texel.okhsl,
+                    Texel.okhsv,
+                  )
+
+                  let (_, hsvsA, hsvvA) = Texel.convert(
+                    (hue.value, a.saturation, a.lightness),
+                    Texel.okhsl,
+                    Texel.okhsv,
+                  )
+                  let (_, s, l) = Texel.convert(
+                    (hue.value, (hsvsB +. hsvsA) /. 2., (hsvvB +. hsvvA) /. 2.),
+                    Texel.okhsv,
+                    Texel.okhsl,
+                  )
 
                   let newElement = {
                     id: ulid(),
                     hueId: hue.id,
                     shadeId: newShadeId,
-                    saturation: (b.saturation +. a.saturation) /. 2.,
-                    lightness: (b.lightness +. a.lightness) /. 2.,
+                    saturation: s,
+                    lightness: l,
                   }
 
                   {
@@ -463,12 +512,23 @@ module Palette = {
                 hue => {
                   let b = hue.elements->Array.getUnsafe(bi)
 
+                  let (_, hsvs, hsvv) = Texel.convert(
+                    (hue.value, b.saturation, b.lightness),
+                    Texel.okhsl,
+                    Texel.okhsv,
+                  )
+                  let (_, s, l) = Texel.convert(
+                    (hue.value, (hsvs +. 1.) /. 2., hsvv /. 2.),
+                    Texel.okhsv,
+                    Texel.okhsl,
+                  )
+
                   let newElement = {
                     id: ulid(),
                     hueId: hue.id,
                     shadeId: newShadeId,
-                    saturation: (b.saturation +. 1.0) /. 2.,
-                    lightness: (b.lightness +. 0.) /. 2.,
+                    saturation: s,
+                    lightness: l,
                   }
 
                   {
@@ -502,12 +562,23 @@ module Palette = {
                 hue => {
                   let a = hue.elements->Array.getUnsafe(ai)
 
+                  let (_, hsvs, hsvv) = Texel.convert(
+                    (hue.value, a.saturation, a.lightness),
+                    Texel.okhsl,
+                    Texel.okhsv,
+                  )
+                  let (_, s, l) = Texel.convert(
+                    (hue.value, hsvs /. 2., (hsvv +. 1.) /. 2.),
+                    Texel.okhsv,
+                    Texel.okhsl,
+                  )
+
                   let newElement = {
                     id: ulid(),
                     hueId: hue.id,
                     shadeId: newShadeId,
-                    saturation: (0.0 +. a.saturation) /. 2.,
-                    lightness: (1.0 +. a.lightness) /. 2.,
+                    saturation: s,
+                    lightness: l,
                   }
                   {
                     ...hue,

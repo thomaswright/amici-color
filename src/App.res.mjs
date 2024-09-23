@@ -397,12 +397,23 @@ function App$Palette(props) {
                             var newElement_elements = (
                                 isAfter ? b.elements : a.elements
                               ).map(function (v) {
+                                  var hueRef = isAfter ? b.value : a.value;
+                                  var match = Color.convert([
+                                        hueRef,
+                                        v.saturation,
+                                        v.lightness
+                                      ], Color.OKHSL, Color.OKHSV);
+                                  var match$1 = Color.convert([
+                                        newHueValue,
+                                        match[1],
+                                        match[2]
+                                      ], Color.OKHSV, Color.OKHSL);
                                   return {
                                           id: Ulid.ulid(),
                                           shadeId: v.shadeId,
                                           hueId: hueId,
-                                          lightness: v.lightness,
-                                          saturation: v.saturation
+                                          lightness: match$1[2],
+                                          saturation: match$1[1]
                                         };
                                 });
                             var newElement = {
@@ -418,12 +429,22 @@ function App$Palette(props) {
                           var hueId$1 = Ulid.ulid();
                           var newElement_name$1 = Common.hueToName(newHueValue$1);
                           var newElement_elements$1 = b$1.elements.map(function (v) {
+                                var match = Color.convert([
+                                      b$1.value,
+                                      v.saturation,
+                                      v.lightness
+                                    ], Color.OKHSL, Color.OKHSV);
+                                var match$1 = Color.convert([
+                                      newHueValue$1,
+                                      match[1],
+                                      match[2]
+                                    ], Color.OKHSV, Color.OKHSL);
                                 return {
                                         id: Ulid.ulid(),
                                         shadeId: v.shadeId,
                                         hueId: hueId$1,
-                                        lightness: v.lightness,
-                                        saturation: v.saturation
+                                        lightness: match$1[2],
+                                        saturation: match$1[1]
                                       };
                               });
                           var newElement$1 = {
@@ -442,12 +463,22 @@ function App$Palette(props) {
                         var hueId$2 = Ulid.ulid();
                         var newElement_name$2 = Common.hueToName(newHueValue$2);
                         var newElement_elements$2 = a$1.elements.map(function (v) {
+                              var match = Color.convert([
+                                    a$1.value,
+                                    v.saturation,
+                                    v.lightness
+                                  ], Color.OKHSL, Color.OKHSV);
+                              var match$1 = Color.convert([
+                                    newHueValue$2,
+                                    match[1],
+                                    match[2]
+                                  ], Color.OKHSV, Color.OKHSL);
                               return {
                                       id: Ulid.ulid(),
                                       shadeId: v.shadeId,
                                       hueId: hueId$2,
-                                      lightness: v.lightness,
-                                      saturation: v.saturation
+                                      lightness: match$1[2],
+                                      saturation: match$1[1]
                                     };
                             });
                         var newElement$2 = {
@@ -498,10 +529,25 @@ function App$Palette(props) {
                             return p_.map(function (hue) {
                                         var b = hue.elements[beforeIndex];
                                         var a = hue.elements[afterIndex];
+                                        var match = Color.convert([
+                                              hue.value,
+                                              b.saturation,
+                                              b.lightness
+                                            ], Color.OKHSL, Color.OKHSV);
+                                        var match$1 = Color.convert([
+                                              hue.value,
+                                              a.saturation,
+                                              a.lightness
+                                            ], Color.OKHSL, Color.OKHSV);
+                                        var match$2 = Color.convert([
+                                              hue.value,
+                                              (match[1] + match$1[1]) / 2,
+                                              (match[2] + match$1[2]) / 2
+                                            ], Color.OKHSV, Color.OKHSL);
                                         var newElement_id = Ulid.ulid();
                                         var newElement_hueId = hue.id;
-                                        var newElement_lightness = (b.lightness + a.lightness) / 2;
-                                        var newElement_saturation = (b.saturation + a.saturation) / 2;
+                                        var newElement_lightness = match$2[2];
+                                        var newElement_saturation = match$2[1];
                                         var newElement = {
                                           id: newElement_id,
                                           shadeId: newShadeId,
@@ -527,10 +573,20 @@ function App$Palette(props) {
                 return setPicks(function (p_) {
                             return p_.map(function (hue) {
                                         var b = hue.elements[beforeIndex];
+                                        var match = Color.convert([
+                                              hue.value,
+                                              b.saturation,
+                                              b.lightness
+                                            ], Color.OKHSL, Color.OKHSV);
+                                        var match$1 = Color.convert([
+                                              hue.value,
+                                              (match[1] + 1) / 2,
+                                              match[2] / 2
+                                            ], Color.OKHSV, Color.OKHSL);
                                         var newElement_id = Ulid.ulid();
                                         var newElement_hueId = hue.id;
-                                        var newElement_lightness = (b.lightness + 0) / 2;
-                                        var newElement_saturation = (b.saturation + 1.0) / 2;
+                                        var newElement_lightness = match$1[2];
+                                        var newElement_saturation = match$1[1];
                                         var newElement = {
                                           id: newElement_id,
                                           shadeId: newShadeId,
@@ -557,10 +613,20 @@ function App$Palette(props) {
               return setPicks(function (p_) {
                           return p_.map(function (hue) {
                                       var a = hue.elements[afterIndex];
+                                      var match = Color.convert([
+                                            hue.value,
+                                            a.saturation,
+                                            a.lightness
+                                          ], Color.OKHSL, Color.OKHSV);
+                                      var match$1 = Color.convert([
+                                            hue.value,
+                                            match[1] / 2,
+                                            (match[2] + 1) / 2
+                                          ], Color.OKHSV, Color.OKHSL);
                                       var newElement_id = Ulid.ulid();
                                       var newElement_hueId = hue.id;
-                                      var newElement_lightness = (1.0 + a.lightness) / 2;
-                                      var newElement_saturation = (0.0 + a.saturation) / 2;
+                                      var newElement_lightness = match$1[2];
+                                      var newElement_saturation = match$1[1];
                                       var newElement = {
                                         id: newElement_id,
                                         shadeId: newShadeId,
