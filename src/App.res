@@ -73,7 +73,9 @@ module Palette = {
     // let (selectedMode, setSelectedMode) = React.useState(() => LCH_L)
     let (picks_, setPicks) = React.useState(() => defaultPicks)
     let (shades, setShades) = React.useState(() => defaultShades)
-    let (selectedHue, setSelectedHue) = React.useState(() => None)
+    let (selectedHue, setSelectedHue) = React.useState(() =>
+      picks_->Array.get(0)->Option.map(v => v.id)
+    )
     let (selectedElement, setSelectedElement) = React.useState(() => None)
 
     let handleKeydown = React.useCallback2(event => {

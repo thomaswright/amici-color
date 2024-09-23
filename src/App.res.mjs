@@ -77,13 +77,16 @@ function App$Palette(props) {
         return defaultPicks;
       });
   var setPicks = match$1[1];
+  var picks_ = match$1[0];
   var match$2 = React.useState(function () {
         return defaultShades;
       });
   var setShades = match$2[1];
   var shades = match$2[0];
   var match$3 = React.useState(function () {
-        
+        return Core__Option.map(picks_[0], (function (v) {
+                      return v.id;
+                    }));
       });
   var setSelectedHue = match$3[1];
   var selectedHue = match$3[0];
@@ -347,7 +350,7 @@ function App$Palette(props) {
         selectedElement,
         view
       ]);
-  var picks = match$1[0].toSorted(function (a, b) {
+  var picks = picks_.toSorted(function (a, b) {
         return a.value - b.value;
       });
   var hueLen = picks.length;
