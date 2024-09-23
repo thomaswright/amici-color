@@ -107,14 +107,16 @@ let make = (
             }
 
             <div
-              onClick={_ => {
-                setSelectedElement(_ => Some(e.id))
-                setSelectedHue(_ => Some(hue.id))
-              }}
+              // onClick={_ => {
+              //   setSelectedElement(_ => Some(e.id))
+              //   setSelectedHue(_ => Some(hue.id))
+              // }}
               onMouseDown={_ => {
                 isDragging.current = true
                 dragPos.current = None
                 dragId.current = Some(e.id)
+                setSelectedElement(_ => Some(e.id))
+                setSelectedHue(_ => Some(hue.id))
               }}
               onTouchStart={_ => {
                 isDragging.current = true

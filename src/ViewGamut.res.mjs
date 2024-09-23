@@ -233,15 +233,13 @@ function ViewGamut(props) {
                                                               left: (match[0] * 300 | 0).toString() + "px",
                                                               transform: "translate(-50%, 50%)"
                                                             },
-                                                            onClick: (function (param) {
-                                                                setSelectedElement(function (param) {
-                                                                      return e.id;
-                                                                    });
-                                                              }),
                                                             onMouseDown: (function (param) {
                                                                 isDragging.current = true;
                                                                 dragPos.current = undefined;
                                                                 dragId.current = e.id;
+                                                                setSelectedElement(function (param) {
+                                                                      return e.id;
+                                                                    });
                                                               }),
                                                             onTouchStart: (function (param) {
                                                                 isDragging.current = true;

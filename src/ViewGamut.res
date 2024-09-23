@@ -193,13 +193,14 @@ let make = (
                 isDragging.current = true
                 dragPos.current = None
                 dragId.current = Some(e.id)
+                setSelectedElement(_ => Some(e.id))
               }}
               onTouchStart={_ => {
                 isDragging.current = true
                 dragPos.current = None
                 dragId.current = Some(e.id)
               }}
-              onClick={_ => {setSelectedElement(_ => Some(e.id))}}
+              // onClick={_ => {}}
               className=" select-none absolute w-5 h-5 border border-black border-t-white border-l-white flex flex-row items-center justify-center cursor-pointer"
               style={{
                 backgroundColor: hex,

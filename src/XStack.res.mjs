@@ -113,18 +113,16 @@ function XStack(props) {
                                                             left: (percentage * 300 | 0).toString() + "px",
                                                             transform: "translate(-50%, 0)"
                                                           },
-                                                          onClick: (function (param) {
+                                                          onMouseDown: (function (param) {
+                                                              isDragging.current = true;
+                                                              dragPos.current = undefined;
+                                                              dragId.current = e.id;
                                                               setSelectedElement(function (param) {
                                                                     return e.id;
                                                                   });
                                                               setSelectedHue(function (param) {
                                                                     return hue.id;
                                                                   });
-                                                            }),
-                                                          onMouseDown: (function (param) {
-                                                              isDragging.current = true;
-                                                              dragPos.current = undefined;
-                                                              dragId.current = e.id;
                                                             }),
                                                           onTouchStart: (function (param) {
                                                               isDragging.current = true;
