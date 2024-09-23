@@ -248,7 +248,7 @@ function ViewGamut(props) {
                                                                 dragPos.current = undefined;
                                                                 dragId.current = e.id;
                                                               })
-                                                          });
+                                                          }, e.id);
                                               });
                                   })),
                             ref: Caml_option.some(gamutEl),

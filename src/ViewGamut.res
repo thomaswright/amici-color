@@ -190,6 +190,7 @@ let make = (
             }
 
             <div
+              key={e.id}
               onMouseDown={_ => {
                 isDragging.current = true
                 dragPos.current = None
