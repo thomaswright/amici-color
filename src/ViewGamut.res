@@ -37,7 +37,6 @@ let ySizeScaled = (ySize->Int.toFloat *. devicePixelRatio)->Float.toInt
 module CanvasComp = {
   @react.component
   let make = (~hueObj, ~view) => {
-    Console.log("Render Canvas")
     let canvasRef = React.useRef(Nullable.null)
 
     // Todo: update on hues change
@@ -117,20 +116,15 @@ let make = (
     | _ => ()
     }
   }
-  React.useEffect0(() => {
-    let handle = event => {
+  React.useEffect1(() => {
+    let onMouseMove = event => {
       if !isDragging.current {
         ()
       } else {
         drag(event->ReactEvent.Mouse.clientX, event->ReactEvent.Mouse.clientY)
       }
     }
-    addMouseListner("mousemove", handle)
-    Some(() => removeMouseListner("mousemove", handle))
-  })
-
-  React.useEffect0(() => {
-    let handle = event => {
+    let onTouchMove = event => {
       if !isDragging.current {
         ()
       } else {
@@ -141,29 +135,31 @@ let make = (
         ->Option.mapOr((), touch => drag(touch["clientX"], touch["clientY"]))
       }
     }
-    addTouchListner("touchmove", handle)
-    Some(() => removeTouchListner("touchmove", handle))
-  })
 
-  React.useEffect0(() => {
-    let handle = _ => {
+    let onTouchEnd = _ => {
       isDragging.current = false
       dragPos.current = None
       dragId.current = None
     }
-    addTouchListner("touchend", handle)
-    Some(() => removeTouchListner("touchend", handle))
-  })
-
-  React.useEffect0(() => {
-    let handle = _ => {
+    let onMouseUp = _ => {
       isDragging.current = false
       dragPos.current = None
       dragId.current = None
     }
-    addMouseListner("mouseup", handle)
-    Some(() => removeMouseListner("mouseup", handle))
-  })
+
+    addMouseListner("mousemove", onMouseMove)
+    addTouchListner("touchmove", onTouchMove)
+    addTouchListner("touchend", onTouchEnd)
+    addMouseListner("mouseup", onMouseUp)
+    Some(
+      () => {
+        removeMouseListner("mousemove", onMouseMove)
+        removeTouchListner("touchmove", onTouchMove)
+        removeTouchListner("touchend", onTouchEnd)
+        removeMouseListner("mouseup", onMouseUp)
+      },
+    )
+  }, [view])
 
   <div className="p-3 bg-black">
     <div className=" relative">

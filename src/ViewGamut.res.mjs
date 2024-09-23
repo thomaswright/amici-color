@@ -55,7 +55,6 @@ var ySizeScaled = 300 * window.devicePixelRatio | 0;
 function ViewGamut$CanvasComp(props) {
   var view = props.view;
   var hueObj = props.hueObj;
-  console.log("Render Canvas");
   var canvasRef = React.useRef(null);
   React.useEffect((function () {
           var canvasDom = canvasRef.current;
@@ -141,19 +140,13 @@ function ViewGamut(props) {
     onDragTo(match$1, x / 300, y / 300);
   };
   React.useEffect((function () {
-          var handle = function ($$event) {
+          var onMouseMove = function ($$event) {
             if (isDragging.current) {
               return drag($$event.clientX, $$event.clientY);
             }
             
           };
-          document.addEventListener("mousemove", handle);
-          return (function () {
-                    document.removeEventListener("mousemove", handle);
-                  });
-        }), []);
-  React.useEffect((function () {
-          var handle = function ($$event) {
+          var onTouchMove = function ($$event) {
             if (isDragging.current) {
               return Core__Option.mapOr($$event.touches[0], undefined, (function (touch) {
                             drag(touch.clientX, touch.clientY);
@@ -161,33 +154,27 @@ function ViewGamut(props) {
             }
             
           };
-          document.addEventListener("touchmove", handle);
-          return (function () {
-                    document.removeEventListener("touchmove", handle);
-                  });
-        }), []);
-  React.useEffect((function () {
-          var handle = function (param) {
+          var onTouchEnd = function (param) {
             isDragging.current = false;
             dragPos.current = undefined;
             dragId.current = undefined;
           };
-          document.addEventListener("touchend", handle);
-          return (function () {
-                    document.removeEventListener("touchend", handle);
-                  });
-        }), []);
-  React.useEffect((function () {
-          var handle = function (param) {
+          var onMouseUp = function (param) {
             isDragging.current = false;
             dragPos.current = undefined;
             dragId.current = undefined;
           };
-          document.addEventListener("mouseup", handle);
+          document.addEventListener("mousemove", onMouseMove);
+          document.addEventListener("touchmove", onTouchMove);
+          document.addEventListener("touchend", onTouchEnd);
+          document.addEventListener("mouseup", onMouseUp);
           return (function () {
-                    document.removeEventListener("mouseup", handle);
+                    document.removeEventListener("mousemove", onMouseMove);
+                    document.removeEventListener("touchmove", onTouchMove);
+                    document.removeEventListener("touchend", onTouchEnd);
+                    document.removeEventListener("mouseup", onMouseUp);
                   });
-        }), []);
+        }), [view]);
   return JsxRuntime.jsx("div", {
               children: JsxRuntime.jsxs("div", {
                     children: [
