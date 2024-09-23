@@ -95,13 +95,14 @@ let make = (
   ~onDragTo,
 ) => {
   let hueObj = selectedHue->Option.flatMap(s => hues->Array.find(v => v.id == s))
-  let isDragging = ref(false)
-  let dragPos = ref(None)
+  let isDragging = React.useRef(false)
+  let dragPos = React.useRef(None)
+  let dragId = React.useRef(None)
   let gamutEl = React.useRef(Nullable.null)
 
   let drag = (clientX, clientY) => {
-    switch gamutEl.current {
-    | Value(dom) => {
+    switch (gamutEl.current, dragId.current) {
+    | (Value(dom), Some(id)) => {
         let gamutRect = dom->getBoundingClientRect
 
         let gamutX = gamutRect["left"]
@@ -110,90 +111,97 @@ let make = (
         let x = clientX - gamutX
         let y = clientY - gamutY
 
-        onDragTo(x, y)
+        if x > 0 && x < xSize && y > 0 && y < ySize {
+          onDragTo(id, x->Int.toFloat /. xSize->Int.toFloat, y->Int.toFloat /. ySize->Int.toFloat)
+        }
       }
 
-    | Null | Undefined => ()
+    | _ => ()
     }
   }
-
-  <div className="p-3 bg-black relative">
-    <CanvasComp hueObj view />
-    <div
-      ref={ReactDOM.Ref.domRef(gamutEl)}
-      className="absolute top-0 left-0 bg-transparent rounded-sm w-full h-full"
-      onMouseMove={event => {
-        if !isDragging.contents {
-          ()
-        } else {
-          drag(event->ReactEvent.Mouse.clientX, event->ReactEvent.Mouse.clientY)
-        }
-      }}
-      onTouchMove={event => {
-        if !isDragging.contents {
-          ()
-        } else {
-          event
-          ->ReactEvent.Touch.touches
-          ->Obj.magic
-          ->Array.get(0)
-          ->Option.mapOr((), touch => drag(touch["clientX"], touch["clientY"]))
-        }
-      }}
-      onMouseUp={_ => {
-        isDragging := false
-        dragPos := None
-      }}
-      onTouchEnd={_ => {
-        isDragging := false
-        dragPos := None
-      }}>
-      {hueObj->Option.mapOr(React.null, hue => {
-        hue.elements
-        ->Array.map(e => {
-          let hsl = (hue.value, e.saturation, e.lightness)
-
-          let hex = Texel.convert(hsl, Texel.okhsl, Texel.srgb)->Texel.rgbToHex
-          let (xPer, yPer) = switch view {
-          | View_LC => {
-              let (l, c, _h) = Texel.convert(hsl, Texel.okhsl, Texel.oklch)
-              (l, c /. chromaBound)
-            }
-          | View_SL => (e.lightness, e.saturation)
-          | View_SV => {
-              let (_, s, v) = Texel.convert(
-                (hue.value, e.saturation, e.lightness),
-                Texel.okhsl,
-                Texel.okhsv,
-              )
-              (v, s)
-            }
+  <div className="p-3 bg-black">
+    <div className=" relative">
+      <CanvasComp hueObj view />
+      <div
+        ref={ReactDOM.Ref.domRef(gamutEl)}
+        className="absolute top-0 left-0 bg-transparent rounded-sm w-full h-full"
+        onMouseMove={event => {
+          if !isDragging.current {
+            ()
+          } else {
+            drag(event->ReactEvent.Mouse.clientX, event->ReactEvent.Mouse.clientY)
           }
+        }}
+        onTouchMove={event => {
+          if !isDragging.current {
+            ()
+          } else {
+            event
+            ->ReactEvent.Touch.touches
+            ->Obj.magic
+            ->Array.get(0)
+            ->Option.mapOr((), touch => drag(touch["clientX"], touch["clientY"]))
+          }
+        }}
+        onMouseUp={_ => {
+          isDragging.current = false
+          dragPos.current = None
+          dragId.current = None
+        }}
+        onTouchEnd={_ => {
+          isDragging.current = false
+          dragPos.current = None
+          dragId.current = None
+        }}>
+        {hueObj->Option.mapOr(React.null, hue => {
+          hue.elements
+          ->Array.map(e => {
+            let hsl = (hue.value, e.saturation, e.lightness)
 
-          <div
-            onMouseDown={_ => {
-              isDragging := true
-              dragPos := None
-            }}
-            onTouchStart={_ => {
-              isDragging := true
-              dragPos := None
-            }}
-            onClick={_ => {setSelectedElement(_ => Some(e.id))}}
-            className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer"
-            style={{
-              backgroundColor: hex,
-              transform: "translate(-50%, 50%)",
-              left: (xPer *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
-              bottom: (yPer *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
-            }}>
-            {selectedElement->Option.mapOr(false, x => x == e.id)
-              ? {"•"->React.string}
-              : React.null}
-          </div>
-        })
-        ->React.array
-      })}
+            let hex = Texel.convert(hsl, Texel.okhsl, Texel.srgb)->Texel.rgbToHex
+            let (xPer, yPer) = switch view {
+            | View_LC => {
+                let (l, c, _h) = Texel.convert(hsl, Texel.okhsl, Texel.oklch)
+                (l, c /. chromaBound)
+              }
+            | View_SL => (e.lightness, e.saturation)
+            | View_SV => {
+                let (_, s, v) = Texel.convert(
+                  (hue.value, e.saturation, e.lightness),
+                  Texel.okhsl,
+                  Texel.okhsv,
+                )
+                (v, s)
+              }
+            }
+
+            <div
+              onMouseDown={_ => {
+                isDragging.current = true
+                dragPos.current = None
+                dragId.current = Some(e.id)
+              }}
+              onTouchStart={_ => {
+                isDragging.current = true
+                dragPos.current = None
+                dragId.current = Some(e.id)
+              }}
+              onClick={_ => {setSelectedElement(_ => Some(e.id))}}
+              className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer"
+              style={{
+                backgroundColor: hex,
+                transform: "translate(-50%, 50%)",
+                left: (xPer *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+                bottom: (yPer *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+              }}>
+              {selectedElement->Option.mapOr(false, x => x == e.id)
+                ? {"•"->React.string}
+                : React.null}
+            </div>
+          })
+          ->React.array
+        })}
+      </div>
     </div>
   </div>
 }

@@ -120,125 +120,136 @@ function ViewGamut(props) {
                       return v.id === s;
                     });
         }));
-  var isDragging = {
-    contents: false
-  };
-  var dragPos = {
-    contents: undefined
-  };
+  var isDragging = React.useRef(false);
+  var dragPos = React.useRef(undefined);
+  var dragId = React.useRef(undefined);
   var gamutEl = React.useRef(null);
   var drag = function (clientX, clientY) {
-    var dom = gamutEl.current;
-    if (dom === null || dom === undefined) {
+    var match = gamutEl.current;
+    var match$1 = dragId.current;
+    if (match === null || match === undefined) {
       return ;
     }
-    var gamutRect = dom.getBoundingClientRect();
+    if (match$1 === undefined) {
+      return ;
+    }
+    var gamutRect = match.getBoundingClientRect();
     var gamutX = gamutRect.left;
     var gamutY = gamutRect.top;
     var x = clientX - gamutX | 0;
     var y = clientY - gamutY | 0;
-    onDragTo(x, y);
+    if (x > 0 && x < 300 && y > 0 && y < 300) {
+      return onDragTo(match$1, x / 300, y / 300);
+    }
+    
   };
-  return JsxRuntime.jsxs("div", {
-              children: [
-                JsxRuntime.jsx(make, {
-                      hueObj: hueObj,
-                      view: view
-                    }),
-                JsxRuntime.jsx("div", {
-                      children: Core__Option.mapOr(hueObj, null, (function (hue) {
-                              return hue.elements.map(function (e) {
-                                          var hsl_0 = hue.value;
-                                          var hsl_1 = e.saturation;
-                                          var hsl_2 = e.lightness;
-                                          var hsl = [
-                                            hsl_0,
-                                            hsl_1,
-                                            hsl_2
-                                          ];
-                                          var hex = Color.RGBToHex(Color.convert(hsl, Color.OKHSL, Color.sRGB));
-                                          var match;
-                                          switch (view) {
-                                            case "View_LC" :
-                                                var match$1 = Color.convert(hsl, Color.OKHSL, Color.OKLCH);
-                                                match = [
-                                                  match$1[0],
-                                                  match$1[1] / Common.chromaBound
+  return JsxRuntime.jsx("div", {
+              children: JsxRuntime.jsxs("div", {
+                    children: [
+                      JsxRuntime.jsx(make, {
+                            hueObj: hueObj,
+                            view: view
+                          }),
+                      JsxRuntime.jsx("div", {
+                            children: Core__Option.mapOr(hueObj, null, (function (hue) {
+                                    return hue.elements.map(function (e) {
+                                                var hsl_0 = hue.value;
+                                                var hsl_1 = e.saturation;
+                                                var hsl_2 = e.lightness;
+                                                var hsl = [
+                                                  hsl_0,
+                                                  hsl_1,
+                                                  hsl_2
                                                 ];
-                                                break;
-                                            case "View_SV" :
-                                                var match$2 = Color.convert([
-                                                      hue.value,
-                                                      e.saturation,
-                                                      e.lightness
-                                                    ], Color.OKHSL, Color.OKHSV);
-                                                match = [
-                                                  match$2[2],
-                                                  match$2[1]
-                                                ];
-                                                break;
-                                            case "View_SL" :
-                                                match = [
-                                                  e.lightness,
-                                                  e.saturation
-                                                ];
-                                                break;
-                                            
-                                          }
-                                          return JsxRuntime.jsx("div", {
-                                                      children: Core__Option.mapOr(selectedElement, false, (function (x) {
-                                                              return x === e.id;
-                                                            })) ? "•" : null,
-                                                      className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer",
-                                                      style: {
-                                                        backgroundColor: hex,
-                                                        bottom: (match[1] * 300 | 0).toString() + "px",
-                                                        left: (match[0] * 300 | 0).toString() + "px",
-                                                        transform: "translate(-50%, 50%)"
-                                                      },
-                                                      onClick: (function (param) {
-                                                          setSelectedElement(function (param) {
-                                                                return e.id;
-                                                              });
-                                                        }),
-                                                      onMouseDown: (function (param) {
-                                                          isDragging.contents = true;
-                                                          dragPos.contents = undefined;
-                                                        }),
-                                                      onTouchStart: (function (param) {
-                                                          isDragging.contents = true;
-                                                          dragPos.contents = undefined;
-                                                        })
-                                                    });
-                                        });
-                            })),
-                      ref: Caml_option.some(gamutEl),
-                      className: "absolute top-0 left-0 bg-transparent rounded-sm w-full h-full",
-                      onMouseMove: (function ($$event) {
-                          if (isDragging.contents) {
-                            return drag($$event.clientX, $$event.clientY);
-                          }
-                          
-                        }),
-                      onMouseUp: (function (param) {
-                          isDragging.contents = false;
-                          dragPos.contents = undefined;
-                        }),
-                      onTouchEnd: (function (param) {
-                          isDragging.contents = false;
-                          dragPos.contents = undefined;
-                        }),
-                      onTouchMove: (function ($$event) {
-                          if (isDragging.contents) {
-                            return Core__Option.mapOr($$event.touches[0], undefined, (function (touch) {
-                                          drag(touch.clientX, touch.clientY);
-                                        }));
-                          }
-                          
-                        })
-                    })
-              ],
-              className: "p-3 bg-black relative"
+                                                var hex = Color.RGBToHex(Color.convert(hsl, Color.OKHSL, Color.sRGB));
+                                                var match;
+                                                switch (view) {
+                                                  case "View_LC" :
+                                                      var match$1 = Color.convert(hsl, Color.OKHSL, Color.OKLCH);
+                                                      match = [
+                                                        match$1[0],
+                                                        match$1[1] / Common.chromaBound
+                                                      ];
+                                                      break;
+                                                  case "View_SV" :
+                                                      var match$2 = Color.convert([
+                                                            hue.value,
+                                                            e.saturation,
+                                                            e.lightness
+                                                          ], Color.OKHSL, Color.OKHSV);
+                                                      match = [
+                                                        match$2[2],
+                                                        match$2[1]
+                                                      ];
+                                                      break;
+                                                  case "View_SL" :
+                                                      match = [
+                                                        e.lightness,
+                                                        e.saturation
+                                                      ];
+                                                      break;
+                                                  
+                                                }
+                                                return JsxRuntime.jsx("div", {
+                                                            children: Core__Option.mapOr(selectedElement, false, (function (x) {
+                                                                    return x === e.id;
+                                                                  })) ? "•" : null,
+                                                            className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer",
+                                                            style: {
+                                                              backgroundColor: hex,
+                                                              bottom: (match[1] * 300 | 0).toString() + "px",
+                                                              left: (match[0] * 300 | 0).toString() + "px",
+                                                              transform: "translate(-50%, 50%)"
+                                                            },
+                                                            onClick: (function (param) {
+                                                                setSelectedElement(function (param) {
+                                                                      return e.id;
+                                                                    });
+                                                              }),
+                                                            onMouseDown: (function (param) {
+                                                                isDragging.current = true;
+                                                                dragPos.current = undefined;
+                                                                dragId.current = e.id;
+                                                              }),
+                                                            onTouchStart: (function (param) {
+                                                                isDragging.current = true;
+                                                                dragPos.current = undefined;
+                                                                dragId.current = e.id;
+                                                              })
+                                                          });
+                                              });
+                                  })),
+                            ref: Caml_option.some(gamutEl),
+                            className: "absolute top-0 left-0 bg-transparent rounded-sm w-full h-full",
+                            onMouseMove: (function ($$event) {
+                                if (isDragging.current) {
+                                  return drag($$event.clientX, $$event.clientY);
+                                }
+                                
+                              }),
+                            onMouseUp: (function (param) {
+                                isDragging.current = false;
+                                dragPos.current = undefined;
+                                dragId.current = undefined;
+                              }),
+                            onTouchEnd: (function (param) {
+                                isDragging.current = false;
+                                dragPos.current = undefined;
+                                dragId.current = undefined;
+                              }),
+                            onTouchMove: (function ($$event) {
+                                if (isDragging.current) {
+                                  return Core__Option.mapOr($$event.touches[0], undefined, (function (touch) {
+                                                drag(touch.clientX, touch.clientY);
+                                              }));
+                                }
+                                
+                              })
+                          })
+                    ],
+                    className: " relative"
+                  }),
+              className: "p-3 bg-black"
             });
 }
 

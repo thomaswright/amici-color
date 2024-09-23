@@ -442,8 +442,58 @@ module Palette = {
                 selectedHue
                 selectedElement
                 setSelectedElement
-                onDragTo={(x, y) => {
+                onDragTo={(id, x, y) => {
+                  let adjust = f =>
+                    setPicks(p_ => {
+                      p_->Array.map(hue => {
+                        ...hue,
+                        elements: hue.elements
+                        ->Array.map(
+                          hueElement => {
+                            if hueElement.id == id {
+                              f(hueElement, hue.value)
+                            } else {
+                              hueElement
+                            }
+                          },
+                        )
+                        ->Array.toSorted((a, b) => b.lightness -. a.lightness),
+                      })
+                    })
                   Console.log2(x, y)
+
+                  switch view {
+                  | View_LC =>
+                    adjust((el, hue) => {
+                      let (h, s, l) = Texel.convert(
+                        (x, (1. -. y) /. chromaBound, hue),
+                        Texel.oklch,
+                        Texel.okhsl,
+                      )
+                      {
+                        ...el,
+                        saturation: s,
+                        lightness: l,
+                      }
+                    })
+                  | View_SL =>
+                    adjust((el, hue) => {
+                      {
+                        ...el,
+                        saturation: 1. -. y,
+                        lightness: x,
+                      }
+                    })
+                  | View_SV =>
+                    adjust((el, hue) => {
+                      let (h, s, l) = Texel.convert((hue, 1. -. y, x), Texel.okhsv, Texel.okhsl)
+                      {
+                        ...el,
+                        saturation: s,
+                        lightness: l,
+                      }
+                    })
+                  }
                 }}
               />
               <YStack

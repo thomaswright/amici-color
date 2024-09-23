@@ -480,8 +480,71 @@ function App$Palette(props) {
                                                       selectedElement: selectedElement,
                                                       view: view,
                                                       setSelectedElement: setSelectedElement,
-                                                      onDragTo: (function (x, y) {
+                                                      onDragTo: (function (id, x, y) {
+                                                          var adjust = function (f) {
+                                                            setPicks(function (p_) {
+                                                                  return p_.map(function (hue) {
+                                                                              return {
+                                                                                      id: hue.id,
+                                                                                      value: hue.value,
+                                                                                      name: hue.name,
+                                                                                      elements: hue.elements.map(function (hueElement) {
+                                                                                              if (hueElement.id === id) {
+                                                                                                return f(hueElement, hue.value);
+                                                                                              } else {
+                                                                                                return hueElement;
+                                                                                              }
+                                                                                            }).toSorted(function (a, b) {
+                                                                                            return b.lightness - a.lightness;
+                                                                                          })
+                                                                                    };
+                                                                            });
+                                                                });
+                                                          };
                                                           console.log(x, y);
+                                                          switch (view) {
+                                                            case "View_LC" :
+                                                                return adjust(function (el, hue) {
+                                                                            var match = Color.convert([
+                                                                                  x,
+                                                                                  (1 - y) / Common.chromaBound,
+                                                                                  hue
+                                                                                ], Color.OKLCH, Color.OKHSL);
+                                                                            return {
+                                                                                    id: el.id,
+                                                                                    shadeId: el.shadeId,
+                                                                                    hueId: el.hueId,
+                                                                                    lightness: match[2],
+                                                                                    saturation: match[1]
+                                                                                  };
+                                                                          });
+                                                            case "View_SV" :
+                                                                return adjust(function (el, hue) {
+                                                                            var match = Color.convert([
+                                                                                  hue,
+                                                                                  1 - y,
+                                                                                  x
+                                                                                ], Color.OKHSV, Color.OKHSL);
+                                                                            return {
+                                                                                    id: el.id,
+                                                                                    shadeId: el.shadeId,
+                                                                                    hueId: el.hueId,
+                                                                                    lightness: match[2],
+                                                                                    saturation: match[1]
+                                                                                  };
+                                                                          });
+                                                            case "View_SL" :
+                                                                return adjust(function (el, hue) {
+                                                                            return {
+                                                                                    id: el.id,
+                                                                                    shadeId: el.shadeId,
+                                                                                    hueId: el.hueId,
+                                                                                    lightness: x,
+                                                                                    saturation: 1 - y
+                                                                                  };
+                                                                          });
+                                                            
+                                                          }
                                                         })
                                                     }),
                                                 JsxRuntime.jsx(YStack.make, {
