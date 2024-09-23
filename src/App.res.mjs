@@ -361,76 +361,225 @@ function App$Palette(props) {
       });
   var hueLen = picks.length;
   var shadeLen = shades.length;
-  var makeNewHue = function (copy, left, right) {
-    var newValue = (left + right) / 2;
-    var hueId = Ulid.ulid();
-    return {
-            id: hueId,
-            value: newValue,
-            name: Common.hueToName(newValue),
-            elements: copy.elements.map(function (v) {
-                  return {
-                          id: Ulid.ulid(),
-                          shadeId: v.shadeId,
-                          hueId: hueId,
-                          lightness: v.lightness,
-                          saturation: v.saturation
-                        };
-                })
-          };
-  };
-  var newEndHue = function () {
+  var newHue = function (referenceHueId, isAfter) {
     setPicks(function (p_) {
-          var lastHue = picks.toReversed()[0];
-          var $$new = makeNewHue(lastHue, lastHue.value, 360);
-          return Belt_Array.concatMany([
-                      p_,
-                      [$$new]
-                    ]);
-        });
-  };
-  var newEndShade = function () {
-    var newShadeId = Ulid.ulid();
-    setShades(function (s_) {
-          return Belt_Array.concatMany([
-                      s_,
-                      [{
-                          id: newShadeId,
-                          name: "New"
-                        }]
-                    ]);
-        });
-    setPicks(function (p_) {
-          return p_.map(function (v) {
-                      return {
-                              id: v.id,
-                              value: v.value,
-                              name: v.name,
-                              elements: Core__Array.reduceWithIndex(v.elements, [], (function (a, c, i) {
-                                      if (i === (v.elements.length - 1 | 0)) {
-                                        return Belt_Array.concatMany([
-                                                    a,
-                                                    [
-                                                      c,
-                                                      {
-                                                        id: Ulid.ulid(),
-                                                        shadeId: newShadeId,
-                                                        hueId: v.id,
-                                                        lightness: Common.Utils.bound(0.0, 1.0, (c.lightness + 1.0) / 2),
-                                                        saturation: Common.Utils.bound(0.0, 1.0, (c.saturation + 1.0) / 2)
-                                                      }
-                                                    ]
-                                                  ]);
-                                      } else {
-                                        return Belt_Array.concatMany([
-                                                    a,
-                                                    [c]
-                                                  ]);
-                                      }
-                                    }))
+          return Core__Option.mapOr(Core__Array.findIndexOpt(p_, (function (v) {
+                            return v.id === referenceHueId;
+                          })), p_, (function (pickIndex) {
+                        var isFirst = pickIndex === 0;
+                        var isLast = pickIndex === (p_.length - 1 | 0);
+                        var match = isAfter ? (
+                            isLast ? [
+                                pickIndex,
+                                undefined
+                              ] : [
+                                pickIndex,
+                                pickIndex + 1 | 0
+                              ]
+                          ) : (
+                            isFirst ? [
+                                undefined,
+                                pickIndex
+                              ] : [
+                                pickIndex - 1 | 0,
+                                pickIndex
+                              ]
+                          );
+                        var afterIndex = match[1];
+                        var beforeIndex = match[0];
+                        if (beforeIndex !== undefined) {
+                          if (afterIndex !== undefined) {
+                            var b = p_[beforeIndex];
+                            var a = p_[afterIndex];
+                            var newHueValue = (b.value + a.value) / 2;
+                            var hueId = Ulid.ulid();
+                            var newElement_name = Common.hueToName(newHueValue);
+                            var newElement_elements = (
+                                isAfter ? b.elements : a.elements
+                              ).map(function (v) {
+                                  return {
+                                          id: Ulid.ulid(),
+                                          shadeId: v.shadeId,
+                                          hueId: hueId,
+                                          lightness: v.lightness,
+                                          saturation: v.saturation
+                                        };
+                                });
+                            var newElement = {
+                              id: hueId,
+                              value: newHueValue,
+                              name: newElement_name,
+                              elements: newElement_elements
                             };
-                    });
+                            return p_.toSpliced(afterIndex, 0, newElement);
+                          }
+                          var b$1 = p_[beforeIndex];
+                          var newHueValue$1 = (b$1.value + 360) / 2;
+                          var hueId$1 = Ulid.ulid();
+                          var newElement_name$1 = Common.hueToName(newHueValue$1);
+                          var newElement_elements$1 = b$1.elements.map(function (v) {
+                                return {
+                                        id: Ulid.ulid(),
+                                        shadeId: v.shadeId,
+                                        hueId: hueId$1,
+                                        lightness: v.lightness,
+                                        saturation: v.saturation
+                                      };
+                              });
+                          var newElement$1 = {
+                            id: hueId$1,
+                            value: newHueValue$1,
+                            name: newElement_name$1,
+                            elements: newElement_elements$1
+                          };
+                          return p_.toSpliced(beforeIndex + 1 | 0, 0, newElement$1);
+                        }
+                        if (afterIndex === undefined) {
+                          return p_;
+                        }
+                        var a$1 = p_[afterIndex];
+                        var newHueValue$2 = (0 + a$1.value) / 2;
+                        var hueId$2 = Ulid.ulid();
+                        var newElement_name$2 = Common.hueToName(newHueValue$2);
+                        var newElement_elements$2 = a$1.elements.map(function (v) {
+                              return {
+                                      id: Ulid.ulid(),
+                                      shadeId: v.shadeId,
+                                      hueId: hueId$2,
+                                      lightness: v.lightness,
+                                      saturation: v.saturation
+                                    };
+                            });
+                        var newElement$2 = {
+                          id: hueId$2,
+                          value: newHueValue$2,
+                          name: newElement_name$2,
+                          elements: newElement_elements$2
+                        };
+                        return p_.toSpliced(0, 0, newElement$2);
+                      }));
         });
+  };
+  var newShade = function (referenceShadeId, isAfter) {
+    var newShadeId = Ulid.ulid();
+    Core__Option.mapOr(Core__Array.findIndexOpt(shades, (function (v) {
+                return v.id === referenceShadeId;
+              })), undefined, (function (shadeIndex) {
+            var isFirst = shadeIndex === 0;
+            var isLast = shadeIndex === (shades.length - 1 | 0);
+            var match = isAfter ? (
+                isLast ? [
+                    shadeIndex,
+                    undefined
+                  ] : [
+                    shadeIndex,
+                    shadeIndex + 1 | 0
+                  ]
+              ) : (
+                isFirst ? [
+                    undefined,
+                    shadeIndex
+                  ] : [
+                    shadeIndex - 1 | 0,
+                    shadeIndex
+                  ]
+              );
+            var afterIndex = match[1];
+            var beforeIndex = match[0];
+            if (beforeIndex !== undefined) {
+              if (afterIndex !== undefined) {
+                setShades(function (s_) {
+                      return s_.toSpliced(afterIndex, 0, {
+                                  id: newShadeId,
+                                  name: "New"
+                                });
+                    });
+                return setPicks(function (p_) {
+                            return p_.map(function (hue) {
+                                        var b = hue.elements[beforeIndex];
+                                        var a = hue.elements[afterIndex];
+                                        var newElement_id = Ulid.ulid();
+                                        var newElement_hueId = hue.id;
+                                        var newElement_lightness = (b.lightness + a.lightness) / 2;
+                                        var newElement_saturation = (b.saturation + a.saturation) / 2;
+                                        var newElement = {
+                                          id: newElement_id,
+                                          shadeId: newShadeId,
+                                          hueId: newElement_hueId,
+                                          lightness: newElement_lightness,
+                                          saturation: newElement_saturation
+                                        };
+                                        return {
+                                                id: hue.id,
+                                                value: hue.value,
+                                                name: hue.name,
+                                                elements: hue.elements.toSpliced(afterIndex, 0, newElement)
+                                              };
+                                      });
+                          });
+              } else {
+                setShades(function (s_) {
+                      return s_.toSpliced(beforeIndex + 1 | 0, 0, {
+                                  id: newShadeId,
+                                  name: "New"
+                                });
+                    });
+                return setPicks(function (p_) {
+                            return p_.map(function (hue) {
+                                        var b = hue.elements[beforeIndex];
+                                        var newElement_id = Ulid.ulid();
+                                        var newElement_hueId = hue.id;
+                                        var newElement_lightness = (b.lightness + 0) / 2;
+                                        var newElement_saturation = (b.saturation + 1.0) / 2;
+                                        var newElement = {
+                                          id: newElement_id,
+                                          shadeId: newShadeId,
+                                          hueId: newElement_hueId,
+                                          lightness: newElement_lightness,
+                                          saturation: newElement_saturation
+                                        };
+                                        return {
+                                                id: hue.id,
+                                                value: hue.value,
+                                                name: hue.name,
+                                                elements: hue.elements.toSpliced(beforeIndex + 1 | 0, 0, newElement)
+                                              };
+                                      });
+                          });
+              }
+            } else if (afterIndex !== undefined) {
+              setShades(function (s_) {
+                    return s_.toSpliced(0, 0, {
+                                id: newShadeId,
+                                name: "New"
+                              });
+                  });
+              return setPicks(function (p_) {
+                          return p_.map(function (hue) {
+                                      var a = hue.elements[afterIndex];
+                                      var newElement_id = Ulid.ulid();
+                                      var newElement_hueId = hue.id;
+                                      var newElement_lightness = (1.0 + a.lightness) / 2;
+                                      var newElement_saturation = (0.0 + a.saturation) / 2;
+                                      var newElement = {
+                                        id: newElement_id,
+                                        shadeId: newShadeId,
+                                        hueId: newElement_hueId,
+                                        lightness: newElement_lightness,
+                                        saturation: newElement_saturation
+                                      };
+                                      return {
+                                              id: hue.id,
+                                              value: hue.value,
+                                              name: hue.name,
+                                              elements: hue.elements.toSpliced(0, 0, newElement)
+                                            };
+                                    });
+                        });
+            } else {
+              return ;
+            }
+          }));
   };
   var onDragToGamut = React.useCallback((function (id, x, y) {
           var adjust = function (f) {
@@ -742,8 +891,7 @@ function App$Palette(props) {
                         JsxRuntime.jsxs("div", {
                               children: [
                                 JsxRuntime.jsx("div", {
-                                      children: picks.map(function (pick, i) {
-                                            var isLastRow = i === (picks.length - 1 | 0);
+                                      children: picks.map(function (pick) {
                                             var onDelete = function () {
                                               setPicks(function (p_) {
                                                     return p_.filter(function (v) {
@@ -760,44 +908,29 @@ function App$Palette(props) {
                                                                 }));
                                                   });
                                             };
-                                            var onAdd = function () {
-                                              setPicks(function (p_) {
-                                                    return Core__Array.reduceWithIndex(p_, [], (function (acc, cur, i) {
-                                                                  var leftValue = i === 0 ? 0 : p_[i - 1 | 0].value;
-                                                                  if (cur.id === pick.id) {
-                                                                    return Belt_Array.concatMany([
-                                                                                acc,
-                                                                                [
-                                                                                  makeNewHue(cur, leftValue, cur.value),
-                                                                                  cur
-                                                                                ]
-                                                                              ]);
-                                                                  } else {
-                                                                    return Belt_Array.concatMany([
-                                                                                acc,
-                                                                                [cur]
-                                                                              ]);
-                                                                  }
-                                                                }));
-                                                  });
-                                            };
                                             return JsxRuntime.jsxs("div", {
                                                         children: [
                                                           JsxRuntime.jsxs("div", {
                                                                 children: [
                                                                   JsxRuntime.jsx(make$1, {
-                                                                        items: [[
-                                                                                "Add Row Before",
-                                                                                onAdd
-                                                                              ]].concat(isLastRow ? [[
-                                                                                    "Add Row After",
-                                                                                    (function () {
-                                                                                        newEndHue();
-                                                                                      })
-                                                                                  ]] : []).concat([[
-                                                                                "Delete Row",
-                                                                                onDelete
-                                                                              ]])
+                                                                        items: [
+                                                                          [
+                                                                            "Add Row Before",
+                                                                            (function () {
+                                                                                newHue(pick.id, false);
+                                                                              })
+                                                                          ],
+                                                                          [
+                                                                            "Add Row After",
+                                                                            (function () {
+                                                                                newHue(pick.id, true);
+                                                                              })
+                                                                          ],
+                                                                          [
+                                                                            "Delete Row",
+                                                                            onDelete
+                                                                          ]
+                                                                        ]
                                                                       }),
                                                                   JsxRuntime.jsx("input", {
                                                                         className: "w-20 h-5",
@@ -841,8 +974,7 @@ function App$Palette(props) {
                                       }
                                     }),
                                 JsxRuntime.jsx("div", {
-                                      children: shades.map(function (shade, i) {
-                                            var isLastColumn = i === (picks.length - 1 | 0);
+                                      children: shades.map(function (shade) {
                                             var onDelete = function () {
                                               setPicks(function (p_) {
                                                     return p_.map(function (v) {
@@ -862,84 +994,27 @@ function App$Palette(props) {
                                                               });
                                                   });
                                             };
-                                            var onAdd = function () {
-                                              var newShadeId = Ulid.ulid();
-                                              setShades(function (s_) {
-                                                    return Core__Array.reduce(s_, [], (function (a, c) {
-                                                                  if (c.id === shade.id) {
-                                                                    return Belt_Array.concatMany([
-                                                                                a,
-                                                                                [
-                                                                                  {
-                                                                                    id: newShadeId,
-                                                                                    name: "New"
-                                                                                  },
-                                                                                  c
-                                                                                ]
-                                                                              ]);
-                                                                  } else {
-                                                                    return Belt_Array.concatMany([
-                                                                                a,
-                                                                                [c]
-                                                                              ]);
-                                                                  }
-                                                                }));
-                                                  });
-                                              setPicks(function (p_) {
-                                                    return p_.map(function (hue) {
-                                                                return {
-                                                                        id: hue.id,
-                                                                        value: hue.value,
-                                                                        name: hue.name,
-                                                                        elements: Core__Array.reduceWithIndex(hue.elements, [], (function (a, c, i) {
-                                                                                if (c.shadeId !== shade.id) {
-                                                                                  return Belt_Array.concatMany([
-                                                                                              a,
-                                                                                              [c]
-                                                                                            ]);
-                                                                                }
-                                                                                var match = i === 0 ? [
-                                                                                    0.0,
-                                                                                    0.0
-                                                                                  ] : (function (x) {
-                                                                                        return [
-                                                                                                x.saturation,
-                                                                                                x.lightness
-                                                                                              ];
-                                                                                      })(hue.elements[i - 1 | 0]);
-                                                                                return Belt_Array.concatMany([
-                                                                                            a,
-                                                                                            [
-                                                                                              {
-                                                                                                id: Ulid.ulid(),
-                                                                                                shadeId: newShadeId,
-                                                                                                hueId: hue.id,
-                                                                                                lightness: Common.Utils.bound(0.0, 1.0, (match[1] + c.lightness) / 2),
-                                                                                                saturation: Common.Utils.bound(0.0, 1.0, (match[0] + c.saturation) / 2)
-                                                                                              },
-                                                                                              c
-                                                                                            ]
-                                                                                          ]);
-                                                                              }))
-                                                                      };
-                                                              });
-                                                  });
-                                            };
                                             return JsxRuntime.jsxs("div", {
                                                         children: [
                                                           JsxRuntime.jsx(make$1, {
-                                                                items: [[
-                                                                        "Add Column Before",
-                                                                        onAdd
-                                                                      ]].concat(isLastColumn ? [[
-                                                                            "Add Column After",
-                                                                            (function () {
-                                                                                newEndShade();
-                                                                              })
-                                                                          ]] : []).concat([[
-                                                                        "Delete Column",
-                                                                        onDelete
-                                                                      ]])
+                                                                items: [
+                                                                  [
+                                                                    "Add Column Before",
+                                                                    (function () {
+                                                                        newShade(shade.id, false);
+                                                                      })
+                                                                  ],
+                                                                  [
+                                                                    "Add Column After",
+                                                                    (function () {
+                                                                        newShade(shade.id, true);
+                                                                      })
+                                                                  ],
+                                                                  [
+                                                                    "Delete Column",
+                                                                    onDelete
+                                                                  ]
+                                                                ]
                                                               }),
                                                           JsxRuntime.jsx("input", {
                                                                 className: "w-10 h-5",

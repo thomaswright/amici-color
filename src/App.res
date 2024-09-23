@@ -46,11 +46,11 @@ let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
   })
 }
 
-let modeName = mode =>
-  switch mode {
-  | HSL_L => "OKHSL - L"
-  | LCH_L => "OKLCH - L"
-  }
+// let modeName = mode =>
+//   switch mode {
+//   | HSL_L => "OKHSL - L"
+//   | LCH_L => "OKLCH - L"
+//   }
 
 let viewName = view =>
   switch view {
@@ -278,135 +278,251 @@ module Palette = {
     let hueLen = picks->Array.length
     let shadeLen = shades->Array.length
 
-    let makeNewHue = (copy, left, right) => {
-      let newValue = (left +. right) /. 2.
-      let hueId = ulid()
-      {
-        id: hueId,
-        name: newValue->hueToName,
-        value: newValue,
-        elements: copy.elements->Array.map(v => {
-          {
-            id: ulid(),
-            hueId,
-            shadeId: v.shadeId,
-            saturation: v.saturation,
-            lightness: v.lightness,
+    let newHue = (referenceHueId, isAfter: bool) => {
+      setPicks(p_ => {
+        p_
+        ->Array.findIndexOpt(v => v.id === referenceHueId)
+        ->Option.mapOr(p_, pickIndex => {
+          let isFirst = pickIndex == 0
+          let isLast = pickIndex == p_->Array.length - 1
+
+          let (beforeIndex, afterIndex) = {
+            if isAfter {
+              if isLast {
+                (Some(pickIndex), None)
+              } else {
+                (Some(pickIndex), Some(pickIndex + 1))
+              }
+            } else if isFirst {
+              (None, Some(pickIndex))
+            } else {
+              (Some(pickIndex - 1), Some(pickIndex))
+            }
           }
-        }),
-      }
-    }
 
-    let newInterHue = (pick: hue) => {
-      setPicks(p_ => {
-        p_->Array.reduceWithIndex([], (acc, cur, i) => {
-          let leftValue = i == 0 ? 0. : p_->Array.getUnsafe(i - 1)->{x => x.value}
+          switch (beforeIndex, afterIndex) {
+          | (Some(bi), Some(ai)) => {
+              let b = p_->Array.getUnsafe(bi)
+              let a = p_->Array.getUnsafe(ai)
+              let newHueValue = (b.value +. a.value) /. 2.
 
-          cur.id == pick.id ? [...acc, makeNewHue(cur, leftValue, cur.value), cur] : [...acc, cur]
-        })
-      })
-    }
-
-    let newEndHue = () => {
-      setPicks(p_ => {
-        let lastHue = picks->Array.toReversed->Array.getUnsafe(0)
-
-        let new = makeNewHue(lastHue, lastHue.value, 360.)
-        [...p_, new]
-      })
-    }
-
-    let newEndShade = () => {
-      let newShadeId = ulid()
-      setShades(s_ => {
-        [
-          ...s_,
-          {
-            id: newShadeId,
-            name: "New",
-          },
-        ]
-      })
-      setPicks(p_ => {
-        p_->Array.map(v => {
-          {
-            ...v,
-            elements: v.elements->Array.reduceWithIndex(
-              [],
-              (a, c, i) => {
-                i == v.elements->Array.length - 1
-                  ? {
-                      [
-                        ...a,
-                        c,
-                        {
-                          id: ulid(),
-                          shadeId: newShadeId,
-                          hueId: v.id,
-                          saturation: Utils.bound(0.0, 1.0, (c.saturation +. 1.0) /. 2.),
-                          lightness: Utils.bound(0.0, 1.0, (c.lightness +. 1.0) /. 2.),
-                        },
-                      ]
+              let hueId = ulid()
+              let newElement = {
+                id: hueId,
+                name: newHueValue->hueToName,
+                value: newHueValue,
+                elements: (isAfter ? b.elements : a.elements)->Array.map(
+                  v => {
+                    {
+                      id: ulid(),
+                      hueId,
+                      shadeId: v.shadeId,
+                      saturation: v.saturation,
+                      lightness: v.lightness,
                     }
-                  : [...a, c]
-              },
-            ),
+                  },
+                ),
+              }
+
+              p_->Array.toSpliced(~start=ai, ~remove=0, ~insert=[newElement])
+            }
+          | (Some(bi), None) => {
+              let b = p_->Array.getUnsafe(bi)
+              let newHueValue = (b.value +. 360.) /. 2.
+
+              let hueId = ulid()
+              let newElement = {
+                id: hueId,
+                name: newHueValue->hueToName,
+                value: newHueValue,
+                elements: b.elements->Array.map(
+                  v => {
+                    {
+                      id: ulid(),
+                      hueId,
+                      shadeId: v.shadeId,
+                      saturation: v.saturation,
+                      lightness: v.lightness,
+                    }
+                  },
+                ),
+              }
+
+              p_->Array.toSpliced(~start=bi + 1, ~remove=0, ~insert=[newElement])
+            }
+          | (None, Some(ai)) => {
+              let a = p_->Array.getUnsafe(ai)
+              let newHueValue = (0. +. a.value) /. 2.
+
+              let hueId = ulid()
+              let newElement = {
+                id: hueId,
+                name: newHueValue->hueToName,
+                value: newHueValue,
+                elements: a.elements->Array.map(
+                  v => {
+                    {
+                      id: ulid(),
+                      hueId,
+                      shadeId: v.shadeId,
+                      saturation: v.saturation,
+                      lightness: v.lightness,
+                    }
+                  },
+                ),
+              }
+
+              p_->Array.toSpliced(~start=0, ~remove=0, ~insert=[newElement])
+            }
+          | _ => p_
           }
         })
       })
     }
 
-    let newInterShade = (shade: shade) => {
+    let newShade = (referenceShadeId, isAfter: bool) => {
       let newShadeId = ulid()
-      setShades(s_ => {
-        s_->Array.reduce([], (a, c) => {
-          c.id == shade.id
-            ? [
-                ...a,
-                {
-                  id: newShadeId,
-                  name: "New",
+
+      shades
+      ->Array.findIndexOpt(v => v.id == referenceShadeId)
+      ->Option.mapOr((), shadeIndex => {
+        let isFirst = shadeIndex == 0
+        let isLast = shadeIndex == shades->Array.length - 1
+
+        let (beforeIndex, afterIndex) = {
+          if isAfter {
+            if isLast {
+              (Some(shadeIndex), None)
+            } else {
+              (Some(shadeIndex), Some(shadeIndex + 1))
+            }
+          } else if isFirst {
+            (None, Some(shadeIndex))
+          } else {
+            (Some(shadeIndex - 1), Some(shadeIndex))
+          }
+        }
+
+        switch (beforeIndex, afterIndex) {
+        | (Some(bi), Some(ai)) => {
+            setShades(s_ => {
+              s_->Array.toSpliced(
+                ~start=ai,
+                ~remove=0,
+                ~insert=[
+                  {
+                    id: newShadeId,
+                    name: "New",
+                  },
+                ],
+              )
+            })
+
+            setPicks(p_ => {
+              p_->Array.map(
+                hue => {
+                  let b = hue.elements->Array.getUnsafe(bi)
+                  let a = hue.elements->Array.getUnsafe(ai)
+
+                  let newElement = {
+                    id: ulid(),
+                    hueId: hue.id,
+                    shadeId: newShadeId,
+                    saturation: (b.saturation +. a.saturation) /. 2.,
+                    lightness: (b.lightness +. a.lightness) /. 2.,
+                  }
+
+                  {
+                    ...hue,
+                    elements: hue.elements->Array.toSpliced(
+                      ~start=ai,
+                      ~remove=0,
+                      ~insert=[newElement],
+                    ),
+                  }
                 },
-                c,
-              ]
-            : [...a, c]
-        })
-      })
-      setPicks(p_ => {
-        p_->Array.map(hue => {
-          {
-            ...hue,
-            elements: hue.elements->Array.reduceWithIndex(
-              [],
-              (a, c, i) => {
-                c.shadeId == shade.id
-                  ? {
-                      let (leftSaturation, leftLightness) =
-                        i == 0
-                          ? (0.0, 0.0)
-                          : hue.elements
-                            ->Array.getUnsafe(i - 1)
-                            ->{
-                              x => (x.saturation, x.lightness)
-                            }
-
-                      [
-                        ...a,
-                        {
-                          id: ulid(),
-                          shadeId: newShadeId,
-                          hueId: hue.id,
-                          saturation: Utils.bound(0.0, 1.0, (leftSaturation +. c.saturation) /. 2.),
-                          lightness: Utils.bound(0.0, 1.0, (leftLightness +. c.lightness) /. 2.),
-                        },
-                        c,
-                      ]
-                    }
-                  : [...a, c]
-              },
-            ),
+              )
+            })
           }
-        })
+        | (Some(bi), None) => {
+            setShades(s_ => {
+              s_->Array.toSpliced(
+                ~start=bi + 1,
+                ~remove=0,
+                ~insert=[
+                  {
+                    id: newShadeId,
+                    name: "New",
+                  },
+                ],
+              )
+            })
+
+            setPicks(p_ => {
+              p_->Array.map(
+                hue => {
+                  let b = hue.elements->Array.getUnsafe(bi)
+
+                  let newElement = {
+                    id: ulid(),
+                    hueId: hue.id,
+                    shadeId: newShadeId,
+                    saturation: (b.saturation +. 1.0) /. 2.,
+                    lightness: (b.lightness +. 0.) /. 2.,
+                  }
+
+                  {
+                    ...hue,
+                    elements: hue.elements->Array.toSpliced(
+                      ~start=bi + 1,
+                      ~remove=0,
+                      ~insert=[newElement],
+                    ),
+                  }
+                },
+              )
+            })
+          }
+        | (None, Some(ai)) => {
+            setShades(s_ => {
+              s_->Array.toSpliced(
+                ~start=0,
+                ~remove=0,
+                ~insert=[
+                  {
+                    id: newShadeId,
+                    name: "New",
+                  },
+                ],
+              )
+            })
+
+            setPicks(p_ => {
+              p_->Array.map(
+                hue => {
+                  let a = hue.elements->Array.getUnsafe(ai)
+
+                  let newElement = {
+                    id: ulid(),
+                    hueId: hue.id,
+                    shadeId: newShadeId,
+                    saturation: (0.0 +. a.saturation) /. 2.,
+                    lightness: (1.0 +. a.lightness) /. 2.,
+                  }
+                  {
+                    ...hue,
+                    elements: hue.elements->Array.toSpliced(
+                      ~start=0,
+                      ~remove=0,
+                      ~insert=[newElement],
+                    ),
+                  }
+                },
+              )
+            })
+          }
+        | _ => ()
+        }
       })
     }
 
@@ -690,21 +806,20 @@ module Palette = {
               gridTemplateColumns: "subgrid",
             }}>
             {picks
-            ->Array.mapWithIndex((pick, i) => {
-              let isLastRow = i == picks->Array.length - 1
+            ->Array.map(pick => {
               let onDelete = () => {
                 setPicks(p_ => p_->Array.filter(v => v.id != pick.id))
                 setSelectedHue(v => v->Option.flatMap(p => p == pick.id ? None : Some(p)))
               }
 
-              let onAdd = () => {newInterHue(pick)}
-
               <div key={pick.id} className=" ">
                 <div className="flex-row flex w-full justify-between items-center gap-2 h-full">
                   <DropdownMenu
-                    items={[("Add Row Before", onAdd)]
-                    ->Array.concat(isLastRow ? [("Add Row After", _ => newEndHue())] : [])
-                    ->Array.concat([("Delete Row", onDelete)])}
+                    items={[
+                      ("Add Row Before", () => {newHue(pick.id, false)}),
+                      ("Add Row After", () => {newHue(pick.id, true)}),
+                      ("Delete Row", onDelete),
+                    ]}
                   />
                   <input
                     type_="text"
@@ -742,9 +857,7 @@ module Palette = {
               gridTemplateColumns: "subgrid",
             }}>
             {shades
-            ->Array.mapWithIndex((shade, i) => {
-              let isLastColumn = i == picks->Array.length - 1
-
+            ->Array.map(shade => {
               let onDelete = () => {
                 setPicks(p_ =>
                   p_->Array.map(
@@ -759,13 +872,13 @@ module Palette = {
                 setShades(s_ => s_->Array.filter(v => v.id != shade.id))
               }
 
-              let onAdd = () => newInterShade(shade)
-
               <div key={shade.id} className=" flex flex-col gap-2">
                 <DropdownMenu
-                  items={[("Add Column Before", onAdd)]
-                  ->Array.concat(isLastColumn ? [("Add Column After", _ => newEndShade())] : [])
-                  ->Array.concat([("Delete Column", onDelete)])}
+                  items={[
+                    ("Add Column Before", _ => newShade(shade.id, false)),
+                    ("Add Column After", _ => newShade(shade.id, true)),
+                    ("Delete Column", onDelete),
+                  ]}
                 />
                 <input
                   type_="text"
