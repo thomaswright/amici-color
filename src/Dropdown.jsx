@@ -27,7 +27,11 @@ const DropdownMenuComp = ({ items }) => {
         <DropdownMenu.Content className="DropdownMenuContent" sideOffset={5}>
           {items.map(([text, handle]) => {
             return (
-              <DropdownMenu.Item onSelect={handle} className="DropdownMenuItem">
+              <DropdownMenu.Item
+                key={text}
+                onSelect={handle}
+                className="DropdownMenuItem"
+              >
                 {text}
               </DropdownMenu.Item>
             );

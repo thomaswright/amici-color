@@ -83,7 +83,7 @@ let make = (
       style={{width: xSize->Int.toString ++ "px"}}>
       {hues
       ->Array.map(hue =>
-        <div className="relative h-5">
+        <div key={hue.id} className="relative h-5">
           {hue.elements
           ->Array.map(e => {
             let hex =
@@ -111,6 +111,7 @@ let make = (
               //   setSelectedElement(_ => Some(e.id))
               //   setSelectedHue(_ => Some(hue.id))
               // }}
+              key={e.id}
               onMouseDown={_ => {
                 isDragging.current = true
                 dragPos.current = None

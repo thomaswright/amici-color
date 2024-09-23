@@ -129,10 +129,10 @@ function XStack(props) {
                                                               dragPos.current = undefined;
                                                               dragId.current = e.id;
                                                             })
-                                                        });
+                                                        }, e.id);
                                             }),
                                         className: "relative h-5"
-                                      });
+                                      }, hue.id);
                           }),
                       ref: Caml_option.some(gamutEl),
                       className: "flex flex-col gap-1 py-1 bg-white rounded",

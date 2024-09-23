@@ -612,6 +612,7 @@ module Palette = {
             ->Array.map(v => {
               let isSelected = view == v
               <button
+                key={v->viewName}
                 className={[
                   "px-2 rounded",
                   isSelected ? "bg-blue-600 text-white" : "bg-blue-200",

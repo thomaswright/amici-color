@@ -138,10 +138,10 @@ function YStack(props) {
                                                               dragPos.current = undefined;
                                                               dragId.current = e.id;
                                                             })
-                                                        });
+                                                        }, e.id);
                                             }),
                                         className: "relative w-5"
-                                      });
+                                      }, hue.id);
                           }),
                       ref: Caml_option.some(gamutEl),
                       className: "flex flex-row gap-1 px-1 bg-white rounded",

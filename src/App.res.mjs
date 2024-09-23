@@ -698,7 +698,7 @@ function App$Palette(props) {
                                                                   return v;
                                                                 });
                                                           })
-                                                      });
+                                                      }, viewName(v));
                                           }),
                                       className: "flex flex-row gap-2"
                                     }),
