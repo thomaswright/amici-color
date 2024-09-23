@@ -459,7 +459,7 @@ module Palette = {
           let (_h, s, l) = Texel.convert((hue, 1. -. y, x), Texel.okhsv, Texel.okhsl)
           {
             ...el,
-            saturation: s,
+            saturation: x == 0. ? 1. -. y : s,
             lightness: l,
           }
         })

@@ -26,8 +26,8 @@ function updateCanvas(canvas, ctx, hue, view) {
         case "View_SV" :
             rgb = Color.convert([
                   hue,
-                  xVal,
-                  yVal
+                  yVal,
+                  xVal
                 ], Color.OKHSV, Color.sRGB);
             break;
         case "View_SL" :
@@ -211,7 +211,7 @@ function ViewGamut(props) {
                                                           ], Color.OKHSL, Color.OKHSV);
                                                       match = [
                                                         match$2[2],
-                                                        match$2[1]
+                                                        e.lightness === 0 ? e.saturation : match$2[1]
                                                       ];
                                                       break;
                                                   case "View_SL" :
@@ -226,7 +226,7 @@ function ViewGamut(props) {
                                                             children: Core__Option.mapOr(selectedElement, false, (function (x) {
                                                                     return x === e.id;
                                                                   })) ? "•" : null,
-                                                            className: " select-none absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer",
+                                                            className: " select-none absolute w-5 h-5 border border-black border-t-white border-l-white flex flex-row items-center justify-center cursor-pointer",
                                                             style: {
                                                               backgroundColor: hex,
                                                               bottom: (match[1] * 300 | 0).toString() + "px",

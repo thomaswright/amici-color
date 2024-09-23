@@ -43,11 +43,12 @@ function YStack(props) {
                                                     percentage = match[1] / Common.chromaBound;
                                                     break;
                                                 case "View_SV" :
-                                                    percentage = Color.convert([
-                                                            hue.value,
-                                                            e.saturation,
-                                                            e.lightness
-                                                          ], Color.OKHSL, Color.OKHSV)[1];
+                                                    var match$1 = Color.convert([
+                                                          hue.value,
+                                                          e.saturation,
+                                                          e.lightness
+                                                        ], Color.OKHSL, Color.OKHSV);
+                                                    percentage = e.lightness === 0 ? e.saturation : match$1[1];
                                                     break;
                                                 case "View_SL" :
                                                     percentage = e.saturation;

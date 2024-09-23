@@ -96,7 +96,7 @@ let make = (
                   Texel.okhsl,
                   Texel.okhsv,
                 )
-                s
+                e.lightness == 0. ? e.saturation : s
               }
             | View_SL => e.saturation
             }

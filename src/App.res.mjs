@@ -486,7 +486,7 @@ function App$Palette(props) {
                                     shadeId: el.shadeId,
                                     hueId: el.hueId,
                                     lightness: match[2],
-                                    saturation: match[1]
+                                    saturation: x === 0 ? 1 - y : match[1]
                                   };
                           });
             case "View_SL" :

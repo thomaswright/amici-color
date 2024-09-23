@@ -16,7 +16,7 @@ let updateCanvas = (canvas, ctx, hue, view) => {
       let rgb = switch view {
       | View_LC => Texel.convert((xVal, yVal *. chromaBound, h), Texel.oklch, Texel.srgb)
       | View_SL => Texel.convert((h, yVal, xVal), Texel.okhsl, Texel.srgb)
-      | View_SV => Texel.convert((h, xVal, yVal), Texel.okhsv, Texel.srgb)
+      | View_SV => Texel.convert((h, yVal, xVal), Texel.okhsv, Texel.srgb)
       }
 
       if rgb->Texel.isRGBInGamut {
@@ -185,7 +185,8 @@ let make = (
                   Texel.okhsl,
                   Texel.okhsv,
                 )
-                (v, s)
+
+                (v, e.lightness == 0. ? e.saturation : s)
               }
             }
 
@@ -202,7 +203,7 @@ let make = (
                 dragId.current = Some(e.id)
               }}
               onClick={_ => {setSelectedElement(_ => Some(e.id))}}
-              className=" select-none absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer"
+              className=" select-none absolute w-5 h-5 border border-black border-t-white border-l-white flex flex-row items-center justify-center cursor-pointer"
               style={{
                 backgroundColor: hex,
                 transform: "translate(-50%, 50%)",
