@@ -69,7 +69,7 @@ module Palette = {
 
   @react.component
   let make = () => {
-    let (view, setView) = React.useState(() => View_SV)
+    let (view, setView) = React.useState(() => View_LC)
     // let (selectedMode, setSelectedMode) = React.useState(() => LCH_L)
     let (picks_, setPicks) = React.useState(() => defaultPicks)
     let (shades, setShades) = React.useState(() => defaultShades)
@@ -460,24 +460,24 @@ module Palette = {
                         ->Array.toSorted((a, b) => b.lightness -. a.lightness),
                       })
                     })
-                  Console.log2(x, y)
 
                   switch view {
                   | View_LC =>
                     adjust((el, hue) => {
-                      let (h, s, l) = Texel.convert(
-                        (x, (1. -. y) /. chromaBound, hue),
-                        Texel.oklch,
-                        Texel.okhsl,
-                      )
-                      {
-                        ...el,
-                        saturation: s,
-                        lightness: l,
+                      let lch = (x, (1. -. y) *. chromaBound, hue)
+                      if Texel.convert(lch, Texel.oklch, Texel.srgb)->Texel.isRGBInGamut {
+                        let (_h, s, l) = Texel.convert(lch, Texel.oklch, Texel.okhsl)
+                        {
+                          ...el,
+                          saturation: s,
+                          lightness: l,
+                        }
+                      } else {
+                        el
                       }
                     })
                   | View_SL =>
-                    adjust((el, hue) => {
+                    adjust((el, _hue) => {
                       {
                         ...el,
                         saturation: 1. -. y,
@@ -486,7 +486,7 @@ module Palette = {
                     })
                   | View_SV =>
                     adjust((el, hue) => {
-                      let (h, s, l) = Texel.convert((hue, 1. -. y, x), Texel.okhsv, Texel.okhsl)
+                      let (_h, s, l) = Texel.convert((hue, 1. -. y, x), Texel.okhsv, Texel.okhsl)
                       {
                         ...el,
                         saturation: s,

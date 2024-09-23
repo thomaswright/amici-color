@@ -136,13 +136,58 @@ function ViewGamut(props) {
     var gamutRect = match.getBoundingClientRect();
     var gamutX = gamutRect.left;
     var gamutY = gamutRect.top;
-    var x = clientX - gamutX | 0;
-    var y = clientY - gamutY | 0;
-    if (x > 0 && x < 300 && y > 0 && y < 300) {
-      return onDragTo(match$1, x / 300, y / 300);
-    }
-    
+    var x = Math.min(Math.max(clientX - gamutX | 0, 0), 300);
+    var y = Math.min(Math.max(clientY - gamutY | 0, 0), 300);
+    onDragTo(match$1, x / 300, y / 300);
   };
+  React.useEffect((function () {
+          var handle = function ($$event) {
+            if (isDragging.current) {
+              return drag($$event.clientX, $$event.clientY);
+            }
+            
+          };
+          document.addEventListener("mousemove", handle);
+          return (function () {
+                    document.removeEventListener("mousemove", handle);
+                  });
+        }), []);
+  React.useEffect((function () {
+          var handle = function ($$event) {
+            if (isDragging.current) {
+              return Core__Option.mapOr($$event.touches[0], undefined, (function (touch) {
+                            drag(touch.clientX, touch.clientY);
+                          }));
+            }
+            
+          };
+          document.addEventListener("touchmove", handle);
+          return (function () {
+                    document.removeEventListener("touchmove", handle);
+                  });
+        }), []);
+  React.useEffect((function () {
+          var handle = function (param) {
+            isDragging.current = false;
+            dragPos.current = undefined;
+            dragId.current = undefined;
+          };
+          document.addEventListener("touchend", handle);
+          return (function () {
+                    document.removeEventListener("touchend", handle);
+                  });
+        }), []);
+  React.useEffect((function () {
+          var handle = function (param) {
+            isDragging.current = false;
+            dragPos.current = undefined;
+            dragId.current = undefined;
+          };
+          document.addEventListener("mouseup", handle);
+          return (function () {
+                    document.removeEventListener("mouseup", handle);
+                  });
+        }), []);
   return JsxRuntime.jsx("div", {
               children: JsxRuntime.jsxs("div", {
                     children: [
@@ -194,7 +239,7 @@ function ViewGamut(props) {
                                                             children: Core__Option.mapOr(selectedElement, false, (function (x) {
                                                                     return x === e.id;
                                                                   })) ? "•" : null,
-                                                            className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer",
+                                                            className: " select-none absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer",
                                                             style: {
                                                               backgroundColor: hex,
                                                               bottom: (match[1] * 300 | 0).toString() + "px",
@@ -220,31 +265,7 @@ function ViewGamut(props) {
                                               });
                                   })),
                             ref: Caml_option.some(gamutEl),
-                            className: "absolute top-0 left-0 bg-transparent rounded-sm w-full h-full",
-                            onMouseMove: (function ($$event) {
-                                if (isDragging.current) {
-                                  return drag($$event.clientX, $$event.clientY);
-                                }
-                                
-                              }),
-                            onMouseUp: (function (param) {
-                                isDragging.current = false;
-                                dragPos.current = undefined;
-                                dragId.current = undefined;
-                              }),
-                            onTouchEnd: (function (param) {
-                                isDragging.current = false;
-                                dragPos.current = undefined;
-                                dragId.current = undefined;
-                              }),
-                            onTouchMove: (function ($$event) {
-                                if (isDragging.current) {
-                                  return Core__Option.mapOr($$event.touches[0], undefined, (function (touch) {
-                                                drag(touch.clientX, touch.clientY);
-                                              }));
-                                }
-                                
-                              })
+                            className: "absolute top-0 left-0 bg-transparent rounded-sm w-full h-full"
                           })
                     ],
                     className: " relative"

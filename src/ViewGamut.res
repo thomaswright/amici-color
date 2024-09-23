@@ -108,51 +108,69 @@ let make = (
         let gamutX = gamutRect["left"]
         let gamutY = gamutRect["top"]
 
-        let x = clientX - gamutX
-        let y = clientY - gamutY
+        let x = (clientX - gamutX)->Int.toFloat->Math.max(0.)->Math.min(xSize->Int.toFloat)
+        let y = (clientY - gamutY)->Int.toFloat->Math.max(0.)->Math.min(ySize->Int.toFloat)
 
-        if x > 0 && x < xSize && y > 0 && y < ySize {
-          onDragTo(id, x->Int.toFloat /. xSize->Int.toFloat, y->Int.toFloat /. ySize->Int.toFloat)
-        }
+        onDragTo(id, x /. xSize->Int.toFloat, y /. ySize->Int.toFloat)
       }
 
     | _ => ()
     }
   }
+  React.useEffect0(() => {
+    let handle = event => {
+      if !isDragging.current {
+        ()
+      } else {
+        drag(event->ReactEvent.Mouse.clientX, event->ReactEvent.Mouse.clientY)
+      }
+    }
+    addMouseListner("mousemove", handle)
+    Some(() => removeMouseListner("mousemove", handle))
+  })
+
+  React.useEffect0(() => {
+    let handle = event => {
+      if !isDragging.current {
+        ()
+      } else {
+        event
+        ->ReactEvent.Touch.touches
+        ->Obj.magic
+        ->Array.get(0)
+        ->Option.mapOr((), touch => drag(touch["clientX"], touch["clientY"]))
+      }
+    }
+    addTouchListner("touchmove", handle)
+    Some(() => removeTouchListner("touchmove", handle))
+  })
+
+  React.useEffect0(() => {
+    let handle = _ => {
+      isDragging.current = false
+      dragPos.current = None
+      dragId.current = None
+    }
+    addTouchListner("touchend", handle)
+    Some(() => removeTouchListner("touchend", handle))
+  })
+
+  React.useEffect0(() => {
+    let handle = _ => {
+      isDragging.current = false
+      dragPos.current = None
+      dragId.current = None
+    }
+    addMouseListner("mouseup", handle)
+    Some(() => removeMouseListner("mouseup", handle))
+  })
+
   <div className="p-3 bg-black">
     <div className=" relative">
       <CanvasComp hueObj view />
       <div
         ref={ReactDOM.Ref.domRef(gamutEl)}
-        className="absolute top-0 left-0 bg-transparent rounded-sm w-full h-full"
-        onMouseMove={event => {
-          if !isDragging.current {
-            ()
-          } else {
-            drag(event->ReactEvent.Mouse.clientX, event->ReactEvent.Mouse.clientY)
-          }
-        }}
-        onTouchMove={event => {
-          if !isDragging.current {
-            ()
-          } else {
-            event
-            ->ReactEvent.Touch.touches
-            ->Obj.magic
-            ->Array.get(0)
-            ->Option.mapOr((), touch => drag(touch["clientX"], touch["clientY"]))
-          }
-        }}
-        onMouseUp={_ => {
-          isDragging.current = false
-          dragPos.current = None
-          dragId.current = None
-        }}
-        onTouchEnd={_ => {
-          isDragging.current = false
-          dragPos.current = None
-          dragId.current = None
-        }}>
+        className="absolute top-0 left-0 bg-transparent rounded-sm w-full h-full">
         {hueObj->Option.mapOr(React.null, hue => {
           hue.elements
           ->Array.map(e => {
@@ -187,7 +205,7 @@ let make = (
                 dragId.current = Some(e.id)
               }}
               onClick={_ => {setSelectedElement(_ => Some(e.id))}}
-              className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer"
+              className=" select-none absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer"
               style={{
                 backgroundColor: hex,
                 transform: "translate(-50%, 50%)",

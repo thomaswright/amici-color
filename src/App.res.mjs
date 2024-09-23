@@ -70,7 +70,7 @@ var defaultPicks = makeDefaultPicks(5, defaultShades);
 
 function App$Palette(props) {
   var match = React.useState(function () {
-        return "View_SV";
+        return "View_LC";
       });
   var setView = match[1];
   var view = match[0];
@@ -501,15 +501,19 @@ function App$Palette(props) {
                                                                             });
                                                                 });
                                                           };
-                                                          console.log(x, y);
                                                           switch (view) {
                                                             case "View_LC" :
                                                                 return adjust(function (el, hue) {
-                                                                            var match = Color.convert([
-                                                                                  x,
-                                                                                  (1 - y) / Common.chromaBound,
-                                                                                  hue
-                                                                                ], Color.OKLCH, Color.OKHSL);
+                                                                            var lch_1 = (1 - y) * Common.chromaBound;
+                                                                            var lch = [
+                                                                              x,
+                                                                              lch_1,
+                                                                              hue
+                                                                            ];
+                                                                            if (!Color.isRGBInGamut(Color.convert(lch, Color.OKLCH, Color.sRGB))) {
+                                                                              return el;
+                                                                            }
+                                                                            var match = Color.convert(lch, Color.OKLCH, Color.OKHSL);
                                                                             return {
                                                                                     id: el.id,
                                                                                     shadeId: el.shadeId,
@@ -534,7 +538,7 @@ function App$Palette(props) {
                                                                                   };
                                                                           });
                                                             case "View_SL" :
-                                                                return adjust(function (el, hue) {
+                                                                return adjust(function (el, _hue) {
                                                                             return {
                                                                                     id: el.id,
                                                                                     shadeId: el.shadeId,

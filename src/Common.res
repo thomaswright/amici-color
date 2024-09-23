@@ -21,6 +21,18 @@ external addKeyboardListner: (string, ReactEvent.Keyboard.t => unit) => unit = "
 external removeKeyboardListner: (string, ReactEvent.Keyboard.t => unit) => unit =
   "removeEventListener"
 
+@val @scope("document")
+external addMouseListner: (string, ReactEvent.Mouse.t => unit) => unit = "addEventListener"
+
+@val @scope("document")
+external removeMouseListner: (string, ReactEvent.Mouse.t => unit) => unit = "removeEventListener"
+
+@val @scope("document")
+external addTouchListner: (string, ReactEvent.Touch.t => unit) => unit = "addEventListener"
+
+@val @scope("document")
+external removeTouchListner: (string, ReactEvent.Touch.t => unit) => unit = "removeEventListener"
+
 let chromaBound = 0.36
 
 module Types = {
