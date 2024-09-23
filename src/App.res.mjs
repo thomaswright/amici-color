@@ -432,7 +432,7 @@ function App$Palette(props) {
                     });
         });
   };
-  var onDragTo = React.useCallback((function (id, x, y) {
+  var onDragToGamut = React.useCallback((function (id, x, y) {
           var adjust = function (f) {
             setPicks(function (p_) {
                   return p_.map(function (hue) {
@@ -502,6 +502,87 @@ function App$Palette(props) {
             
           }
         }), [view]);
+  var onDragToY = React.useCallback((function (id, y) {
+          var adjust = function (f) {
+            setPicks(function (p_) {
+                  return p_.map(function (hue) {
+                              return {
+                                      id: hue.id,
+                                      value: hue.value,
+                                      name: hue.name,
+                                      elements: hue.elements.map(function (hueElement) {
+                                              if (hueElement.id === id) {
+                                                return f(hueElement, hue.value);
+                                              } else {
+                                                return hueElement;
+                                              }
+                                            }).toSorted(function (a, b) {
+                                            return b.lightness - a.lightness;
+                                          })
+                                    };
+                            });
+                });
+          };
+          switch (view) {
+            case "View_LC" :
+                return adjust(function (el, hue) {
+                            var match = Color.convert([
+                                  hue,
+                                  el.saturation,
+                                  el.lightness
+                                ], Color.OKHSL, Color.OKLCH);
+                            var lch_0 = match[0];
+                            var lch_1 = (1 - y) * Common.chromaBound;
+                            var lch = [
+                              lch_0,
+                              lch_1,
+                              hue
+                            ];
+                            if (!Color.isRGBInGamut(Color.convert(lch, Color.OKLCH, Color.sRGB))) {
+                              return el;
+                            }
+                            var match$1 = Color.convert(lch, Color.OKLCH, Color.OKHSL);
+                            return {
+                                    id: el.id,
+                                    shadeId: el.shadeId,
+                                    hueId: el.hueId,
+                                    lightness: match$1[2],
+                                    saturation: match$1[1]
+                                  };
+                          });
+            case "View_SV" :
+                return adjust(function (el, hue) {
+                            var match = Color.convert([
+                                  hue,
+                                  el.saturation,
+                                  el.lightness
+                                ], Color.OKHSL, Color.OKHSV);
+                            var match$1 = Color.convert([
+                                  hue,
+                                  1 - y,
+                                  match[2]
+                                ], Color.OKHSV, Color.OKHSL);
+                            return {
+                                    id: el.id,
+                                    shadeId: el.shadeId,
+                                    hueId: el.hueId,
+                                    lightness: match$1[2],
+                                    saturation: el.lightness === 0 ? 1 - y : match$1[1]
+                                  };
+                          });
+            case "View_SL" :
+                return adjust(function (el, _hue) {
+                            return {
+                                    id: el.id,
+                                    shadeId: el.shadeId,
+                                    hueId: el.hueId,
+                                    lightness: el.lightness,
+                                    saturation: 1 - y
+                                  };
+                          });
+            
+          }
+        }), [view]);
   return JsxRuntime.jsxs("div", {
               children: [
                 JsxRuntime.jsxs("div", {
@@ -550,7 +631,7 @@ function App$Palette(props) {
                                                       selectedElement: selectedElement,
                                                       view: view,
                                                       setSelectedElement: setSelectedElement,
-                                                      onDragTo: onDragTo
+                                                      onDragTo: onDragToGamut
                                                     }),
                                                 JsxRuntime.jsx(YStack.make, {
                                                       hues: picks,
@@ -558,7 +639,8 @@ function App$Palette(props) {
                                                       view: view,
                                                       setSelectedElement: setSelectedElement,
                                                       setSelectedHue: setSelectedHue,
-                                                      selectedHue: selectedHue
+                                                      selectedHue: selectedHue,
+                                                      onDragTo: onDragToY
                                                     })
                                               ],
                                               className: "flex flex-row"

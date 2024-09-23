@@ -50,7 +50,7 @@ function XStack(props) {
                                                           children: Core__Option.mapOr(selectedElement, false, (function (x) {
                                                                   return x === e.id;
                                                                 })) ? "•" : null,
-                                                          className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer",
+                                                          className: "absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer select-none",
                                                           style: {
                                                             backgroundColor: hex,
                                                             left: (percentage * 300 | 0).toString() + "px",

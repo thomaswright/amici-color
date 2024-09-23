@@ -33,6 +33,9 @@ external addTouchListner: (string, ReactEvent.Touch.t => unit) => unit = "addEve
 @val @scope("document")
 external removeTouchListner: (string, ReactEvent.Touch.t => unit) => unit = "removeEventListener"
 
+@send
+external getBoundingClientRect: Dom.element => {"left": int, "top": int} = "getBoundingClientRect"
+
 let chromaBound = 0.36
 
 module Types = {

@@ -38,6 +38,7 @@ let make = (
   ~setSelectedElement,
   ~setSelectedHue,
   ~selectedHue,
+  ~onDragTo,
 ) => {
   // let canvasRef = React.useRef(Nullable.null)
   // let selectedHueUnwrapped =
@@ -58,6 +59,71 @@ let make = (
   //   None
   // }, (view, canvasRef.current, selectedHueUnwrapped))
 
+  let isDragging = React.useRef(false)
+  let dragPos = React.useRef(None)
+  let dragId = React.useRef(None)
+  let gamutEl = React.useRef(Nullable.null)
+
+  let drag = (clientX, clientY) => {
+    switch (gamutEl.current, dragId.current) {
+    | (Value(dom), Some(id)) => {
+        let gamutRect = dom->getBoundingClientRect
+
+        let gamutY = gamutRect["top"]
+
+        let y = (clientY - gamutY)->Int.toFloat->Math.max(0.)->Math.min(ySize->Int.toFloat)
+
+        onDragTo(id, y /. ySize->Int.toFloat)
+      }
+
+    | _ => ()
+    }
+  }
+  React.useEffect1(() => {
+    let onMouseMove = event => {
+      if !isDragging.current {
+        ()
+      } else {
+        drag(event->ReactEvent.Mouse.clientX, event->ReactEvent.Mouse.clientY)
+      }
+    }
+    let onTouchMove = event => {
+      if !isDragging.current {
+        ()
+      } else {
+        event
+        ->ReactEvent.Touch.touches
+        ->Obj.magic
+        ->Array.get(0)
+        ->Option.mapOr((), touch => drag(touch["clientX"], touch["clientY"]))
+      }
+    }
+
+    let onTouchEnd = _ => {
+      isDragging.current = false
+      dragPos.current = None
+      dragId.current = None
+    }
+    let onMouseUp = _ => {
+      isDragging.current = false
+      dragPos.current = None
+      dragId.current = None
+    }
+
+    addMouseListner("mousemove", onMouseMove)
+    addTouchListner("touchmove", onTouchMove)
+    addTouchListner("touchend", onTouchEnd)
+    addMouseListner("mouseup", onMouseUp)
+    Some(
+      () => {
+        removeMouseListner("mousemove", onMouseMove)
+        removeTouchListner("touchmove", onTouchMove)
+        removeTouchListner("touchend", onTouchEnd)
+        removeMouseListner("mouseup", onMouseUp)
+      },
+    )
+  }, [view])
+
   <div className="p-3 bg-black pl-0 flex flex-row">
     // <canvas
     //   style={{
@@ -67,6 +133,7 @@ let make = (
     //   ref={ReactDOM.Ref.domRef(canvasRef)}
     // />
     <div
+      ref={ReactDOM.Ref.domRef(gamutEl)}
       className="flex flex-row gap-1 px-1 bg-white rounded"
       style={{height: ySize->Int.toString ++ "px"}}>
       {hues
@@ -106,7 +173,17 @@ let make = (
                 setSelectedElement(_ => Some(e.id))
                 setSelectedHue(_ => Some(hue.id))
               }}
-              className="absolute w-5 h-5 border border-black flex flex-col items-center justify-center cursor-pointer"
+              onMouseDown={_ => {
+                isDragging.current = true
+                dragPos.current = None
+                dragId.current = Some(e.id)
+              }}
+              onTouchStart={_ => {
+                isDragging.current = true
+                dragPos.current = None
+                dragId.current = Some(e.id)
+              }}
+              className="absolute w-5 h-5 border border-black flex flex-col items-center justify-center cursor-pointer select-none"
               style={{
                 backgroundColor: hex,
                 transform: "translate(0, 50%)",

@@ -81,9 +81,6 @@ module CanvasComp = {
   })
 }
 
-@send
-external getBoundingClientRect: Dom.element => {"left": int, "top": int} = "getBoundingClientRect"
-
 @react.component
 let make = (
   ~hues: array<hue>,
