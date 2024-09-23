@@ -64,7 +64,7 @@ let make = (
   let dragId = React.useRef(None)
   let gamutEl = React.useRef(Nullable.null)
 
-  let drag = (clientX, clientY) => {
+  let drag = clientY => {
     switch (gamutEl.current, dragId.current) {
     | (Value(dom), Some(id)) => {
         let gamutRect = dom->getBoundingClientRect
@@ -84,7 +84,7 @@ let make = (
       if !isDragging.current {
         ()
       } else {
-        drag(event->ReactEvent.Mouse.clientX, event->ReactEvent.Mouse.clientY)
+        drag(event->ReactEvent.Mouse.clientY)
       }
     }
     let onTouchMove = event => {
@@ -95,7 +95,7 @@ let make = (
         ->ReactEvent.Touch.touches
         ->Obj.magic
         ->Array.get(0)
-        ->Option.mapOr((), touch => drag(touch["clientX"], touch["clientY"]))
+        ->Option.mapOr((), touch => drag(touch["clientY"]))
       }
     }
 

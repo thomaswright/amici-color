@@ -17,7 +17,7 @@ function YStack(props) {
   var dragPos = React.useRef(undefined);
   var dragId = React.useRef(undefined);
   var gamutEl = React.useRef(null);
-  var drag = function (clientX, clientY) {
+  var drag = function (clientY) {
     var match = gamutEl.current;
     var match$1 = dragId.current;
     if (match === null || match === undefined) {
@@ -34,14 +34,14 @@ function YStack(props) {
   React.useEffect((function () {
           var onMouseMove = function ($$event) {
             if (isDragging.current) {
-              return drag($$event.clientX, $$event.clientY);
+              return drag($$event.clientY);
             }
             
           };
           var onTouchMove = function ($$event) {
             if (isDragging.current) {
               return Core__Option.mapOr($$event.touches[0], undefined, (function (touch) {
-                            drag(touch.clientX, touch.clientY);
+                            drag(touch.clientY);
                           }));
             }
             

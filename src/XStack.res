@@ -1,7 +1,7 @@
 open Common
 open Types
 
-let size = 300
+let xSize = 300
 @react.component
 let make = (
   ~hues: array<hue>,
@@ -9,11 +9,78 @@ let make = (
   ~view: view,
   ~setSelectedElement,
   ~setSelectedHue,
+  ~onDragTo,
 ) => {
+  let isDragging = React.useRef(false)
+  let dragPos = React.useRef(None)
+  let dragId = React.useRef(None)
+  let gamutEl = React.useRef(Nullable.null)
+
+  let drag = clientX => {
+    switch (gamutEl.current, dragId.current) {
+    | (Value(dom), Some(id)) => {
+        let gamutRect = dom->getBoundingClientRect
+
+        let gamutX = gamutRect["left"]
+
+        let x = (clientX - gamutX)->Int.toFloat->Math.max(0.)->Math.min(xSize->Int.toFloat)
+
+        onDragTo(id, x /. xSize->Int.toFloat)
+      }
+
+    | _ => ()
+    }
+  }
+  React.useEffect1(() => {
+    let onMouseMove = event => {
+      if !isDragging.current {
+        ()
+      } else {
+        drag(event->ReactEvent.Mouse.clientX)
+      }
+    }
+    let onTouchMove = event => {
+      if !isDragging.current {
+        ()
+      } else {
+        event
+        ->ReactEvent.Touch.touches
+        ->Obj.magic
+        ->Array.get(0)
+        ->Option.mapOr((), touch => drag(touch["clientX"]))
+      }
+    }
+
+    let onTouchEnd = _ => {
+      isDragging.current = false
+      dragPos.current = None
+      dragId.current = None
+    }
+    let onMouseUp = _ => {
+      isDragging.current = false
+      dragPos.current = None
+      dragId.current = None
+    }
+
+    addMouseListner("mousemove", onMouseMove)
+    addTouchListner("touchmove", onTouchMove)
+    addTouchListner("touchend", onTouchEnd)
+    addMouseListner("mouseup", onMouseUp)
+    Some(
+      () => {
+        removeMouseListner("mousemove", onMouseMove)
+        removeTouchListner("touchmove", onTouchMove)
+        removeTouchListner("touchend", onTouchEnd)
+        removeMouseListner("mouseup", onMouseUp)
+      },
+    )
+  }, [view])
+
   <div className="p-3 bg-black w-fit pt-0">
     <div
+      ref={ReactDOM.Ref.domRef(gamutEl)}
       className="flex flex-col gap-1 py-1 bg-white rounded"
-      style={{width: size->Int.toString ++ "px"}}>
+      style={{width: xSize->Int.toString ++ "px"}}>
       {hues
       ->Array.map(hue =>
         <div className="relative h-5">
@@ -44,11 +111,21 @@ let make = (
                 setSelectedElement(_ => Some(e.id))
                 setSelectedHue(_ => Some(hue.id))
               }}
+              onMouseDown={_ => {
+                isDragging.current = true
+                dragPos.current = None
+                dragId.current = Some(e.id)
+              }}
+              onTouchStart={_ => {
+                isDragging.current = true
+                dragPos.current = None
+                dragId.current = Some(e.id)
+              }}
               className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer select-none"
               style={{
                 backgroundColor: hex,
                 transform: "translate(-50%, 0)",
-                left: (percentage *. size->Int.toFloat)->Float.toInt->Int.toString ++ "px",
+                left: (percentage *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
               }}>
               {selectedElement->Option.mapOr(false, x => x == e.id)
                 ? {"•"->React.string}

@@ -466,6 +466,72 @@ module Palette = {
       }
     }, [view])
 
+    let onDragToX = React.useCallback1((id, x) => {
+      let adjust = f =>
+        setPicks(p_ => {
+          p_->Array.map(
+            hue => {
+              ...hue,
+              elements: hue.elements
+              ->Array.map(
+                hueElement => {
+                  if hueElement.id == id {
+                    f(hueElement, hue.value)
+                  } else {
+                    hueElement
+                  }
+                },
+              )
+              ->Array.toSorted((a, b) => b.lightness -. a.lightness),
+            },
+          )
+        })
+
+      switch view {
+      | View_LC =>
+        adjust((el, hue) => {
+          let (_, oldChroma, _) = Texel.convert(
+            (hue, el.saturation, el.lightness),
+            Texel.okhsl,
+            Texel.oklch,
+          )
+          let lch = (x, oldChroma, hue)
+          if Texel.convert(lch, Texel.oklch, Texel.srgb)->Texel.isRGBInGamut {
+            let (_h, s, l) = Texel.convert(lch, Texel.oklch, Texel.okhsl)
+            {
+              ...el,
+              saturation: s,
+              lightness: l,
+            }
+          } else {
+            el
+          }
+        })
+      | View_SL =>
+        adjust((el, _hue) => {
+          {
+            ...el,
+            lightness: x,
+          }
+        })
+      | View_SV =>
+        adjust((el, hue) => {
+          let (_, oldS, _) = Texel.convert(
+            (hue, el.saturation, el.lightness),
+            Texel.okhsl,
+            Texel.okhsv,
+          )
+
+          let (_h, s, l) = Texel.convert((hue, oldS, x), Texel.okhsv, Texel.okhsl)
+          {
+            ...el,
+            saturation: el.lightness == 0. ? oldS : s,
+            lightness: l,
+          }
+        })
+      }
+    }, [view])
+
     let onDragToY = React.useCallback1((id, y) => {
       let adjust = f =>
         setPicks(p_ => {
@@ -576,7 +642,14 @@ module Palette = {
                 onDragTo={onDragToY}
               />
             </div>
-            <XStack view={view} hues={picks} selectedElement setSelectedElement setSelectedHue />
+            <XStack
+              view={view}
+              hues={picks}
+              selectedElement
+              setSelectedElement
+              setSelectedHue
+              onDragTo={onDragToX}
+            />
             // <div className="flex flex-row gap-2 ">
             //   <HslSGamut hues={picks} selectedHue selectedElement />
             //   <HueLine hues={picks} selected={selectedHue} />
