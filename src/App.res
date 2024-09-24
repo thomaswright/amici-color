@@ -13,6 +13,10 @@ module DropdownMenu = {
   external make: (~items: array<(string, unit => unit)>) => React.element = "default"
 }
 
+// @module("@uidotdev/usehooks")
+// external useLocalStorage: (string, 'a) => ('a, ('a => 'a) => unit) = "useLocalStorage"
+let useLocalStorage = (_, a) => React.useState(() => a)
+
 let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
   let xLenF = xLen->Int.toFloat
   let yLenF = defaultShades->Array.length->Int.toFloat
@@ -69,14 +73,15 @@ module Palette = {
 
   @react.component
   let make = () => {
-    let (view, setView) = React.useState(() => View_LC)
+    let (view, setView) = useLocalStorage("View", View_LC)
     // let (selectedMode, setSelectedMode) = React.useState(() => LCH_L)
-    let (picks_, setPicks) = React.useState(() => defaultPicks)
-    let (shades, setShades) = React.useState(() => defaultShades)
-    let (selectedHue, setSelectedHue) = React.useState(() =>
-      picks_->Array.get(0)->Option.map(v => v.id)
+    let (picks_, setPicks) = useLocalStorage("picks", defaultPicks)
+    let (shades, setShades) = useLocalStorage("shades", defaultShades)
+    let (selectedHue, setSelectedHue) = useLocalStorage(
+      "selectedHue",
+      picks_->Array.get(0)->Option.map(v => v.id),
     )
-    let (selectedElement, setSelectedElement) = React.useState(() => None)
+    let (selectedElement, setSelectedElement) = useLocalStorage("selectedElement", None)
 
     let handleKeydown = React.useCallback2(event => {
       let updateElement = f => {

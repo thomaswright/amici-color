@@ -83,10 +83,11 @@ function App$Palette(props) {
       });
   var setShades = match$2[1];
   var shades = match$2[0];
+  var a = Core__Option.map(picks_[0], (function (v) {
+          return v.id;
+        }));
   var match$3 = React.useState(function () {
-        return Core__Option.map(picks_[0], (function (v) {
-                      return v.id;
-                    }));
+        return a;
       });
   var setSelectedHue = match$3[1];
   var selectedHue = match$3[0];
