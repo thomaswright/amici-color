@@ -5,6 +5,7 @@ import * as React from "react";
 import * as Common from "./Common.res.mjs";
 import * as XStack from "./XStack.res.mjs";
 import * as YStack from "./YStack.res.mjs";
+import * as HueXLine from "./HueXLine.res.mjs";
 import * as ViewGamut from "./ViewGamut.res.mjs";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as Core__Array from "@rescript/core/src/Core__Array.res.mjs";
@@ -859,6 +860,22 @@ function App$Palette(props) {
             
           }
         }), [view]);
+  var onDragToHue = React.useCallback((function (id, x) {
+          setPicks(function (p_) {
+                return p_.map(function (hue) {
+                            if (hue.id === id) {
+                              return {
+                                      id: hue.id,
+                                      value: Common.Utils.bound(x * 360, 0, 360),
+                                      name: hue.name,
+                                      elements: hue.elements
+                                    };
+                            } else {
+                              return hue;
+                            }
+                          });
+              });
+        }), []);
   return JsxRuntime.jsxs("div", {
               children: [
                 JsxRuntime.jsxs("div", {
@@ -875,6 +892,12 @@ function App$Palette(props) {
                       children: [
                         JsxRuntime.jsxs("div", {
                               children: [
+                                JsxRuntime.jsx(HueXLine.make, {
+                                      hues: picks,
+                                      selectedHue: selectedHue,
+                                      setSelectedHue: setSelectedHue,
+                                      onDragTo: onDragToHue
+                                    }),
                                 JsxRuntime.jsx("div", {
                                       children: [
                                           "View_LC",

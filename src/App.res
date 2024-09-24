@@ -792,6 +792,21 @@ module Palette = {
       }
     }, [view])
 
+    let onDragToHue = React.useCallback0((id, x) => {
+      setPicks(p_ => {
+        p_->Array.map(
+          hue => {
+            hue.id == id
+              ? {
+                  ...hue,
+                  value: Utils.bound(x *. 360., 0., 360.),
+                }
+              : hue
+          },
+        )
+      })
+    })
+
     <div>
       <div className="font-black text-4xl flex flex-row items-center gap-2 pb-4">
         <div className="h-12 w-12">
@@ -801,6 +816,7 @@ module Palette = {
       </div>
       <div className="flex flex-row">
         <div>
+          <HueXLine hues={picks} selectedHue setSelectedHue onDragTo={onDragToHue} />
           <div className="flex flex-row gap-2">
             {[View_LC, View_SL, View_SV]
             ->Array.map(v => {
