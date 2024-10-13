@@ -22,7 +22,7 @@ var make$1 = DropdownJsx;
 function makeDefaultPicks(xLen, defaultShades) {
   var yLenF = defaultShades.length;
   return Common.Utils.mapRange(xLen, (function (x) {
-                var hue = x / xLen * 360 + 1;
+                var hue = (x + 0.5) / xLen * 360 + 1;
                 var hueId = Ulid.ulid();
                 var elements = defaultShades.map(function (param, y) {
                       var s = (y + 1) / yLenF;

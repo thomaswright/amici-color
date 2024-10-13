@@ -23,7 +23,7 @@ let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
 
   Utils.mapRange(xLen, x => {
     let xF = x->Int.toFloat
-    let hue = xF /. xLenF *. 360. +. 1.
+    let hue = (xF +. 0.5) /. xLenF *. 360. +. 1.
     let hueId = ulid()
     let elements = defaultShades->Array.mapWithIndex((_, y) => {
       let yF = y->Int.toFloat
