@@ -17,13 +17,9 @@ module DropdownMenu = {
 // external useLocalStorage: (string, 'a) => ('a, ('a => 'a) => unit) = "useLocalStorage"
 let useLocalStorage = (_, a) => React.useState(() => a)
 
-let makeDefaultPicks = (xLen, defaultShades: array<shade>) => {
-  let xLenF = xLen->Int.toFloat
+let makeDefaultPicks = (hues, defaultShades: array<shade>) => {
   let yLenF = defaultShades->Array.length->Int.toFloat
-
-  Utils.mapRange(xLen, x => {
-    let xF = x->Int.toFloat
-    let hue = (xF +. 0.5) /. xLenF *. 360. +. 1.
+  hues->Array.map(hue => {
     let hueId = ulid()
     let elements = defaultShades->Array.mapWithIndex((_, y) => {
       let yF = y->Int.toFloat
@@ -69,7 +65,7 @@ module Palette = {
     name: ((i + 1) * 100)->Int.toString,
   })
 
-  let defaultPicks = makeDefaultPicks(5, defaultShades)
+  let defaultPicks = makeDefaultPicks([25., 90., 140., 240., 300.], defaultShades)
 
   @react.component
   let make = () => {

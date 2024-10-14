@@ -19,32 +19,31 @@ var make = AmiciPrismSvgreact;
 
 var make$1 = DropdownJsx;
 
-function makeDefaultPicks(xLen, defaultShades) {
+function makeDefaultPicks(hues, defaultShades) {
   var yLenF = defaultShades.length;
-  return Common.Utils.mapRange(xLen, (function (x) {
-                var hue = (x + 0.5) / xLen * 360 + 1;
-                var hueId = Ulid.ulid();
-                var elements = defaultShades.map(function (param, y) {
-                      var s = (y + 1) / yLenF;
-                      var match = Color.convert([
-                            hue,
-                            s,
-                            1.0
-                          ], Color.OKHSV, Color.OKHSL);
-                      return {
-                              id: Ulid.ulid(),
-                              hueId: hueId,
-                              lightness: match[2],
-                              saturation: match[1]
-                            };
-                    });
-                return {
-                        id: hueId,
-                        value: hue,
-                        name: Common.hueToName(hue),
-                        elements: elements
-                      };
-              }));
+  return hues.map(function (hue) {
+              var hueId = Ulid.ulid();
+              var elements = defaultShades.map(function (param, y) {
+                    var s = (y + 1) / yLenF;
+                    var match = Color.convert([
+                          hue,
+                          s,
+                          1.0
+                        ], Color.OKHSV, Color.OKHSL);
+                    return {
+                            id: Ulid.ulid(),
+                            hueId: hueId,
+                            lightness: match[2],
+                            saturation: match[1]
+                          };
+                  });
+              return {
+                      id: hueId,
+                      value: hue,
+                      name: Common.hueToName(hue),
+                      elements: elements
+                    };
+            });
 }
 
 function viewName(view) {
@@ -66,7 +65,13 @@ var defaultShades = Common.Utils.mapRange(5, (function (i) {
               };
       }));
 
-var defaultPicks = makeDefaultPicks(5, defaultShades);
+var defaultPicks = makeDefaultPicks([
+      25,
+      90,
+      140,
+      240,
+      300
+    ], defaultShades);
 
 function App$Palette(props) {
   var match = React.useState(function () {
