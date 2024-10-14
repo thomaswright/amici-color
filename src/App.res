@@ -59,6 +59,10 @@ let viewName = view =>
   | View_SL => "okhsl"
   }
 
+@val @scope("document") external documentElement: 'element = "documentElement"
+
+@send @scope("style") external setProperty: ('element, string, string) => unit = "setProperty"
+
 module Palette = {
   let defaultShades = Utils.mapRange(5, i => {
     id: ulid(),
@@ -78,6 +82,29 @@ module Palette = {
       picks_->Array.get(0)->Option.map(v => v.id),
     )
     let (selectedElement, setSelectedElement) = useLocalStorage("selectedElement", None)
+
+    switch (selectedHue, selectedElement) {
+    | (Some(hueId), Some(elId)) =>
+      picks_
+      ->Array.find(v => v.id == hueId)
+      ->Option.flatMap(v => {
+        v.elements
+        ->Array.find(el => el.id == elId)
+        ->Option.map(el => {
+          let hex =
+            Texel.convert(
+              (v.value, el.saturation, el.lightness),
+              Texel.okhsl,
+              Texel.srgb,
+            )->Texel.rgbToHex
+
+          setProperty(documentElement, "--bg", hex)
+          setProperty(documentElement, "--select", el.lightness < 0.5 ? "white" : "black")
+        })
+      })
+      ->ignore
+    | _ => ()
+    }
 
     let handleKeydown = React.useCallback2(event => {
       let updateElement = f => {
@@ -276,6 +303,7 @@ module Palette = {
       Some(() => removeKeyboardListner("keydown", handleKeydown))
     }, (selectedElement, view))
 
+    // Todo: replace this
     let picks = picks_->Array.toSorted((a, b) => a.value -. b.value)
 
     let hueLen = picks->Array.length
@@ -824,7 +852,8 @@ module Palette = {
     })
 
     <div>
-      <div className="font-black text-4xl flex flex-row items-center gap-2 pb-4">
+      <div
+        className="font-black text-4xl flex flex-row items-center gap-2 pb-4 text-[var(--select)]">
         <div className="h-12 w-12">
           <Logo />
         </div>
@@ -949,7 +978,7 @@ module Palette = {
                         )
                       })
                     }}
-                    className="w-20 h-5"
+                    className="w-20 h-5  bg-transparent text-[var(--select)]"
                   />
                 </div>
                 <div className="flex flex-row justify-start gap-2 w-full" />
@@ -1007,7 +1036,7 @@ module Palette = {
                     )
                   }}
                   value={shade.name}
-                  className="w-10 h-5"
+                  className="w-10 h-5 bg-transparent text-[var(--select)]"
                 />
               </div>
             })
@@ -1030,20 +1059,23 @@ module Palette = {
                     Texel.okhsl,
                     Texel.srgb,
                   )->Texel.rgbToHex
+
+                let isSelected = selectedElement->Option.mapOr(false, e => e == element.id)
+
                 <div
                   key={element.id}
                   className="w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center 
-                  cursor-pointer rounded-2xl border-2 border-white text-white text-xl"
+                  cursor-pointer rounded-2xl border-2 border-[var(--bg)] text-xl"
                   style={{
                     backgroundColor: hex,
+                    borderColor: isSelected ? "var(--select)" : "var(--bg)",
+                    color: isSelected ? "var(--select)" : "inherit",
                   }}
                   onClick={_ => {
                     setSelectedElement(_ => Some(element.id))
                     setSelectedHue(_ => Some(element.hueId))
                   }}>
-                  {selectedElement->Option.mapOr(false, e => e == element.id)
-                    ? {"✔︎"->React.string}
-                    : React.null}
+                  {isSelected ? {""->React.string} : React.null}
                 </div>
               })
             })
@@ -1058,7 +1090,7 @@ module Palette = {
 
 @react.component
 let make = () => {
-  <div className="p-6 min-h-screen bg-white">
+  <div className="p-6 min-h-screen ">
     <Palette />
     // <Gamut />
   </div>

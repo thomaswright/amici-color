@@ -108,10 +108,11 @@ function HueXLine(props) {
                                           return s === hue.id;
                                         }));
                                   return JsxRuntime.jsx("div", {
-                                              children: isSelected ? "•" : null,
-                                              className: "absolute w-3 h-7 rounded border-2 text-white border-white flex flex-row items-center justify-center cursor-pointer select-none",
+                                              children: isSelected ? "" : null,
+                                              className: "absolute w-3 h-7 rounded border-2 text-[var(--select)]  flex flex-row items-center justify-center cursor-pointer select-none",
                                               style: {
                                                 backgroundColor: hex,
+                                                borderColor: isSelected ? "var(--select)" : "var(--bg)",
                                                 fontSize: "16px",
                                                 left: (hue.value / 360 * 300 | 0).toString() + "px",
                                                 top: "0.25rem",

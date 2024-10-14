@@ -125,8 +125,9 @@ let make = (~hues: array<hue>, ~selectedHue, ~setSelectedHue, ~onDragTo) => {
 
           <div
             key={hue.id}
-            className="absolute w-3 h-7 rounded border-2 text-white border-white flex flex-row items-center justify-center cursor-pointer select-none"
+            className="absolute w-3 h-7 rounded border-2 text-[var(--select)]  flex flex-row items-center justify-center cursor-pointer select-none"
             style={{
+              borderColor: isSelected ? "var(--select)" : "var(--bg)",
               fontSize: "16px",
               backgroundColor: hex,
               transform: "translate(-50%, 0)",
@@ -144,7 +145,7 @@ let make = (~hues: array<hue>, ~selectedHue, ~setSelectedHue, ~onDragTo) => {
               dragPos.current = None
               dragId.current = Some(hue.id)
             }}>
-            {isSelected ? {"•"->React.string} : React.null}
+            {isSelected ? {""->React.string} : React.null}
           </div>
         })
         ->React.array}

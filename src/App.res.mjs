@@ -102,6 +102,23 @@ function App$Palette(props) {
       });
   var setSelectedElement = match$4[1];
   var selectedElement = match$4[0];
+  if (selectedHue !== undefined && selectedElement !== undefined) {
+    Core__Option.flatMap(picks_.find(function (v) {
+              return v.id === selectedHue;
+            }), (function (v) {
+            return Core__Option.map(v.elements.find(function (el) {
+                            return el.id === selectedElement;
+                          }), (function (el) {
+                          var hex = Color.RGBToHex(Color.convert([
+                                    v.value,
+                                    el.saturation,
+                                    el.lightness
+                                  ], Color.OKHSL, Color.sRGB));
+                          document.documentElement.style.setProperty("--bg", hex);
+                          document.documentElement.style.setProperty("--select", el.lightness < 0.5 ? "white" : "black");
+                        }));
+          }));
+  }
   var handleKeydown = React.useCallback((function ($$event) {
           var updateElement = function (f) {
             Core__Option.mapOr(selectedElement, undefined, (function (e) {
@@ -909,7 +926,7 @@ function App$Palette(props) {
                             }),
                         "Amici Color"
                       ],
-                      className: "font-black text-4xl flex flex-row items-center gap-2 pb-4"
+                      className: "font-black text-4xl flex flex-row items-center gap-2 pb-4 text-[var(--select)]"
                     }),
                 JsxRuntime.jsxs("div", {
                       children: [
@@ -1025,7 +1042,7 @@ function App$Palette(props) {
                                                                         ]
                                                                       }),
                                                                   JsxRuntime.jsx("input", {
-                                                                        className: "w-20 h-5",
+                                                                        className: "w-20 h-5  bg-transparent text-[var(--select)]",
                                                                         type: "text",
                                                                         value: pick.name,
                                                                         onChange: (function (e) {
@@ -1109,7 +1126,7 @@ function App$Palette(props) {
                                                                 ]
                                                               }),
                                                           JsxRuntime.jsx("input", {
-                                                                className: "w-10 h-5",
+                                                                className: "w-10 h-5 bg-transparent text-[var(--select)]",
                                                                 type: "text",
                                                                 value: shade.name,
                                                                 onChange: (function (e) {
@@ -1149,13 +1166,16 @@ function App$Palette(props) {
                                                                       element.saturation,
                                                                       element.lightness
                                                                     ], Color.OKHSL, Color.sRGB));
+                                                            var isSelected = Core__Option.mapOr(selectedElement, false, (function (e) {
+                                                                    return e === element.id;
+                                                                  }));
                                                             return JsxRuntime.jsx("div", {
-                                                                        children: Core__Option.mapOr(selectedElement, false, (function (e) {
-                                                                                return e === element.id;
-                                                                              })) ? "✔︎" : null,
-                                                                        className: "w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center \n                  cursor-pointer rounded-2xl border-2 border-white text-white text-xl",
+                                                                        children: isSelected ? "" : null,
+                                                                        className: "w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center \n                  cursor-pointer rounded-2xl border-2 border-[var(--bg)] text-xl",
                                                                         style: {
-                                                                          backgroundColor: hex
+                                                                          backgroundColor: hex,
+                                                                          borderColor: isSelected ? "var(--select)" : "var(--bg)",
+                                                                          color: isSelected ? "var(--select)" : "inherit"
                                                                         },
                                                                         onClick: (function (param) {
                                                                             setSelectedElement(function (param) {
@@ -1194,7 +1214,7 @@ function App$Palette(props) {
 function App(props) {
   return JsxRuntime.jsx("div", {
               children: JsxRuntime.jsx(App$Palette, {}),
-              className: "p-6 min-h-screen bg-white"
+              className: "p-6 min-h-screen "
             });
 }
 

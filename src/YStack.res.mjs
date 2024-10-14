@@ -112,14 +112,17 @@ function YStack(props) {
                                                     break;
                                                 
                                               }
+                                              var isSelected = Core__Option.mapOr(selectedElement, false, (function (x) {
+                                                      return x === e.id;
+                                                    }));
                                               return JsxRuntime.jsx("div", {
-                                                          children: Core__Option.mapOr(selectedElement, false, (function (x) {
-                                                                  return x === e.id;
-                                                                })) ? "✔︎" : null,
-                                                          className: "absolute w-5 h-5 rounded-lg border-2 border-white text-white\n              flex flex-col items-center justify-center cursor-pointer select-none",
+                                                          children: isSelected ? "" : null,
+                                                          className: "absolute w-5 h-5 rounded-lg border-2 border-[var(--bg)] \n              flex flex-col items-center justify-center cursor-pointer select-none",
                                                           style: {
                                                             backgroundColor: hex,
+                                                            borderColor: isSelected ? "var(--select)" : "var(--bg)",
                                                             bottom: (percentage * 300 | 0).toString() + "px",
+                                                            color: isSelected ? "var(--select)" : "inherit",
                                                             fontSize: "10px",
                                                             transform: "translate(0, 50%)"
                                                           },

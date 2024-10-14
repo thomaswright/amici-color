@@ -167,6 +167,7 @@ let make = (
               }
             | View_SL => e.saturation
             }
+            let isSelected = selectedElement->Option.mapOr(false, x => x == e.id)
 
             <div
               // onClick={_ => {
@@ -186,9 +187,11 @@ let make = (
                 dragPos.current = None
                 dragId.current = Some(e.id)
               }}
-              className="absolute w-5 h-5 rounded-lg border-2 border-white text-white
+              className="absolute w-5 h-5 rounded-lg border-2 border-[var(--bg)] 
               flex flex-col items-center justify-center cursor-pointer select-none"
               style={{
+                borderColor: isSelected ? "var(--select)" : "var(--bg)",
+                color: isSelected ? "var(--select)" : "inherit",
                 fontSize: "10px",
                 backgroundColor: hex,
                 transform: "translate(0, 50%)",
@@ -196,9 +199,7 @@ let make = (
                 ->Float.toInt
                 ->Int.toString ++ "px",
               }}>
-              {selectedElement->Option.mapOr(false, x => x == e.id)
-                ? {"✔︎"->React.string}
-                : React.null}
+              {isSelected ? {""->React.string} : React.null}
             </div>
           })
           ->React.array}

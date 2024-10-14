@@ -203,16 +203,17 @@ let make = (
               }}
               // onClick={_ => {}}
               className=" select-none absolute w-5 h-5 
-              flex flex-row items-center justify-center cursor-pointer rounded-lg border-2  text-white"
+              flex flex-row items-center justify-center cursor-pointer rounded-lg border-2  border-[var(--bg)]"
               style={{
                 fontSize: "10px",
-                borderColor: isSelected ? "white" : "white",
+                borderColor: isSelected ? "var(--select)" : "var(--bg)",
+                color: isSelected ? "var(--select)" : "inherit",
                 backgroundColor: hex,
                 transform: "translate(-50%, 50%)",
                 left: (xPer *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
                 bottom: (yPer *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
               }}>
-              {isSelected ? {"✔︎"->React.string} : React.null}
+              {isSelected ? {""->React.string} : React.null}
             </div>
           })
           ->React.array

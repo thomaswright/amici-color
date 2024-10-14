@@ -105,7 +105,7 @@ let make = (
               }
             | View_SL => e.lightness
             }
-
+            let isSelected = selectedElement->Option.mapOr(false, x => x == e.id)
             <div
               // onClick={_ => {
               //   setSelectedElement(_ => Some(e.id))
@@ -124,17 +124,17 @@ let make = (
                 dragPos.current = None
                 dragId.current = Some(e.id)
               }}
-              className="absolute w-5 h-5  rounded-lg border-2 border-white text-white
+              className="absolute w-5 h-5  rounded-lg border-2 border-[var(--bg)] 
               flex flex-row items-center justify-center cursor-pointer select-none"
               style={{
+                borderColor: isSelected ? "var(--select)" : "var(--bg)",
+                color: isSelected ? "var(--select)" : "inherit",
                 fontSize: "10px",
                 backgroundColor: hex,
                 transform: "translate(-50%, 0)",
                 left: (percentage *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
               }}>
-              {selectedElement->Option.mapOr(false, x => x == e.id)
-                ? {"✔︎"->React.string}
-                : React.null}
+              {isSelected ? {""->React.string} : React.null}
             </div>
           })
           ->React.array}
