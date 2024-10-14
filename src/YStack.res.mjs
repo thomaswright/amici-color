@@ -81,6 +81,13 @@ function YStack(props) {
   return JsxRuntime.jsxs("div", {
               children: [
                 JsxRuntime.jsx("div", {
+                      children: tmp,
+                      className: " w-5 font-medium text-center text-[var(--select)]",
+                      style: {
+                        writingMode: "vertical-lr"
+                      }
+                    }),
+                JsxRuntime.jsx("div", {
                       children: props.hues.map(function (hue) {
                             return JsxRuntime.jsx("div", {
                                         children: hue.elements.map(function (e) {
@@ -153,16 +160,9 @@ function YStack(props) {
                       style: {
                         height: (300).toString() + "px"
                       }
-                    }),
-                JsxRuntime.jsx("div", {
-                      children: tmp,
-                      className: " w-3 font-medium text-center",
-                      style: {
-                        writingMode: "vertical-lr"
-                      }
                     })
               ],
-              className: "p-3  pl-0 flex flex-row"
+              className: "py-3 flex flex-row"
             });
 }
 

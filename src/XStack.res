@@ -76,7 +76,14 @@ let make = (
     )
   }, [view])
 
-  <div className="p-3 w-fit pt-0">
+  <div className="px-3 w-fit ">
+    <div className=" font-medium text-center text-[var(--select)]">
+      {switch view {
+      | View_LC => "lightness"
+      | View_SL => "lightness"
+      | View_SV => "value"
+      }->React.string}
+    </div>
     <div
       ref={ReactDOM.Ref.domRef(gamutEl)}
       className="flex flex-col gap-1 py-1  rounded"
@@ -142,13 +149,6 @@ let make = (
         </div>
       )
       ->React.array}
-    </div>
-    <div className=" h-4 font-medium text-center">
-      {switch view {
-      | View_LC => "lightness"
-      | View_SL => "lightness"
-      | View_SV => "value"
-      }->React.string}
     </div>
   </div>
 }

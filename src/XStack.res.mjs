@@ -80,6 +80,10 @@ function XStack(props) {
   return JsxRuntime.jsxs("div", {
               children: [
                 JsxRuntime.jsx("div", {
+                      children: tmp,
+                      className: " font-medium text-center text-[var(--select)]"
+                    }),
+                JsxRuntime.jsx("div", {
                       children: props.hues.map(function (hue) {
                             return JsxRuntime.jsx("div", {
                                         children: hue.elements.map(function (e) {
@@ -144,13 +148,9 @@ function XStack(props) {
                       style: {
                         width: (300).toString() + "px"
                       }
-                    }),
-                JsxRuntime.jsx("div", {
-                      children: tmp,
-                      className: " h-4 font-medium text-center"
                     })
               ],
-              className: "p-3 w-fit pt-0"
+              className: "px-3 w-fit "
             });
 }
 
