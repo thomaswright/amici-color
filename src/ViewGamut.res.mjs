@@ -227,7 +227,7 @@ function ViewGamut(props) {
                                                       }));
                                                 return JsxRuntime.jsx("div", {
                                                             children: isSelected ? "" : null,
-                                                            className: " select-none absolute w-5 h-5 \n              flex flex-row items-center justify-center cursor-pointer rounded-lg border-2  border-[var(--bg)]",
+                                                            className: " select-none absolute w-5 h-5 \n              flex flex-row items-center justify-center cursor-pointer rounded-md border-2  border-[var(--bg)]",
                                                             style: {
                                                               backgroundColor: hex,
                                                               borderColor: isSelected ? "var(--select)" : "var(--bg)",

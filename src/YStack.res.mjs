@@ -117,7 +117,7 @@ function YStack(props) {
                                                     }));
                                               return JsxRuntime.jsx("div", {
                                                           children: isSelected ? "" : null,
-                                                          className: "absolute w-5 h-5 rounded-lg border-2 border-[var(--bg)] \n              flex flex-col items-center justify-center cursor-pointer select-none",
+                                                          className: "absolute w-5 h-5 rounded-md border-2 border-[var(--bg)] \n              flex flex-col items-center justify-center cursor-pointer select-none",
                                                           style: {
                                                             backgroundColor: hex,
                                                             borderColor: isSelected ? "var(--select)" : "var(--bg)",

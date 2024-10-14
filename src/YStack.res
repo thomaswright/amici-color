@@ -187,7 +187,7 @@ let make = (
                 dragPos.current = None
                 dragId.current = Some(e.id)
               }}
-              className="absolute w-5 h-5 rounded-lg border-2 border-[var(--bg)] 
+              className="absolute w-5 h-5 rounded-md border-2 border-[var(--bg)] 
               flex flex-col items-center justify-center cursor-pointer select-none"
               style={{
                 borderStyle: isSelected ? "dashed" : "solid",

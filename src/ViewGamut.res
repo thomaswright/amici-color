@@ -203,7 +203,7 @@ let make = (
               }}
               // onClick={_ => {}}
               className=" select-none absolute w-5 h-5 
-              flex flex-row items-center justify-center cursor-pointer rounded-lg border-2  border-[var(--bg)]"
+              flex flex-row items-center justify-center cursor-pointer rounded-md border-2  border-[var(--bg)]"
               style={{
                 borderStyle: isSelected ? "dashed" : "solid",
                 fontSize: "10px",

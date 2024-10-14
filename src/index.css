@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --bg: black;
-  --select: white;
+  --bg: white;
+  --select: black;
   background-color: var(--bg);
 }
