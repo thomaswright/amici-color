@@ -1152,8 +1152,8 @@ function App$Palette(props) {
                                                             return JsxRuntime.jsx("div", {
                                                                         children: Core__Option.mapOr(selectedElement, false, (function (e) {
                                                                                 return e === element.id;
-                                                                              })) ? "•" : null,
-                                                                        className: "w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center cursor-pointer",
+                                                                              })) ? "✔︎" : null,
+                                                                        className: "w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center \n                  cursor-pointer rounded-2xl border-2 border-white text-white text-xl",
                                                                         style: {
                                                                           backgroundColor: hex
                                                                         },

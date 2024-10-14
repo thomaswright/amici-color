@@ -222,14 +222,17 @@ function ViewGamut(props) {
                                                       break;
                                                   
                                                 }
+                                                var isSelected = Core__Option.mapOr(selectedElement, false, (function (x) {
+                                                        return x === e.id;
+                                                      }));
                                                 return JsxRuntime.jsx("div", {
-                                                            children: Core__Option.mapOr(selectedElement, false, (function (x) {
-                                                                    return x === e.id;
-                                                                  })) ? "•" : null,
-                                                            className: " select-none absolute w-5 h-5 border border-black border-t-white border-l-white flex flex-row items-center justify-center cursor-pointer",
+                                                            children: isSelected ? "✔︎" : null,
+                                                            className: " select-none absolute w-5 h-5 \n              flex flex-row items-center justify-center cursor-pointer rounded-lg border-2  text-white",
                                                             style: {
                                                               backgroundColor: hex,
+                                                              borderColor: "white",
                                                               bottom: (match[1] * 300 | 0).toString() + "px",
+                                                              fontSize: "10px",
                                                               left: (match[0] * 300 | 0).toString() + "px",
                                                               transform: "translate(-50%, 50%)"
                                                             },
@@ -255,7 +258,7 @@ function ViewGamut(props) {
                     ],
                     className: " relative"
                   }),
-              className: "p-3 bg-black"
+              className: "p-3 "
             });
 }
 

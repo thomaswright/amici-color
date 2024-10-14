@@ -115,11 +115,12 @@ function YStack(props) {
                                               return JsxRuntime.jsx("div", {
                                                           children: Core__Option.mapOr(selectedElement, false, (function (x) {
                                                                   return x === e.id;
-                                                                })) ? "•" : null,
-                                                          className: "absolute w-5 h-5 border border-black flex flex-col items-center justify-center cursor-pointer select-none",
+                                                                })) ? "✔︎" : null,
+                                                          className: "absolute w-5 h-5 rounded-lg border-2 border-white text-white\n              flex flex-col items-center justify-center cursor-pointer select-none",
                                                           style: {
                                                             backgroundColor: hex,
                                                             bottom: (percentage * 300 | 0).toString() + "px",
+                                                            fontSize: "10px",
                                                             transform: "translate(0, 50%)"
                                                           },
                                                           onMouseDown: (function (param) {
@@ -144,20 +145,20 @@ function YStack(props) {
                                       }, hue.id);
                           }),
                       ref: Caml_option.some(gamutEl),
-                      className: "flex flex-row gap-1 px-1 bg-white rounded",
+                      className: "flex flex-row gap-1 px-1  rounded",
                       style: {
                         height: (300).toString() + "px"
                       }
                     }),
                 JsxRuntime.jsx("div", {
                       children: tmp,
-                      className: "text-white w-3 font-medium text-center",
+                      className: " w-3 font-medium text-center",
                       style: {
                         writingMode: "vertical-lr"
                       }
                     })
               ],
-              className: "p-3 bg-black pl-0 flex flex-row"
+              className: "p-3  pl-0 flex flex-row"
             });
 }
 

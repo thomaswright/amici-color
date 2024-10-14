@@ -125,8 +125,9 @@ let make = (~hues: array<hue>, ~selectedHue, ~setSelectedHue, ~onDragTo) => {
 
           <div
             key={hue.id}
-            className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer select-none"
+            className="absolute w-3 h-7 rounded border-2 text-white border-white flex flex-row items-center justify-center cursor-pointer select-none"
             style={{
+              fontSize: "16px",
               backgroundColor: hex,
               transform: "translate(-50%, 0)",
               left: (hue.value /. 360. *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",

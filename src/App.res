@@ -1032,7 +1032,8 @@ module Palette = {
                   )->Texel.rgbToHex
                 <div
                   key={element.id}
-                  className="w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center cursor-pointer"
+                  className="w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center 
+                  cursor-pointer rounded-2xl border-2 border-white text-white text-xl"
                   style={{
                     backgroundColor: hex,
                   }}
@@ -1041,7 +1042,7 @@ module Palette = {
                     setSelectedHue(_ => Some(element.hueId))
                   }}>
                   {selectedElement->Option.mapOr(false, e => e == element.id)
-                    ? {"•"->React.string}
+                    ? {"✔︎"->React.string}
                     : React.null}
                 </div>
               })

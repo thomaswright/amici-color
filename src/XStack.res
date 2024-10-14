@@ -76,10 +76,10 @@ let make = (
     )
   }, [view])
 
-  <div className="p-3 bg-black w-fit pt-0">
+  <div className="p-3 w-fit pt-0">
     <div
       ref={ReactDOM.Ref.domRef(gamutEl)}
-      className="flex flex-col gap-1 py-1 bg-white rounded"
+      className="flex flex-col gap-1 py-1  rounded"
       style={{width: xSize->Int.toString ++ "px"}}>
       {hues
       ->Array.map(hue =>
@@ -124,14 +124,16 @@ let make = (
                 dragPos.current = None
                 dragId.current = Some(e.id)
               }}
-              className="absolute w-5 h-5 border border-black flex flex-row items-center justify-center cursor-pointer select-none"
+              className="absolute w-5 h-5  rounded-lg border-2 border-white text-white
+              flex flex-row items-center justify-center cursor-pointer select-none"
               style={{
+                fontSize: "10px",
                 backgroundColor: hex,
                 transform: "translate(-50%, 0)",
                 left: (percentage *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
               }}>
               {selectedElement->Option.mapOr(false, x => x == e.id)
-                ? {"•"->React.string}
+                ? {"✔︎"->React.string}
                 : React.null}
             </div>
           })
@@ -140,7 +142,7 @@ let make = (
       )
       ->React.array}
     </div>
-    <div className="text-white h-4 font-medium text-center">
+    <div className=" h-4 font-medium text-center">
       {switch view {
       | View_LC => "lightness"
       | View_SL => "lightness"

@@ -158,7 +158,7 @@ let make = (
     )
   }, [view])
 
-  <div className="p-3 bg-black">
+  <div className="p-3 ">
     <div className=" relative">
       <CanvasComp hueObj view />
       <div
@@ -186,7 +186,8 @@ let make = (
                 (v, e.lightness == 0. ? e.saturation : s)
               }
             }
-
+            let isSelected = selectedElement->Option.mapOr(false, x => x == e.id)
+            // let borderColor = Texel.convert((hue.value, 1.0, 0.5), Texel.okhsl, Texel.srgb) -> Texel.rgbToHex
             <div
               key={e.id}
               onMouseDown={_ => {
@@ -201,16 +202,17 @@ let make = (
                 dragId.current = Some(e.id)
               }}
               // onClick={_ => {}}
-              className=" select-none absolute w-5 h-5 border border-black border-t-white border-l-white flex flex-row items-center justify-center cursor-pointer"
+              className=" select-none absolute w-5 h-5 
+              flex flex-row items-center justify-center cursor-pointer rounded-lg border-2  text-white"
               style={{
+                fontSize: "10px",
+                borderColor: isSelected ? "white" : "white",
                 backgroundColor: hex,
                 transform: "translate(-50%, 50%)",
                 left: (xPer *. xSize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
                 bottom: (yPer *. ySize->Int.toFloat)->Float.toInt->Int.toString ++ "px",
               }}>
-              {selectedElement->Option.mapOr(false, x => x == e.id)
-                ? {"•"->React.string}
-                : React.null}
+              {isSelected ? {"✔︎"->React.string} : React.null}
             </div>
           })
           ->React.array
