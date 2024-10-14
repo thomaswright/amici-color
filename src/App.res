@@ -792,10 +792,30 @@ module Palette = {
       setPicks(p_ => {
         p_->Array.map(
           hue => {
+            let newHue = Utils.bound(x *. 360., 0., 360.)
             hue.id == id
               ? {
                   ...hue,
-                  value: Utils.bound(x *. 360., 0., 360.),
+                  elements: hue.elements->Array.map(
+                    el => {
+                      let (_, hsvS, hsvV) = Texel.convert(
+                        (hue.value, el.saturation, el.lightness),
+                        Texel.okhsl,
+                        Texel.okhsv,
+                      )
+                      let (_, hslS, hslL) = Texel.convert(
+                        (newHue, hsvS, hsvV),
+                        Texel.okhsv,
+                        Texel.okhsl,
+                      )
+                      {
+                        ...el,
+                        saturation: hslS,
+                        lightness: hslL,
+                      }
+                    },
+                  ),
+                  value: newHue,
                 }
               : hue
           },

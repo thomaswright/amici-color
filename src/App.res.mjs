@@ -868,12 +868,30 @@ function App$Palette(props) {
   var onDragToHue = React.useCallback((function (id, x) {
           setPicks(function (p_) {
                 return p_.map(function (hue) {
+                            var newHue = Common.Utils.bound(x * 360, 0, 360);
                             if (hue.id === id) {
                               return {
                                       id: hue.id,
-                                      value: Common.Utils.bound(x * 360, 0, 360),
+                                      value: newHue,
                                       name: hue.name,
-                                      elements: hue.elements
+                                      elements: hue.elements.map(function (el) {
+                                            var match = Color.convert([
+                                                  hue.value,
+                                                  el.saturation,
+                                                  el.lightness
+                                                ], Color.OKHSL, Color.OKHSV);
+                                            var match$1 = Color.convert([
+                                                  newHue,
+                                                  match[1],
+                                                  match[2]
+                                                ], Color.OKHSV, Color.OKHSL);
+                                            return {
+                                                    id: el.id,
+                                                    hueId: el.hueId,
+                                                    lightness: match$1[2],
+                                                    saturation: match$1[1]
+                                                  };
+                                          })
                                     };
                             } else {
                               return hue;
