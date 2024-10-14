@@ -205,6 +205,7 @@ let make = (
               className=" select-none absolute w-5 h-5 
               flex flex-row items-center justify-center cursor-pointer rounded-lg border-2  border-[var(--bg)]"
               style={{
+                borderStyle: isSelected ? "dashed" : "solid",
                 fontSize: "10px",
                 borderColor: isSelected ? "var(--select)" : "var(--bg)",
                 color: isSelected ? "var(--select)" : "inherit",

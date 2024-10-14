@@ -121,6 +121,7 @@ function YStack(props) {
                                                           style: {
                                                             backgroundColor: hex,
                                                             borderColor: isSelected ? "var(--select)" : "var(--bg)",
+                                                            borderStyle: isSelected ? "dashed" : "solid",
                                                             bottom: (percentage * 300 | 0).toString() + "px",
                                                             color: isSelected ? "var(--select)" : "inherit",
                                                             fontSize: "10px",

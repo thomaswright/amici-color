@@ -113,6 +113,7 @@ function HueXLine(props) {
                                               style: {
                                                 backgroundColor: hex,
                                                 borderColor: isSelected ? "var(--select)" : "var(--bg)",
+                                                borderStyle: isSelected ? "dotted" : "solid",
                                                 fontSize: "16px",
                                                 left: (hue.value / 360 * 300 | 0).toString() + "px",
                                                 top: "0.25rem",

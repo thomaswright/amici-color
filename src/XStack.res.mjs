@@ -112,6 +112,7 @@ function XStack(props) {
                                                           style: {
                                                             backgroundColor: hex,
                                                             borderColor: isSelected ? "var(--select)" : "var(--bg)",
+                                                            borderStyle: isSelected ? "dashed" : "solid",
                                                             color: isSelected ? "var(--select)" : "inherit",
                                                             fontSize: "10px",
                                                             left: (percentage * 300 | 0).toString() + "px",

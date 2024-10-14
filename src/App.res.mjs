@@ -1174,7 +1174,8 @@ function App$Palette(props) {
                                                                         className: "w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center \n                  cursor-pointer rounded-2xl border-2 border-[var(--bg)] text-xl",
                                                                         style: {
                                                                           backgroundColor: hex,
-                                                                          borderColor: isSelected ? "var(--select)" : "var(--bg)",
+                                                                          borderColor: isSelected ? "var(--select) " : "var(--bg)",
+                                                                          borderStyle: isSelected ? "dashed" : "solid",
                                                                           color: isSelected ? "var(--select)" : "inherit"
                                                                         },
                                                                         onClick: (function (param) {

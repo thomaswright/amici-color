@@ -1067,8 +1067,9 @@ module Palette = {
                   className="w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center 
                   cursor-pointer rounded-2xl border-2 border-[var(--bg)] text-xl"
                   style={{
+                    borderStyle: isSelected ? "dashed" : "solid",
                     backgroundColor: hex,
-                    borderColor: isSelected ? "var(--select)" : "var(--bg)",
+                    borderColor: isSelected ? "var(--select) " : "var(--bg)",
                     color: isSelected ? "var(--select)" : "inherit",
                   }}
                   onClick={_ => {
