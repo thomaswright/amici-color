@@ -8,6 +8,7 @@ import * as YStack from "./YStack.res.mjs";
 import * as HueXLine from "./HueXLine.res.mjs";
 import * as ViewGamut from "./ViewGamut.res.mjs";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
+import AboutJsx from "./about.jsx";
 import * as Core__Array from "@rescript/core/src/Core__Array.res.mjs";
 import * as Color from "@texel/color";
 import * as Core__Option from "@rescript/core/src/Core__Option.res.mjs";
@@ -19,6 +20,8 @@ import AmiciPrismSvgreact from "./assets/amici-prism.svg?react";
 var make = AmiciPrismSvgreact;
 
 var make$1 = DropdownJsx;
+
+var make$2 = AboutJsx;
 
 function makeDefaultPicks(hues, defaultShades) {
   var yLenF = defaultShades.length;
@@ -979,13 +982,22 @@ function App$Palette(props) {
               children: [
                 JsxRuntime.jsxs("div", {
                       children: [
-                        JsxRuntime.jsx("div", {
-                              children: JsxRuntime.jsx(make, {}),
-                              className: "h-12 w-12"
+                        JsxRuntime.jsxs("div", {
+                              children: [
+                                JsxRuntime.jsx("div", {
+                                      children: JsxRuntime.jsx(make, {}),
+                                      className: "h-8 w-8"
+                                    }),
+                                "Amici Color"
+                              ],
+                              className: "font-black text-2xl flex flex-row items-center gap-2 pl-2 text-[var(--select)]"
                             }),
-                        "Amici Color"
+                        JsxRuntime.jsx("div", {
+                              children: JsxRuntime.jsx(make$2, {}),
+                              className: "text-[var(--select)]"
+                            })
                       ],
-                      className: "font-black text-4xl flex flex-row items-center gap-2 pb-4 text-[var(--select)]"
+                      className: "flex flex-row mb-4 items-center"
                     }),
                 JsxRuntime.jsxs("div", {
                       children: [
@@ -1334,13 +1346,13 @@ function App$Palette(props) {
 function App(props) {
   return JsxRuntime.jsx("div", {
               children: JsxRuntime.jsx(App$Palette, {}),
-              className: "p-6 min-h-screen "
+              className: "p-6 pt-4 min-h-screen "
             });
 }
 
-var make$2 = App;
+var make$3 = App;
 
 export {
-  make$2 as make,
+  make$3 as make,
 }
 /* make Not a pure module */

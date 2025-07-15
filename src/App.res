@@ -13,6 +13,11 @@ module DropdownMenu = {
   external make: (~items: array<(string, unit => unit)>) => React.element = "default"
 }
 
+module About = {
+  @module("./about.jsx") @react.component
+  external make: unit => React.element = "default"
+}
+
 @module("./useLocalStorage.js")
 external useLocalStorage: (string, 'a) => ('a, ('a => 'a) => unit, unit => 'a) = "default"
 
@@ -889,12 +894,17 @@ module Palette = {
     })
 
     <div className="">
-      <div
-        className="font-black text-4xl flex flex-row items-center gap-2 pb-4 text-[var(--select)]">
-        <div className="h-12 w-12">
-          <Logo />
+      <div className="flex flex-row mb-4 items-center">
+        <div
+          className="font-black text-2xl flex flex-row items-center gap-2 pl-2 text-[var(--select)]">
+          <div className="h-8 w-8">
+            <Logo />
+          </div>
+          {"Amici Color"->React.string}
         </div>
-        {"Amici Color"->React.string}
+        <div className={"text-[var(--select)]"}>
+          <About />
+        </div>
       </div>
       <div className="flex flex-row">
         <div className="">
@@ -1185,7 +1195,7 @@ module Palette = {
 
 @react.component
 let make = () => {
-  <div className="p-6 min-h-screen ">
+  <div className="p-6 pt-4 min-h-screen ">
     <Palette />
     // <Gamut />
   </div>
