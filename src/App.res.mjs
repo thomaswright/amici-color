@@ -1197,7 +1197,7 @@ function App$Palette(props) {
                                                                         className: "flex flex-row justify-start gap-2 w-full"
                                                                       })
                                                                 ],
-                                                                className: "first:border-0 border-t border-[var(--complement)] mr-1"
+                                                                className: "first:border-0 border-t border-[var(--complement)] mr-1 pl-0.5"
                                                               }, pick.id);
                                                   }),
                                               className: "overflow-hidden",
@@ -1273,7 +1273,7 @@ function App$Palette(props) {
                                                                           })
                                                                       })
                                                                 ],
-                                                                className: "first:border-0 flex flex-col items-center gap-1 border-l border-[var(--complement)] mb-1"
+                                                                className: "first:border-0 flex flex-col items-center gap-1 border-l border-[var(--complement)] mb-1 pt-0.5"
                                                               }, shade.id);
                                                   }),
                                               className: "overflow-hidden",

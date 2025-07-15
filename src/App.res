@@ -1042,7 +1042,8 @@ module Palette = {
                 }
 
                 <div
-                  key={pick.id} className="first:border-0 border-t border-[var(--complement)] mr-1">
+                  key={pick.id}
+                  className="first:border-0 border-t border-[var(--complement)] mr-1 pl-0.5">
                   <div className="flex-row flex w-full justify-between items-center gap-1 h-full">
                     <DropdownMenu
                       items={[
@@ -1104,7 +1105,7 @@ module Palette = {
 
                 <div
                   key={shade.id}
-                  className="first:border-0 flex flex-col items-center gap-1 border-l border-[var(--complement)] mb-1">
+                  className="first:border-0 flex flex-col items-center gap-1 border-l border-[var(--complement)] mb-1 pt-0.5">
                   <DropdownMenu
                     items={[
                       ("Add Column Before", _ => newShade(shade.id, false)),
