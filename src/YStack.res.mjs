@@ -137,12 +137,12 @@ function YStack(props) {
                                     }, hue.id);
                         }),
                     ref: Caml_option.some(gamutEl),
-                    className: "flex flex-row gap-1 px-1 border-y border-[var(--select)]",
+                    className: "flex flex-row gap-1 px-3",
                     style: {
                       height: (300).toString() + "px"
                     }
                   }),
-              className: "py-3 flex flex-row -ml-3"
+              className: " flex flex-row border-y border-[var(--select)]"
             });
 }
 

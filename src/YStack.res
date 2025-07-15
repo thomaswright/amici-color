@@ -124,7 +124,7 @@ let make = (
     )
   }, [view])
 
-  <div className="py-3 flex flex-row -ml-3">
+  <div className=" flex flex-row border-y border-[var(--select)]">
     // <canvas
     //   style={{
     //     width: xSize->Int.toString ++ "px",
@@ -143,7 +143,7 @@ let make = (
     // </div>
     <div
       ref={ReactDOM.Ref.domRef(gamutEl)}
-      className="flex flex-row gap-1 px-1 border-y border-[var(--select)]"
+      className="flex flex-row gap-1 px-3"
       style={{height: ySize->Int.toString ++ "px"}}>
       {hues
       ->Array.map(hue =>

@@ -76,7 +76,7 @@ let make = (
     )
   }, [view])
 
-  <div className="ml-8 w-fit -mt-3">
+  <div className=" w-fit border-x border-[var(--select)]">
     // <div className=" font-medium text-center text-[var(--select)]">
     //   {switch view {
     //   | View_LC => "lightness"
@@ -86,7 +86,7 @@ let make = (
     // </div>
     <div
       ref={ReactDOM.Ref.domRef(gamutEl)}
-      className="flex flex-col gap-1 py-1 border-x border-[var(--select)]"
+      className="flex flex-col gap-1 py-3"
       style={{width: xSize->Int.toString ++ "px"}}>
       {hues
       ->Array.map(hue =>

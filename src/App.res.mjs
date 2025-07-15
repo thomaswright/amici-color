@@ -982,45 +982,41 @@ function App$Palette(props) {
                                                                   })
                                                               }, viewName(v));
                                                   }),
-                                              className: "flex flex-row gap-2 justify-center border-b border-[var(--select)] py-2"
+                                              className: "flex flex-row gap-2 justify-center bg-opacity-15 bg-neutral-900 border-b border-[var(--select)] py-2"
                                             }),
                                         JsxRuntime.jsxs("div", {
                                               children: [
+                                                JsxRuntime.jsx("div", {}),
                                                 JsxRuntime.jsx("div", {
-                                                      children: JsxRuntime.jsx("div", {
-                                                            children: tmp,
-                                                            className: "h-5 font-medium text-center text-[var(--select)] w-[300px] ml-5"
-                                                          })
+                                                      children: tmp,
+                                                      className: "font-medium flex flex-row justify-center items-center text-[var(--select)] w-full h-full ml-5"
                                                     }),
-                                                JsxRuntime.jsxs("div", {
-                                                      children: [
-                                                        JsxRuntime.jsx("div", {
-                                                              children: tmp$1,
-                                                              className: " w-5 font-medium text-center text-[var(--select)]",
-                                                              style: {
-                                                                writingMode: "sideways-lr"
-                                                              }
-                                                            }),
-                                                        JsxRuntime.jsx(ViewGamut.make, {
-                                                              hues: picks,
-                                                              selectedHue: selectedHue,
-                                                              selectedElement: selectedElement,
-                                                              view: view,
-                                                              setSelectedElement: setSelectedElement,
-                                                              onDragTo: onDragToGamut
-                                                            }),
-                                                        JsxRuntime.jsx(YStack.make, {
-                                                              hues: picks,
-                                                              selectedElement: selectedElement,
-                                                              view: view,
-                                                              setSelectedElement: setSelectedElement,
-                                                              setSelectedHue: setSelectedHue,
-                                                              selectedHue: selectedHue,
-                                                              onDragTo: onDragToY
-                                                            })
-                                                      ],
-                                                      className: "flex flex-row"
+                                                JsxRuntime.jsx("div", {}),
+                                                JsxRuntime.jsx("div", {
+                                                      children: tmp$1,
+                                                      className: " font-medium text-center text-[var(--select)] flex flex-row justify-center items-center w-full h-full",
+                                                      style: {
+                                                        writingMode: "sideways-lr"
+                                                      }
                                                     }),
+                                                JsxRuntime.jsx(ViewGamut.make, {
+                                                      hues: picks,
+                                                      selectedHue: selectedHue,
+                                                      selectedElement: selectedElement,
+                                                      view: view,
+                                                      setSelectedElement: setSelectedElement,
+                                                      onDragTo: onDragToGamut
+                                                    }),
+                                                JsxRuntime.jsx(YStack.make, {
+                                                      hues: picks,
+                                                      selectedElement: selectedElement,
+                                                      view: view,
+                                                      setSelectedElement: setSelectedElement,
+                                                      setSelectedHue: setSelectedHue,
+                                                      selectedHue: selectedHue,
+                                                      onDragTo: onDragToY
+                                                    }),
+                                                JsxRuntime.jsx("div", {}),
                                                 JsxRuntime.jsx(XStack.make, {
                                                       hues: picks,
                                                       selectedElement: selectedElement,
@@ -1028,9 +1024,14 @@ function App$Palette(props) {
                                                       setSelectedElement: setSelectedElement,
                                                       setSelectedHue: setSelectedHue,
                                                       onDragTo: onDragToX
-                                                    })
+                                                    }),
+                                                JsxRuntime.jsx("div", {})
                                               ],
-                                              className: "flex flex-col pt-1 pl-1"
+                                              style: {
+                                                display: "grid",
+                                                gridTemplateColumns: "32px 302px auto",
+                                                gridTemplateRows: "32px 302px auto"
+                                              }
                                             })
                                       ],
                                       className: "border rounded-xl border-[var(--select)]"

@@ -864,7 +864,7 @@ module Palette = {
           <HueXLine hues={picks} selectedHue setSelectedHue onDragTo={onDragToHue} />
           <div className="border rounded-xl border-[var(--select)]">
             <div
-              className="flex flex-row gap-2 justify-center border-b border-[var(--select)] py-2">
+              className="flex flex-row gap-2 justify-center bg-opacity-15 bg-neutral-900 border-b border-[var(--select)] py-2">
               {[View_LC, View_SL, View_SV]
               ->Array.map(v => {
                 let isSelected = view == v
@@ -880,44 +880,49 @@ module Palette = {
               })
               ->React.array}
             </div>
-            <div className="flex flex-col pt-1 pl-1">
-              <div>
-                <div className="h-5 font-medium text-center text-[var(--select)] w-[300px] ml-5">
-                  {switch view {
-                  | View_LC => "lightness"
-                  | View_SL => "lightness"
-                  | View_SV => "value"
-                  }->React.string}
-                </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: `32px 302px auto`,
+                gridTemplateRows: `32px 302px auto`,
+              }}>
+              <div />
+              <div
+                className="font-medium flex flex-row justify-center items-center text-[var(--select)] w-full h-full ml-5">
+                {switch view {
+                | View_LC => "lightness"
+                | View_SL => "lightness"
+                | View_SV => "value"
+                }->React.string}
               </div>
-              <div className="flex flex-row">
-                <div
-                  className=" w-5 font-medium text-center text-[var(--select)]"
-                  style={{writingMode: "sideways-lr"}}>
-                  {switch view {
-                  | View_LC => "chroma"
-                  | View_SL => "saturation"
-                  | View_SV => "saturation"
-                  }->React.string}
-                </div>
-                <ViewGamut
-                  view={view}
-                  hues={picks}
-                  selectedHue
-                  selectedElement
-                  setSelectedElement
-                  onDragTo={onDragToGamut}
-                />
-                <YStack
-                  view={view}
-                  hues={picks}
-                  selectedElement
-                  setSelectedElement
-                  setSelectedHue
-                  selectedHue
-                  onDragTo={onDragToY}
-                />
+              <div />
+              <div
+                className=" font-medium text-center text-[var(--select)] flex flex-row justify-center items-center w-full h-full"
+                style={{writingMode: "sideways-lr"}}>
+                {switch view {
+                | View_LC => "chroma"
+                | View_SL => "saturation"
+                | View_SV => "saturation"
+                }->React.string}
               </div>
+              <ViewGamut
+                view={view}
+                hues={picks}
+                selectedHue
+                selectedElement
+                setSelectedElement
+                onDragTo={onDragToGamut}
+              />
+              <YStack
+                view={view}
+                hues={picks}
+                selectedElement
+                setSelectedElement
+                setSelectedHue
+                selectedHue
+                onDragTo={onDragToY}
+              />
+              <div />
               <XStack
                 view={view}
                 hues={picks}
@@ -926,6 +931,8 @@ module Palette = {
                 setSelectedHue
                 onDragTo={onDragToX}
               />
+              <div />
+
               // <div className="flex flex-row gap-2 ">
               //   <HslSGamut hues={picks} selectedHue selectedElement />
               //   <HueLine hues={picks} selected={selectedHue} />

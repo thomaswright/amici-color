@@ -128,12 +128,12 @@ function XStack(props) {
                                     }, hue.id);
                         }),
                     ref: Caml_option.some(gamutEl),
-                    className: "flex flex-col gap-1 py-1 border-x border-[var(--select)]",
+                    className: "flex flex-col gap-1 py-3",
                     style: {
                       width: (300).toString() + "px"
                     }
                   }),
-              className: "ml-8 w-fit -mt-3"
+              className: " w-fit border-x border-[var(--select)]"
             });
 }
 
