@@ -58,6 +58,18 @@ function viewName(view) {
   }
 }
 
+function bgName(bg) {
+  switch (bg) {
+    case "BG_White" :
+        return "white";
+    case "BG_Black" :
+        return "black";
+    case "BG_Select" :
+        return "selected";
+    
+  }
+}
+
 var defaultShades = Common.Utils.mapRange(5, (function (i) {
         return {
                 id: Ulid.ulid(),
@@ -75,55 +87,86 @@ var defaultPicks = makeDefaultPicks([
 
 function App$Palette(props) {
   var match = React.useState(function () {
+        return "BG_White";
+      });
+  var setBg = match[1];
+  var bg = match[0];
+  var match$1 = React.useState(function () {
         return "View_LC";
       });
-  var setView = match[1];
-  var view = match[0];
-  var match$1 = React.useState(function () {
+  var setView = match$1[1];
+  var view = match$1[0];
+  var match$2 = React.useState(function () {
         return defaultPicks;
       });
-  var setPicks = match$1[1];
-  var picks_ = match$1[0];
-  var match$2 = React.useState(function () {
+  var setPicks = match$2[1];
+  var picks_ = match$2[0];
+  var match$3 = React.useState(function () {
         return defaultShades;
       });
-  var setShades = match$2[1];
-  var shades = match$2[0];
+  var setShades = match$3[1];
+  var shades = match$3[0];
   var a = Core__Option.map(picks_[0], (function (v) {
           return v.id;
         }));
-  var match$3 = React.useState(function () {
+  var match$4 = React.useState(function () {
         return a;
       });
-  var setSelectedHue = match$3[1];
-  var selectedHue = match$3[0];
-  var match$4 = React.useState(function () {
+  var setSelectedHue = match$4[1];
+  var selectedHue = match$4[0];
+  var match$5 = React.useState(function () {
         
       });
-  var setSelectedElement = match$4[1];
-  var selectedElement = match$4[0];
-  if (selectedHue !== undefined && selectedElement !== undefined) {
-    Core__Option.flatMap(picks_.find(function (v) {
-              return v.id === selectedHue;
-            }), (function (v) {
-            return Core__Option.map(v.elements.find(function (el) {
-                            return el.id === selectedElement;
-                          }), (function (el) {
-                          var hex = Color.RGBToHex(Color.convert([
-                                    v.value,
-                                    el.saturation,
-                                    el.lightness
-                                  ], Color.OKHSL, Color.sRGB));
-                          var complement = Color.RGBToHex(Color.convert([
-                                    v.value,
-                                    el.saturation,
-                                    el.lightness < 0.5 ? 0.7 : 0.4
-                                  ], Color.OKHSL, Color.sRGB));
-                          document.documentElement.style.setProperty("--bg", hex);
-                          document.documentElement.style.setProperty("--select", el.lightness < 0.5 ? "white" : "black");
-                          document.documentElement.style.setProperty("--complement", complement);
-                        }));
-          }));
+  var setSelectedElement = match$5[1];
+  var selectedElement = match$5[0];
+  var setBgWhite = function () {
+    document.documentElement.style.setProperty("--bg", "white");
+    document.documentElement.style.setProperty("--select", "black");
+    document.documentElement.style.setProperty("--complement", "gray");
+  };
+  var setBgBlack = function () {
+    document.documentElement.style.setProperty("--bg", "black");
+    document.documentElement.style.setProperty("--select", "white");
+    document.documentElement.style.setProperty("--complement", "gray");
+  };
+  var setBgSelect = function () {
+    if (selectedHue !== undefined && selectedElement !== undefined) {
+      Core__Option.flatMap(picks_.find(function (v) {
+                return v.id === selectedHue;
+              }), (function (v) {
+              return Core__Option.map(v.elements.find(function (el) {
+                              return el.id === selectedElement;
+                            }), (function (el) {
+                            var hex = Color.RGBToHex(Color.convert([
+                                      v.value,
+                                      el.saturation,
+                                      el.lightness
+                                    ], Color.OKHSL, Color.sRGB));
+                            var complement = Color.RGBToHex(Color.convert([
+                                      v.value,
+                                      el.saturation,
+                                      el.lightness < 0.5 ? 0.7 : 0.4
+                                    ], Color.OKHSL, Color.sRGB));
+                            document.documentElement.style.setProperty("--bg", hex);
+                            document.documentElement.style.setProperty("--select", el.lightness < 0.5 ? "white" : "black");
+                            document.documentElement.style.setProperty("--complement", complement);
+                          }));
+            }));
+      return ;
+    }
+    
+  };
+  switch (bg) {
+    case "BG_White" :
+        setBgWhite();
+        break;
+    case "BG_Black" :
+        setBgBlack();
+        break;
+    case "BG_Select" :
+        setBgSelect();
+        break;
+    
   }
   var handleKeydown = React.useCallback((function ($$event) {
           var updateElement = function (f) {
@@ -1047,62 +1090,174 @@ function App$Palette(props) {
                             }),
                         JsxRuntime.jsxs("div", {
                               children: [
-                                JsxRuntime.jsx("div", {
-                                      children: picks.map(function (pick) {
-                                            var onDelete = function () {
-                                              setPicks(function (p_) {
-                                                    return p_.filter(function (v) {
-                                                                return v.id !== pick.id;
-                                                              });
-                                                  });
-                                              setSelectedHue(function (v) {
-                                                    return Core__Option.flatMap(v, (function (p) {
-                                                                  if (p === pick.id) {
-                                                                    return ;
-                                                                  } else {
-                                                                    return p;
-                                                                  }
-                                                                }));
-                                                  });
-                                            };
-                                            return JsxRuntime.jsxs("div", {
-                                                        children: [
-                                                          JsxRuntime.jsxs("div", {
+                                JsxRuntime.jsxs("div", {
+                                      children: [
+                                        JsxRuntime.jsx("span", {
+                                              children: "Background:",
+                                              className: "font-bold text-lg text-[var(--select)] "
+                                            }),
+                                        [
+                                            "BG_White",
+                                            "BG_Black",
+                                            "BG_Select"
+                                          ].map(function (v) {
+                                              var isSelected = bg === v;
+                                              return JsxRuntime.jsx("button", {
+                                                          children: bgName(v),
+                                                          className: [
+                                                              "px-2 rounded h-fit",
+                                                              isSelected ? "bg-neutral-700 text-white" : "bg-neutral-100"
+                                                            ].join(" "),
+                                                          onClick: (function (param) {
+                                                              setBg(function (param) {
+                                                                    return v;
+                                                                  });
+                                                            })
+                                                        }, bgName(v));
+                                            })
+                                      ],
+                                      className: "flex flex-row gap-2 justify-center items-center bg-opacity-15 py-2 h-16 "
+                                    }),
+                                JsxRuntime.jsxs("div", {
+                                      children: [
+                                        JsxRuntime.jsx("div", {
+                                              children: picks.map(function (pick) {
+                                                    var onDelete = function () {
+                                                      setPicks(function (p_) {
+                                                            return p_.filter(function (v) {
+                                                                        return v.id !== pick.id;
+                                                                      });
+                                                          });
+                                                      setSelectedHue(function (v) {
+                                                            return Core__Option.flatMap(v, (function (p) {
+                                                                          if (p === pick.id) {
+                                                                            return ;
+                                                                          } else {
+                                                                            return p;
+                                                                          }
+                                                                        }));
+                                                          });
+                                                    };
+                                                    return JsxRuntime.jsxs("div", {
+                                                                children: [
+                                                                  JsxRuntime.jsxs("div", {
+                                                                        children: [
+                                                                          JsxRuntime.jsx(make$1, {
+                                                                                items: [
+                                                                                  [
+                                                                                    "Add Row Before",
+                                                                                    (function () {
+                                                                                        newHue(pick.id, false);
+                                                                                      })
+                                                                                  ],
+                                                                                  [
+                                                                                    "Add Row After",
+                                                                                    (function () {
+                                                                                        newHue(pick.id, true);
+                                                                                      })
+                                                                                  ],
+                                                                                  [
+                                                                                    "Delete Row",
+                                                                                    onDelete
+                                                                                  ]
+                                                                                ]
+                                                                              }),
+                                                                          JsxRuntime.jsx("input", {
+                                                                                className: "w-20 h-5  bg-transparent text-[var(--select)] text-right",
+                                                                                type: "text",
+                                                                                value: pick.name,
+                                                                                onChange: (function (e) {
+                                                                                    var value = e.target.value;
+                                                                                    setPicks(function (cur) {
+                                                                                          return cur.map(function (v) {
+                                                                                                      if (v.id === pick.id) {
+                                                                                                        return {
+                                                                                                                id: v.id,
+                                                                                                                value: v.value,
+                                                                                                                name: value,
+                                                                                                                elements: v.elements
+                                                                                                              };
+                                                                                                      } else {
+                                                                                                        return v;
+                                                                                                      }
+                                                                                                    });
+                                                                                        });
+                                                                                  })
+                                                                              })
+                                                                        ],
+                                                                        className: "flex-row flex w-full justify-between items-center gap-1 h-full"
+                                                                      }),
+                                                                  JsxRuntime.jsx("div", {
+                                                                        className: "flex flex-row justify-start gap-2 w-full"
+                                                                      })
+                                                                ],
+                                                                className: "first:border-0 border-t border-[var(--complement)] mr-1"
+                                                              }, pick.id);
+                                                  }),
+                                              className: "overflow-hidden",
+                                              style: {
+                                                display: "grid",
+                                                gridColumn: "1 / 2",
+                                                gridRow: "2 / -1",
+                                                gridTemplateColumns: "subgrid",
+                                                gridTemplateRows: "subgrid"
+                                              }
+                                            }),
+                                        JsxRuntime.jsx("div", {
+                                              children: shades.map(function (shade, i) {
+                                                    var onDelete = function () {
+                                                      setPicks(function (p_) {
+                                                            return p_.map(function (v) {
+                                                                        return {
+                                                                                id: v.id,
+                                                                                value: v.value,
+                                                                                name: v.name,
+                                                                                elements: v.elements.filter(function (param, ei) {
+                                                                                      return ei !== i;
+                                                                                    })
+                                                                              };
+                                                                      });
+                                                          });
+                                                      setShades(function (s_) {
+                                                            return s_.filter(function (v) {
+                                                                        return v.id !== shade.id;
+                                                                      });
+                                                          });
+                                                    };
+                                                    return JsxRuntime.jsxs("div", {
                                                                 children: [
                                                                   JsxRuntime.jsx(make$1, {
                                                                         items: [
                                                                           [
-                                                                            "Add Row Before",
+                                                                            "Add Column Before",
                                                                             (function () {
-                                                                                newHue(pick.id, false);
+                                                                                newShade(shade.id, false);
                                                                               })
                                                                           ],
                                                                           [
-                                                                            "Add Row After",
+                                                                            "Add Column After",
                                                                             (function () {
-                                                                                newHue(pick.id, true);
+                                                                                newShade(shade.id, true);
                                                                               })
                                                                           ],
                                                                           [
-                                                                            "Delete Row",
+                                                                            "Delete Column",
                                                                             onDelete
                                                                           ]
                                                                         ]
                                                                       }),
                                                                   JsxRuntime.jsx("input", {
-                                                                        className: "w-20 h-5  bg-transparent text-[var(--select)] text-right",
+                                                                        className: "w-10 h-5 bg-transparent text-[var(--select)] ml-0.5",
                                                                         type: "text",
-                                                                        value: pick.name,
+                                                                        value: shade.name,
                                                                         onChange: (function (e) {
                                                                             var value = e.target.value;
-                                                                            setPicks(function (cur) {
+                                                                            setShades(function (cur) {
                                                                                   return cur.map(function (v) {
-                                                                                              if (v.id === pick.id) {
+                                                                                              if (v.id === shade.id) {
                                                                                                 return {
                                                                                                         id: v.id,
-                                                                                                        value: v.value,
-                                                                                                        name: value,
-                                                                                                        elements: v.elements
+                                                                                                        name: value
                                                                                                       };
                                                                                               } else {
                                                                                                 return v;
@@ -1112,146 +1267,67 @@ function App$Palette(props) {
                                                                           })
                                                                       })
                                                                 ],
-                                                                className: "flex-row flex w-full justify-between items-center gap-1 h-full"
-                                                              }),
-                                                          JsxRuntime.jsx("div", {
-                                                                className: "flex flex-row justify-start gap-2 w-full"
-                                                              })
-                                                        ],
-                                                        className: "first:border-0 border-t border-[var(--complement)] mr-1"
-                                                      }, pick.id);
-                                          }),
-                                      className: "overflow-hidden",
+                                                                className: "first:border-0 flex flex-col items-center gap-1 border-l border-[var(--complement)] mb-1"
+                                                              }, shade.id);
+                                                  }),
+                                              className: "overflow-hidden",
+                                              style: {
+                                                display: "grid",
+                                                gridColumn: "2 / -1",
+                                                gridRow: "1 / 2",
+                                                gridTemplateColumns: "subgrid",
+                                                gridTemplateRows: "subgrid"
+                                              }
+                                            }),
+                                        JsxRuntime.jsx("div", {
+                                              children: Belt_Array.concatMany(picks.map(function (hue) {
+                                                        return hue.elements.map(function (element) {
+                                                                    var hex = Color.RGBToHex(Color.convert([
+                                                                              hue.value,
+                                                                              element.saturation,
+                                                                              element.lightness
+                                                                            ], Color.OKHSL, Color.sRGB));
+                                                                    var isSelected = Core__Option.mapOr(selectedElement, false, (function (e) {
+                                                                            return e === element.id;
+                                                                          }));
+                                                                    return JsxRuntime.jsx("div", {
+                                                                                children: isSelected ? "" : null,
+                                                                                className: "w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center \n                  cursor-pointer rounded-2xl border-2 border-[var(--bg)] text-xl",
+                                                                                style: {
+                                                                                  backgroundColor: hex,
+                                                                                  borderColor: isSelected ? "var(--select) " : "var(--bg)",
+                                                                                  borderStyle: isSelected ? "dashed" : "solid",
+                                                                                  color: isSelected ? "var(--select)" : "inherit"
+                                                                                },
+                                                                                onClick: (function (param) {
+                                                                                    setSelectedElement(function (param) {
+                                                                                          return element.id;
+                                                                                        });
+                                                                                    setSelectedHue(function (param) {
+                                                                                          return element.hueId;
+                                                                                        });
+                                                                                  })
+                                                                              }, element.id);
+                                                                  });
+                                                      })),
+                                              style: {
+                                                display: "grid",
+                                                gridColumn: "2 / -1",
+                                                gridRow: "2 / -1",
+                                                gridTemplateColumns: "subgrid",
+                                                gridTemplateRows: "subgrid"
+                                              }
+                                            })
+                                      ],
+                                      className: "pb-1 pr-1 w-fit h-fit shadow-xl border border-[var(--complement)] rounded-xl ml-2",
                                       style: {
                                         display: "grid",
-                                        gridColumn: "1 / 2",
-                                        gridRow: "2 / -1",
-                                        gridTemplateColumns: "subgrid",
-                                        gridTemplateRows: "subgrid"
-                                      }
-                                    }),
-                                JsxRuntime.jsx("div", {
-                                      children: shades.map(function (shade, i) {
-                                            var onDelete = function () {
-                                              setPicks(function (p_) {
-                                                    return p_.map(function (v) {
-                                                                return {
-                                                                        id: v.id,
-                                                                        value: v.value,
-                                                                        name: v.name,
-                                                                        elements: v.elements.filter(function (param, ei) {
-                                                                              return ei !== i;
-                                                                            })
-                                                                      };
-                                                              });
-                                                  });
-                                              setShades(function (s_) {
-                                                    return s_.filter(function (v) {
-                                                                return v.id !== shade.id;
-                                                              });
-                                                  });
-                                            };
-                                            return JsxRuntime.jsxs("div", {
-                                                        children: [
-                                                          JsxRuntime.jsx(make$1, {
-                                                                items: [
-                                                                  [
-                                                                    "Add Column Before",
-                                                                    (function () {
-                                                                        newShade(shade.id, false);
-                                                                      })
-                                                                  ],
-                                                                  [
-                                                                    "Add Column After",
-                                                                    (function () {
-                                                                        newShade(shade.id, true);
-                                                                      })
-                                                                  ],
-                                                                  [
-                                                                    "Delete Column",
-                                                                    onDelete
-                                                                  ]
-                                                                ]
-                                                              }),
-                                                          JsxRuntime.jsx("input", {
-                                                                className: "w-10 h-5 bg-transparent text-[var(--select)] ml-0.5",
-                                                                type: "text",
-                                                                value: shade.name,
-                                                                onChange: (function (e) {
-                                                                    var value = e.target.value;
-                                                                    setShades(function (cur) {
-                                                                          return cur.map(function (v) {
-                                                                                      if (v.id === shade.id) {
-                                                                                        return {
-                                                                                                id: v.id,
-                                                                                                name: value
-                                                                                              };
-                                                                                      } else {
-                                                                                        return v;
-                                                                                      }
-                                                                                    });
-                                                                        });
-                                                                  })
-                                                              })
-                                                        ],
-                                                        className: "first:border-0 flex flex-col items-center gap-1 border-l border-[var(--complement)] mb-1"
-                                                      }, shade.id);
-                                          }),
-                                      className: "overflow-hidden",
-                                      style: {
-                                        display: "grid",
-                                        gridColumn: "2 / -1",
-                                        gridRow: "1 / 2",
-                                        gridTemplateColumns: "subgrid",
-                                        gridTemplateRows: "subgrid"
-                                      }
-                                    }),
-                                JsxRuntime.jsx("div", {
-                                      children: Belt_Array.concatMany(picks.map(function (hue) {
-                                                return hue.elements.map(function (element) {
-                                                            var hex = Color.RGBToHex(Color.convert([
-                                                                      hue.value,
-                                                                      element.saturation,
-                                                                      element.lightness
-                                                                    ], Color.OKHSL, Color.sRGB));
-                                                            var isSelected = Core__Option.mapOr(selectedElement, false, (function (e) {
-                                                                    return e === element.id;
-                                                                  }));
-                                                            return JsxRuntime.jsx("div", {
-                                                                        children: isSelected ? "" : null,
-                                                                        className: "w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center \n                  cursor-pointer rounded-2xl border-2 border-[var(--bg)] text-xl",
-                                                                        style: {
-                                                                          backgroundColor: hex,
-                                                                          borderColor: isSelected ? "var(--select) " : "var(--bg)",
-                                                                          borderStyle: isSelected ? "dashed" : "solid",
-                                                                          color: isSelected ? "var(--select)" : "inherit"
-                                                                        },
-                                                                        onClick: (function (param) {
-                                                                            setSelectedElement(function (param) {
-                                                                                  return element.id;
-                                                                                });
-                                                                            setSelectedHue(function (param) {
-                                                                                  return element.hueId;
-                                                                                });
-                                                                          })
-                                                                      }, element.id);
-                                                          });
-                                              })),
-                                      style: {
-                                        display: "grid",
-                                        gridColumn: "2 / -1",
-                                        gridRow: "2 / -1",
-                                        gridTemplateColumns: "subgrid",
-                                        gridTemplateRows: "subgrid"
+                                        gridTemplateColumns: "auto repeat(" + shadeLen.toString() + ", 3rem)",
+                                        gridTemplateRows: "auto repeat(" + hueLen.toString() + ", 3rem)"
                                       }
                                     })
                               ],
-                              className: "pb-1 pr-1 w-fit h-fit shadow-xl border border-[var(--complement)] rounded-xl mt-16 ml-2",
-                              style: {
-                                display: "grid",
-                                gridTemplateColumns: "auto repeat(" + shadeLen.toString() + ", 3rem)",
-                                gridTemplateRows: "auto repeat(" + hueLen.toString() + ", 3rem)"
-                              }
+                              className: " "
                             })
                       ],
                       className: "flex flex-row"

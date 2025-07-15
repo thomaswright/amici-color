@@ -59,6 +59,15 @@ let viewName = view =>
   | View_SL => "okhsl"
   }
 
+type bg = BG_White | BG_Black | BG_Select
+
+let bgName = bg =>
+  switch bg {
+  | BG_White => "white"
+  | BG_Black => "black"
+  | BG_Select => "selected"
+  }
+
 @val @scope("document") external documentElement: 'element = "documentElement"
 
 @send @scope("style") external setProperty: ('element, string, string) => unit = "setProperty"
@@ -73,6 +82,7 @@ module Palette = {
 
   @react.component
   let make = () => {
+    let (bg, setBg) = useLocalStorage("bg", BG_White)
     let (view, setView) = useLocalStorage("View", View_LC)
     // let (selectedMode, setSelectedMode) = React.useState(() => LCH_L)
     let (picks_, setPicks) = useLocalStorage("picks", defaultPicks)
@@ -83,35 +93,55 @@ module Palette = {
     )
     let (selectedElement, setSelectedElement) = useLocalStorage("selectedElement", None)
 
-    switch (selectedHue, selectedElement) {
-    | (Some(hueId), Some(elId)) =>
-      picks_
-      ->Array.find(v => v.id == hueId)
-      ->Option.flatMap(v => {
-        v.elements
-        ->Array.find(el => el.id == elId)
-        ->Option.map(el => {
-          let hex =
-            Texel.convert(
-              (v.value, el.saturation, el.lightness),
-              Texel.okhsl,
-              Texel.srgb,
-            )->Texel.rgbToHex
+    let setBgWhite = () => {
+      setProperty(documentElement, "--bg", "white")
+      setProperty(documentElement, "--select", "black")
+      setProperty(documentElement, "--complement", "gray")
+    }
 
-          let complement =
-            Texel.convert(
-              (v.value, el.saturation, el.lightness < 0.5 ? 0.7 : 0.4),
-              Texel.okhsl,
-              Texel.srgb,
-            )->Texel.rgbToHex
+    let setBgBlack = () => {
+      setProperty(documentElement, "--bg", "black")
+      setProperty(documentElement, "--select", "white")
+      setProperty(documentElement, "--complement", "gray")
+    }
 
-          setProperty(documentElement, "--bg", hex)
-          setProperty(documentElement, "--select", el.lightness < 0.5 ? "white" : "black")
-          setProperty(documentElement, "--complement", complement)
+    let setBgSelect = () => {
+      switch (selectedHue, selectedElement) {
+      | (Some(hueId), Some(elId)) =>
+        picks_
+        ->Array.find(v => v.id == hueId)
+        ->Option.flatMap(v => {
+          v.elements
+          ->Array.find(el => el.id == elId)
+          ->Option.map(el => {
+            let hex =
+              Texel.convert(
+                (v.value, el.saturation, el.lightness),
+                Texel.okhsl,
+                Texel.srgb,
+              )->Texel.rgbToHex
+
+            let complement =
+              Texel.convert(
+                (v.value, el.saturation, el.lightness < 0.5 ? 0.7 : 0.4),
+                Texel.okhsl,
+                Texel.srgb,
+              )->Texel.rgbToHex
+
+            setProperty(documentElement, "--bg", hex)
+            setProperty(documentElement, "--select", el.lightness < 0.5 ? "white" : "black")
+            setProperty(documentElement, "--complement", complement)
+          })
         })
-      })
-      ->ignore
-    | _ => ()
+        ->ignore
+      | _ => ()
+      }
+    }
+
+    switch bg {
+    | BG_Black => setBgBlack()
+    | BG_White => setBgWhite()
+    | BG_Select => setBgSelect()
     }
 
     let handleKeydown = React.useCallback2(event => {
@@ -964,164 +994,184 @@ module Palette = {
         //   })
         //   ->React.array}
         // </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: `auto repeat(${shadeLen->Int.toString}, 3rem)`,
-            gridTemplateRows: `auto repeat(${hueLen->Int.toString}, 3rem)`,
-          }}
-          className="pb-1 pr-1 w-fit h-fit shadow-xl border border-[var(--complement)] rounded-xl mt-16 ml-2">
+        <div className=" ">
+          <div className="flex flex-row gap-2 justify-center items-center bg-opacity-15 py-2 h-16 ">
+            <span className="font-bold text-lg text-[var(--select)] ">
+              {"Background:"->React.string}
+            </span>
+            {[BG_White, BG_Black, BG_Select]
+            ->Array.map(v => {
+              let isSelected = bg == v
+              <button
+                key={v->bgName}
+                className={[
+                  "px-2 rounded h-fit",
+                  isSelected ? "bg-neutral-700 text-white" : "bg-neutral-100",
+                ]->Array.join(" ")}
+                onClick={_ => setBg(_ => v)}>
+                {v->bgName->React.string}
+              </button>
+            })
+            ->React.array}
+          </div>
           <div
-            className="overflow-hidden"
             style={{
               display: "grid",
-              gridRow: "2 / -1",
-              gridColumn: "1 / 2",
-              gridTemplateRows: "subgrid",
-              gridTemplateColumns: "subgrid",
-            }}>
-            {picks
-            ->Array.map(pick => {
-              let onDelete = () => {
-                setPicks(p_ => p_->Array.filter(v => v.id != pick.id))
-                setSelectedHue(v => v->Option.flatMap(p => p == pick.id ? None : Some(p)))
-              }
+              gridTemplateColumns: `auto repeat(${shadeLen->Int.toString}, 3rem)`,
+              gridTemplateRows: `auto repeat(${hueLen->Int.toString}, 3rem)`,
+            }}
+            className="pb-1 pr-1 w-fit h-fit shadow-xl border border-[var(--complement)] rounded-xl ml-2">
+            <div
+              className="overflow-hidden"
+              style={{
+                display: "grid",
+                gridRow: "2 / -1",
+                gridColumn: "1 / 2",
+                gridTemplateRows: "subgrid",
+                gridTemplateColumns: "subgrid",
+              }}>
+              {picks
+              ->Array.map(pick => {
+                let onDelete = () => {
+                  setPicks(p_ => p_->Array.filter(v => v.id != pick.id))
+                  setSelectedHue(v => v->Option.flatMap(p => p == pick.id ? None : Some(p)))
+                }
 
-              <div
-                key={pick.id} className="first:border-0 border-t border-[var(--complement)] mr-1">
-                <div className="flex-row flex w-full justify-between items-center gap-1 h-full">
+                <div
+                  key={pick.id} className="first:border-0 border-t border-[var(--complement)] mr-1">
+                  <div className="flex-row flex w-full justify-between items-center gap-1 h-full">
+                    <DropdownMenu
+                      items={[
+                        ("Add Row Before", () => {newHue(pick.id, false)}),
+                        ("Add Row After", () => {newHue(pick.id, true)}),
+                        ("Delete Row", onDelete),
+                      ]}
+                    />
+                    <input
+                      type_="text"
+                      value={pick.name}
+                      onChange={e => {
+                        let value = (e->ReactEvent.Form.target)["value"]
+                        setPicks(cur => {
+                          cur->Array.map(
+                            v => {
+                              v.id == pick.id
+                                ? {
+                                    ...v,
+                                    name: value,
+                                  }
+                                : v
+                            },
+                          )
+                        })
+                      }}
+                      className="w-20 h-5  bg-transparent text-[var(--select)] text-right"
+                    />
+                  </div>
+                  <div className="flex flex-row justify-start gap-2 w-full" />
+                </div>
+              })
+              ->React.array}
+            </div>
+            <div
+              className="overflow-hidden"
+              style={{
+                display: "grid",
+                gridRow: "1 / 2",
+                gridColumn: "2 / -1",
+                gridTemplateRows: "subgrid",
+                gridTemplateColumns: "subgrid",
+              }}>
+              {shades
+              ->Array.mapWithIndex((shade, i) => {
+                let onDelete = () => {
+                  setPicks(p_ =>
+                    p_->Array.map(
+                      v => {
+                        {
+                          ...v,
+                          elements: v.elements->Array.filterWithIndex((_, ei) => ei != i),
+                        }
+                      },
+                    )
+                  )
+                  setShades(s_ => s_->Array.filter(v => v.id != shade.id))
+                }
+
+                <div
+                  key={shade.id}
+                  className="first:border-0 flex flex-col items-center gap-1 border-l border-[var(--complement)] mb-1">
                   <DropdownMenu
                     items={[
-                      ("Add Row Before", () => {newHue(pick.id, false)}),
-                      ("Add Row After", () => {newHue(pick.id, true)}),
-                      ("Delete Row", onDelete),
+                      ("Add Column Before", _ => newShade(shade.id, false)),
+                      ("Add Column After", _ => newShade(shade.id, true)),
+                      ("Delete Column", onDelete),
                     ]}
                   />
                   <input
                     type_="text"
-                    value={pick.name}
                     onChange={e => {
                       let value = (e->ReactEvent.Form.target)["value"]
-                      setPicks(cur => {
+                      setShades(cur =>
                         cur->Array.map(
-                          v => {
-                            v.id == pick.id
+                          v =>
+                            v.id == shade.id
                               ? {
                                   ...v,
                                   name: value,
                                 }
-                              : v
-                          },
+                              : v,
                         )
-                      })
+                      )
                     }}
-                    className="w-20 h-5  bg-transparent text-[var(--select)] text-right"
+                    value={shade.name}
+                    className="w-10 h-5 bg-transparent text-[var(--select)] ml-0.5"
                   />
                 </div>
-                <div className="flex flex-row justify-start gap-2 w-full" />
-              </div>
-            })
-            ->React.array}
-          </div>
-          <div
-            className="overflow-hidden"
-            style={{
-              display: "grid",
-              gridRow: "1 / 2",
-              gridColumn: "2 / -1",
-              gridTemplateRows: "subgrid",
-              gridTemplateColumns: "subgrid",
-            }}>
-            {shades
-            ->Array.mapWithIndex((shade, i) => {
-              let onDelete = () => {
-                setPicks(p_ =>
-                  p_->Array.map(
-                    v => {
-                      {
-                        ...v,
-                        elements: v.elements->Array.filterWithIndex((_, ei) => ei != i),
-                      }
-                    },
-                  )
-                )
-                setShades(s_ => s_->Array.filter(v => v.id != shade.id))
-              }
-
-              <div
-                key={shade.id}
-                className="first:border-0 flex flex-col items-center gap-1 border-l border-[var(--complement)] mb-1">
-                <DropdownMenu
-                  items={[
-                    ("Add Column Before", _ => newShade(shade.id, false)),
-                    ("Add Column After", _ => newShade(shade.id, true)),
-                    ("Delete Column", onDelete),
-                  ]}
-                />
-                <input
-                  type_="text"
-                  onChange={e => {
-                    let value = (e->ReactEvent.Form.target)["value"]
-                    setShades(cur =>
-                      cur->Array.map(
-                        v =>
-                          v.id == shade.id
-                            ? {
-                                ...v,
-                                name: value,
-                              }
-                            : v,
-                      )
-                    )
-                  }}
-                  value={shade.name}
-                  className="w-10 h-5 bg-transparent text-[var(--select)] ml-0.5"
-                />
-              </div>
-            })
-            ->React.array}
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridRow: "2 / -1",
-              gridColumn: "2 / -1",
-              gridTemplateColumns: "subgrid",
-              gridTemplateRows: "subgrid",
-            }}>
-            {picks
-            ->Array.map(hue => {
-              hue.elements->Array.map(element => {
-                let hex =
-                  Texel.convert(
-                    (hue.value, element.saturation, element.lightness),
-                    Texel.okhsl,
-                    Texel.srgb,
-                  )->Texel.rgbToHex
-
-                let isSelected = selectedElement->Option.mapOr(false, e => e == element.id)
-
-                <div
-                  key={element.id}
-                  className="w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center 
-                  cursor-pointer rounded-2xl border-2 border-[var(--bg)] text-xl"
-                  style={{
-                    borderStyle: isSelected ? "dashed" : "solid",
-                    backgroundColor: hex,
-                    borderColor: isSelected ? "var(--select) " : "var(--bg)",
-                    color: isSelected ? "var(--select)" : "inherit",
-                  }}
-                  onClick={_ => {
-                    setSelectedElement(_ => Some(element.id))
-                    setSelectedHue(_ => Some(element.hueId))
-                  }}>
-                  {isSelected ? {""->React.string} : React.null}
-                </div>
               })
-            })
-            ->Belt.Array.concatMany
-            ->React.array}
+              ->React.array}
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridRow: "2 / -1",
+                gridColumn: "2 / -1",
+                gridTemplateColumns: "subgrid",
+                gridTemplateRows: "subgrid",
+              }}>
+              {picks
+              ->Array.map(hue => {
+                hue.elements->Array.map(element => {
+                  let hex =
+                    Texel.convert(
+                      (hue.value, element.saturation, element.lightness),
+                      Texel.okhsl,
+                      Texel.srgb,
+                    )->Texel.rgbToHex
+
+                  let isSelected = selectedElement->Option.mapOr(false, e => e == element.id)
+
+                  <div
+                    key={element.id}
+                    className="w-12 h-12 max-h-12 max-w-12 flex flex-row items-center justify-center 
+                  cursor-pointer rounded-2xl border-2 border-[var(--bg)] text-xl"
+                    style={{
+                      borderStyle: isSelected ? "dashed" : "solid",
+                      backgroundColor: hex,
+                      borderColor: isSelected ? "var(--select) " : "var(--bg)",
+                      color: isSelected ? "var(--select)" : "inherit",
+                    }}
+                    onClick={_ => {
+                      setSelectedElement(_ => Some(element.id))
+                      setSelectedHue(_ => Some(element.hueId))
+                    }}>
+                    {isSelected ? {""->React.string} : React.null}
+                  </div>
+                })
+              })
+              ->Belt.Array.concatMany
+              ->React.array}
+            </div>
           </div>
         </div>
       </div>
