@@ -31,6 +31,11 @@ const About = () => {
         names of each can be adjusted too.
       </p>
       <p>
+        The arrow keys can be used to adjust the selected color on the gamut
+        panel. The following keys make large hue adjustments: 'u' & 'd' and
+        small hue adjustments: 'j' & 'k'.
+      </p>
+      <p>
         When you are happy with your palette, export to your preferred format.
       </p>
     </div>
