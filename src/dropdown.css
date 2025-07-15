@@ -89,13 +89,10 @@ button {
 }
 
 .IconButton {
-  @apply h-8 w-8 rounded-full flex flex-row items-center justify-center;
+  @apply h-6 w-6 rounded-full flex flex-row items-center justify-center;
 }
 .IconButton:hover {
-  background-color: var(--blue-3);
-}
-.IconButton:focus {
-  /* box-shadow: 0 0 0 2px black; */
+  @apply bg-neutral-500 bg-opacity-15;
 }
 
 .RightSlot {
