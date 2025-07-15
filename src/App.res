@@ -903,21 +903,23 @@ module Palette = {
           <div
             className="border rounded-xl border-[var(--complement)] border-opacity-10 shadow-xl overflow-hidden">
             <div
-              className="flex flex-row gap-2 justify-center bg-opacity-15 bg-neutral-900 border-b border-[var(--complement)] py-2">
-              {[View_LC, View_SL, View_SV]
-              ->Array.map(v => {
-                let isSelected = view == v
-                <button
-                  key={v->viewName}
-                  className={[
-                    "px-2 rounded",
-                    isSelected ? "bg-neutral-700 text-white" : "bg-neutral-100",
-                  ]->Array.join(" ")}
-                  onClick={_ => setView(_ => v)}>
-                  {v->viewName->React.string}
-                </button>
-              })
-              ->React.array}
+              className="flex flex-row justify-center bg-opacity-15 bg-neutral-900 border-b border-[var(--complement)] py-2">
+              <div className={"flex flex-row gap-px"}>
+                {[View_LC, View_SL, View_SV]
+                ->Array.map(v => {
+                  let isSelected = view == v
+                  <button
+                    key={v->viewName}
+                    className={[
+                      "px-2 first:rounded-l last:rounded-r",
+                      isSelected ? "bg-neutral-700 text-white" : "bg-neutral-100",
+                    ]->Array.join(" ")}
+                    onClick={_ => setView(_ => v)}>
+                    {v->viewName->React.string}
+                  </button>
+                })
+                ->React.array}
+              </div>
             </div>
             <div
               style={{
@@ -999,20 +1001,22 @@ module Palette = {
             <span className="font-bold text-lg text-[var(--select)] ">
               {"Background:"->React.string}
             </span>
-            {[BG_White, BG_Black, BG_Select]
-            ->Array.map(v => {
-              let isSelected = bg == v
-              <button
-                key={v->bgName}
-                className={[
-                  "px-2 rounded h-fit",
-                  isSelected ? "bg-neutral-700 text-white" : "bg-neutral-100",
-                ]->Array.join(" ")}
-                onClick={_ => setBg(_ => v)}>
-                {v->bgName->React.string}
-              </button>
-            })
-            ->React.array}
+            <div className={"flex flex-row gap-px"}>
+              {[BG_White, BG_Black, BG_Select]
+              ->Array.map(v => {
+                let isSelected = bg == v
+                <button
+                  key={v->bgName}
+                  className={[
+                    "px-2 first:rounded-l last:rounded-r h-fit",
+                    isSelected ? "bg-neutral-700 text-white" : "bg-neutral-100",
+                  ]->Array.join(" ")}
+                  onClick={_ => setBg(_ => v)}>
+                  {v->bgName->React.string}
+                </button>
+              })
+              ->React.array}
+            </div>
           </div>
           <div
             style={{

@@ -1012,26 +1012,29 @@ function App$Palette(props) {
                                 JsxRuntime.jsxs("div", {
                                       children: [
                                         JsxRuntime.jsx("div", {
-                                              children: [
-                                                  "View_LC",
-                                                  "View_SL",
-                                                  "View_SV"
-                                                ].map(function (v) {
-                                                    var isSelected = view === v;
-                                                    return JsxRuntime.jsx("button", {
-                                                                children: viewName(v),
-                                                                className: [
-                                                                    "px-2 rounded",
-                                                                    isSelected ? "bg-neutral-700 text-white" : "bg-neutral-100"
-                                                                  ].join(" "),
-                                                                onClick: (function (param) {
-                                                                    setView(function (param) {
-                                                                          return v;
-                                                                        });
-                                                                  })
-                                                              }, viewName(v));
+                                              children: JsxRuntime.jsx("div", {
+                                                    children: [
+                                                        "View_LC",
+                                                        "View_SL",
+                                                        "View_SV"
+                                                      ].map(function (v) {
+                                                          var isSelected = view === v;
+                                                          return JsxRuntime.jsx("button", {
+                                                                      children: viewName(v),
+                                                                      className: [
+                                                                          "px-2 first:rounded-l last:rounded-r",
+                                                                          isSelected ? "bg-neutral-700 text-white" : "bg-neutral-100"
+                                                                        ].join(" "),
+                                                                      onClick: (function (param) {
+                                                                          setView(function (param) {
+                                                                                return v;
+                                                                              });
+                                                                        })
+                                                                    }, viewName(v));
+                                                        }),
+                                                    className: "flex flex-row gap-px"
                                                   }),
-                                              className: "flex flex-row gap-2 justify-center bg-opacity-15 bg-neutral-900 border-b border-[var(--complement)] py-2"
+                                              className: "flex flex-row justify-center bg-opacity-15 bg-neutral-900 border-b border-[var(--complement)] py-2"
                                             }),
                                         JsxRuntime.jsxs("div", {
                                               children: [
@@ -1096,24 +1099,27 @@ function App$Palette(props) {
                                               children: "Background:",
                                               className: "font-bold text-lg text-[var(--select)] "
                                             }),
-                                        [
-                                            "BG_White",
-                                            "BG_Black",
-                                            "BG_Select"
-                                          ].map(function (v) {
-                                              var isSelected = bg === v;
-                                              return JsxRuntime.jsx("button", {
-                                                          children: bgName(v),
-                                                          className: [
-                                                              "px-2 rounded h-fit",
-                                                              isSelected ? "bg-neutral-700 text-white" : "bg-neutral-100"
-                                                            ].join(" "),
-                                                          onClick: (function (param) {
-                                                              setBg(function (param) {
-                                                                    return v;
-                                                                  });
-                                                            })
-                                                        }, bgName(v));
+                                        JsxRuntime.jsx("div", {
+                                              children: [
+                                                  "BG_White",
+                                                  "BG_Black",
+                                                  "BG_Select"
+                                                ].map(function (v) {
+                                                    var isSelected = bg === v;
+                                                    return JsxRuntime.jsx("button", {
+                                                                children: bgName(v),
+                                                                className: [
+                                                                    "px-2 first:rounded-l last:rounded-r h-fit",
+                                                                    isSelected ? "bg-neutral-700 text-white" : "bg-neutral-100"
+                                                                  ].join(" "),
+                                                                onClick: (function (param) {
+                                                                    setBg(function (param) {
+                                                                          return v;
+                                                                        });
+                                                                  })
+                                                              }, bgName(v));
+                                                  }),
+                                              className: "flex flex-row gap-px"
                                             })
                                       ],
                                       className: "flex flex-row gap-2 justify-center items-center bg-opacity-15 py-2 h-16 "
