@@ -158,7 +158,7 @@ let make = (
     )
   }, [view])
 
-  <div className="border border-[var(--select)]">
+  <div className="border border-[var(--complement)]">
     <div className=" relative">
       <CanvasComp hueObj view />
       <div

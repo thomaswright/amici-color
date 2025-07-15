@@ -114,8 +114,14 @@ function App$Palette(props) {
                                     el.saturation,
                                     el.lightness
                                   ], Color.OKHSL, Color.sRGB));
+                          var complement = Color.RGBToHex(Color.convert([
+                                    v.value,
+                                    el.saturation,
+                                    el.lightness < 0.5 ? 0.7 : 0.4
+                                  ], Color.OKHSL, Color.sRGB));
                           document.documentElement.style.setProperty("--bg", hex);
                           document.documentElement.style.setProperty("--select", el.lightness < 0.5 ? "white" : "black");
+                          document.documentElement.style.setProperty("--complement", complement);
                         }));
           }));
   }
@@ -982,7 +988,7 @@ function App$Palette(props) {
                                                                   })
                                                               }, viewName(v));
                                                   }),
-                                              className: "flex flex-row gap-2 justify-center bg-opacity-15 bg-neutral-900 border-b border-[var(--select)] py-2"
+                                              className: "flex flex-row gap-2 justify-center bg-opacity-15 bg-neutral-900 border-b border-[var(--complement)] py-2"
                                             }),
                                         JsxRuntime.jsxs("div", {
                                               children: [
@@ -1034,7 +1040,7 @@ function App$Palette(props) {
                                               }
                                             })
                                       ],
-                                      className: "border rounded-xl border-[var(--select)]"
+                                      className: "border rounded-xl border-[var(--complement)] border-opacity-10 shadow-xl overflow-hidden"
                                     })
                               ],
                               className: ""
@@ -1084,7 +1090,7 @@ function App$Palette(props) {
                                                                         ]
                                                                       }),
                                                                   JsxRuntime.jsx("input", {
-                                                                        className: "w-20 h-5  bg-transparent text-[var(--select)]",
+                                                                        className: "w-20 h-5  bg-transparent text-[var(--select)] text-right",
                                                                         type: "text",
                                                                         value: pick.name,
                                                                         onChange: (function (e) {
@@ -1112,7 +1118,7 @@ function App$Palette(props) {
                                                                 className: "flex flex-row justify-start gap-2 w-full"
                                                               })
                                                         ],
-                                                        className: " "
+                                                        className: "first:border-0 border-t border-[var(--complement)] mr-1"
                                                       }, pick.id);
                                           }),
                                       className: "overflow-hidden",
@@ -1168,7 +1174,7 @@ function App$Palette(props) {
                                                                 ]
                                                               }),
                                                           JsxRuntime.jsx("input", {
-                                                                className: "w-10 h-5 bg-transparent text-[var(--select)]",
+                                                                className: "w-10 h-5 bg-transparent text-[var(--select)] ml-0.5",
                                                                 type: "text",
                                                                 value: shade.name,
                                                                 onChange: (function (e) {
@@ -1188,7 +1194,7 @@ function App$Palette(props) {
                                                                   })
                                                               })
                                                         ],
-                                                        className: " flex flex-col gap-1"
+                                                        className: "first:border-0 flex flex-col items-center gap-1 border-l border-[var(--complement)] mb-1"
                                                       }, shade.id);
                                           }),
                                       className: "overflow-hidden",
@@ -1240,7 +1246,7 @@ function App$Palette(props) {
                                       }
                                     })
                               ],
-                              className: "pb-2 pt-1 pr-2 pl-1 w-fit h-fit border border-[var(--select)] rounded-xl mt-16 ml-2",
+                              className: "pb-1 pr-1 w-fit h-fit shadow-xl border border-[var(--complement)] rounded-xl mt-16 ml-2",
                               style: {
                                 display: "grid",
                                 gridTemplateColumns: "auto repeat(" + shadeLen.toString() + ", 3rem)",

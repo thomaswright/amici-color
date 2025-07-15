@@ -124,7 +124,7 @@ let make = (
     )
   }, [view])
 
-  <div className=" flex flex-row border-y border-[var(--select)]">
+  <div className=" flex flex-row border-y border-[var(--complement)]">
     // <canvas
     //   style={{
     //     width: xSize->Int.toString ++ "px",

@@ -133,7 +133,7 @@ function XStack(props) {
                       width: (300).toString() + "px"
                     }
                   }),
-              className: " w-fit border-x border-[var(--select)]"
+              className: " w-fit border-x border-[var(--complement)]"
             });
 }
 

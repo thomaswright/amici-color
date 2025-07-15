@@ -142,7 +142,7 @@ function YStack(props) {
                       height: (300).toString() + "px"
                     }
                   }),
-              className: " flex flex-row border-y border-[var(--select)]"
+              className: " flex flex-row border-y border-[var(--complement)]"
             });
 }
 

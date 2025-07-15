@@ -125,7 +125,7 @@ let make = (~hues: array<hue>, ~selectedHue, ~setSelectedHue, ~onDragTo) => {
 
           <div
             key={hue.id}
-            className="absolute w-3 h-7 rounded border-2 text-[var(--select)]  flex flex-row items-center justify-center cursor-pointer select-none"
+            className="absolute w-3 h-7 rounded border-2 text-[var(--select)]  flex flex-row items-center justify-center cursor-pointer select-none "
             style={{
               borderStyle: isSelected ? "solid" : "solid",
               borderColor: isSelected ? "var(--select)" : "var(--bg)",

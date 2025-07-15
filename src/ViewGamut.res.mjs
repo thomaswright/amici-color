@@ -260,7 +260,7 @@ function ViewGamut(props) {
                     ],
                     className: " relative"
                   }),
-              className: "border border-[var(--select)]"
+              className: "border border-[var(--complement)]"
             });
 }
 

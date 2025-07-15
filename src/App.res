@@ -98,8 +98,16 @@ module Palette = {
               Texel.srgb,
             )->Texel.rgbToHex
 
+          let complement =
+            Texel.convert(
+              (v.value, el.saturation, el.lightness < 0.5 ? 0.7 : 0.4),
+              Texel.okhsl,
+              Texel.srgb,
+            )->Texel.rgbToHex
+
           setProperty(documentElement, "--bg", hex)
           setProperty(documentElement, "--select", el.lightness < 0.5 ? "white" : "black")
+          setProperty(documentElement, "--complement", complement)
         })
       })
       ->ignore
@@ -862,9 +870,10 @@ module Palette = {
       <div className="flex flex-row">
         <div className="">
           <HueXLine hues={picks} selectedHue setSelectedHue onDragTo={onDragToHue} />
-          <div className="border rounded-xl border-[var(--select)]">
+          <div
+            className="border rounded-xl border-[var(--complement)] border-opacity-10 shadow-xl overflow-hidden">
             <div
-              className="flex flex-row gap-2 justify-center bg-opacity-15 bg-neutral-900 border-b border-[var(--select)] py-2">
+              className="flex flex-row gap-2 justify-center bg-opacity-15 bg-neutral-900 border-b border-[var(--complement)] py-2">
               {[View_LC, View_SL, View_SV]
               ->Array.map(v => {
                 let isSelected = view == v
@@ -962,7 +971,7 @@ module Palette = {
             gridTemplateColumns: `auto repeat(${shadeLen->Int.toString}, 3rem)`,
             gridTemplateRows: `auto repeat(${hueLen->Int.toString}, 3rem)`,
           }}
-          className="pb-2 pt-1 pr-2 pl-1 w-fit h-fit border border-[var(--select)] rounded-xl mt-16 ml-2">
+          className="pb-1 pr-1 w-fit h-fit shadow-xl border border-[var(--complement)] rounded-xl mt-16 ml-2">
           <div
             className="overflow-hidden"
             style={{
@@ -979,7 +988,8 @@ module Palette = {
                 setSelectedHue(v => v->Option.flatMap(p => p == pick.id ? None : Some(p)))
               }
 
-              <div key={pick.id} className=" ">
+              <div
+                key={pick.id} className="first:border-0 border-t border-[var(--complement)] mr-1">
                 <div className="flex-row flex w-full justify-between items-center gap-1 h-full">
                   <DropdownMenu
                     items={[
@@ -1006,7 +1016,7 @@ module Palette = {
                         )
                       })
                     }}
-                    className="w-20 h-5  bg-transparent text-[var(--select)]"
+                    className="w-20 h-5  bg-transparent text-[var(--select)] text-right"
                   />
                 </div>
                 <div className="flex flex-row justify-start gap-2 w-full" />
@@ -1039,7 +1049,9 @@ module Palette = {
                 setShades(s_ => s_->Array.filter(v => v.id != shade.id))
               }
 
-              <div key={shade.id} className=" flex flex-col gap-1">
+              <div
+                key={shade.id}
+                className="first:border-0 flex flex-col items-center gap-1 border-l border-[var(--complement)] mb-1">
                 <DropdownMenu
                   items={[
                     ("Add Column Before", _ => newShade(shade.id, false)),
@@ -1064,7 +1076,7 @@ module Palette = {
                     )
                   }}
                   value={shade.name}
-                  className="w-10 h-5 bg-transparent text-[var(--select)]"
+                  className="w-10 h-5 bg-transparent text-[var(--select)] ml-0.5"
                 />
               </div>
             })

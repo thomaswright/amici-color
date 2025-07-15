@@ -4,6 +4,7 @@
 
 :root {
   --bg: white;
+  --complement: black;
   --select: black;
   background-color: var(--bg);
 }

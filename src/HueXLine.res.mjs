@@ -109,7 +109,7 @@ function HueXLine(props) {
                                         }));
                                   return JsxRuntime.jsx("div", {
                                               children: isSelected ? "" : null,
-                                              className: "absolute w-3 h-7 rounded border-2 text-[var(--select)]  flex flex-row items-center justify-center cursor-pointer select-none",
+                                              className: "absolute w-3 h-7 rounded border-2 text-[var(--select)]  flex flex-row items-center justify-center cursor-pointer select-none ",
                                               style: {
                                                 backgroundColor: hex,
                                                 borderColor: isSelected ? "var(--select)" : "var(--bg)",

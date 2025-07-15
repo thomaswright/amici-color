@@ -76,7 +76,7 @@ let make = (
     )
   }, [view])
 
-  <div className=" w-fit border-x border-[var(--select)]">
+  <div className=" w-fit border-x border-[var(--complement)]">
     // <div className=" font-medium text-center text-[var(--select)]">
     //   {switch view {
     //   | View_LC => "lightness"
