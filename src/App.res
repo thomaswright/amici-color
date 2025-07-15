@@ -851,7 +851,7 @@ module Palette = {
       })
     })
 
-    <div>
+    <div className="">
       <div
         className="font-black text-4xl flex flex-row items-center gap-2 pb-4 text-[var(--select)]">
         <div className="h-12 w-12">
@@ -860,56 +860,77 @@ module Palette = {
         {"Amici Color"->React.string}
       </div>
       <div className="flex flex-row">
-        <div>
+        <div className="">
           <HueXLine hues={picks} selectedHue setSelectedHue onDragTo={onDragToHue} />
-          <div className="flex flex-row gap-2">
-            {[View_LC, View_SL, View_SV]
-            ->Array.map(v => {
-              let isSelected = view == v
-              <button
-                key={v->viewName}
-                className={[
-                  "px-2 rounded",
-                  isSelected ? "bg-blue-600 text-white" : "bg-blue-200",
-                ]->Array.join(" ")}
-                onClick={_ => setView(_ => v)}>
-                {v->viewName->React.string}
-              </button>
-            })
-            ->React.array}
-          </div>
-          <div className="flex flex-col py-2">
-            <div className="flex flex-row">
-              <ViewGamut
-                view={view}
-                hues={picks}
-                selectedHue
-                selectedElement
-                setSelectedElement
-                onDragTo={onDragToGamut}
-              />
-              <YStack
+          <div className="border rounded-xl border-[var(--select)]">
+            <div
+              className="flex flex-row gap-2 justify-center border-b border-[var(--select)] py-2">
+              {[View_LC, View_SL, View_SV]
+              ->Array.map(v => {
+                let isSelected = view == v
+                <button
+                  key={v->viewName}
+                  className={[
+                    "px-2 rounded",
+                    isSelected ? "bg-neutral-700 text-white" : "bg-neutral-100",
+                  ]->Array.join(" ")}
+                  onClick={_ => setView(_ => v)}>
+                  {v->viewName->React.string}
+                </button>
+              })
+              ->React.array}
+            </div>
+            <div className="flex flex-col pt-1 pl-1">
+              <div>
+                <div className="h-5 font-medium text-center text-[var(--select)] w-[300px] ml-5">
+                  {switch view {
+                  | View_LC => "lightness"
+                  | View_SL => "lightness"
+                  | View_SV => "value"
+                  }->React.string}
+                </div>
+              </div>
+              <div className="flex flex-row">
+                <div
+                  className=" w-5 font-medium text-center text-[var(--select)]"
+                  style={{writingMode: "sideways-lr"}}>
+                  {switch view {
+                  | View_LC => "chroma"
+                  | View_SL => "saturation"
+                  | View_SV => "saturation"
+                  }->React.string}
+                </div>
+                <ViewGamut
+                  view={view}
+                  hues={picks}
+                  selectedHue
+                  selectedElement
+                  setSelectedElement
+                  onDragTo={onDragToGamut}
+                />
+                <YStack
+                  view={view}
+                  hues={picks}
+                  selectedElement
+                  setSelectedElement
+                  setSelectedHue
+                  selectedHue
+                  onDragTo={onDragToY}
+                />
+              </div>
+              <XStack
                 view={view}
                 hues={picks}
                 selectedElement
                 setSelectedElement
                 setSelectedHue
-                selectedHue
-                onDragTo={onDragToY}
+                onDragTo={onDragToX}
               />
+              // <div className="flex flex-row gap-2 ">
+              //   <HslSGamut hues={picks} selectedHue selectedElement />
+              //   <HueLine hues={picks} selected={selectedHue} />
+              // </div>
             </div>
-            <XStack
-              view={view}
-              hues={picks}
-              selectedElement
-              setSelectedElement
-              setSelectedHue
-              onDragTo={onDragToX}
-            />
-            // <div className="flex flex-row gap-2 ">
-            //   <HslSGamut hues={picks} selectedHue selectedElement />
-            //   <HueLine hues={picks} selected={selectedHue} />
-            // </div>
           </div>
         </div>
         // <div className="flex flex-row gap-2">
@@ -934,7 +955,7 @@ module Palette = {
             gridTemplateColumns: `auto repeat(${shadeLen->Int.toString}, 3rem)`,
             gridTemplateRows: `auto repeat(${hueLen->Int.toString}, 3rem)`,
           }}
-          className="py-6 w-fit h-fit">
+          className="pb-2 pt-1 pr-2 pl-1 w-fit h-fit border border-[var(--select)] rounded-xl mt-16 ml-2">
           <div
             className="overflow-hidden"
             style={{
@@ -952,7 +973,7 @@ module Palette = {
               }
 
               <div key={pick.id} className=" ">
-                <div className="flex-row flex w-full justify-between items-center gap-2 h-full">
+                <div className="flex-row flex w-full justify-between items-center gap-1 h-full">
                   <DropdownMenu
                     items={[
                       ("Add Row Before", () => {newHue(pick.id, false)}),
@@ -1011,7 +1032,7 @@ module Palette = {
                 setShades(s_ => s_->Array.filter(v => v.id != shade.id))
               }
 
-              <div key={shade.id} className=" flex flex-col gap-2">
+              <div key={shade.id} className=" flex flex-col gap-1">
                 <DropdownMenu
                   items={[
                     ("Add Column Before", _ => newShade(shade.id, false)),

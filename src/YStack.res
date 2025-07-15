@@ -124,7 +124,7 @@ let make = (
     )
   }, [view])
 
-  <div className="py-3 flex flex-row">
+  <div className="py-3 flex flex-row -ml-3">
     // <canvas
     //   style={{
     //     width: xSize->Int.toString ++ "px",
@@ -132,18 +132,18 @@ let make = (
     //   }}
     //   ref={ReactDOM.Ref.domRef(canvasRef)}
     // />
-    <div
-      className=" w-5 font-medium text-center text-[var(--select)]"
-      style={{writingMode: "vertical-lr"}}>
-      {switch view {
-      | View_LC => "chroma"
-      | View_SL => "saturation"
-      | View_SV => "saturation"
-      }->React.string}
-    </div>
+    // <div
+    //   className=" w-5 font-medium text-center text-[var(--select)]"
+    //   style={{writingMode: "vertical-lr"}}>
+    //   {switch view {
+    //   | View_LC => "chroma"
+    //   | View_SL => "saturation"
+    //   | View_SV => "saturation"
+    //   }->React.string}
+    // </div>
     <div
       ref={ReactDOM.Ref.domRef(gamutEl)}
-      className="flex flex-row gap-1 px-1  rounded"
+      className="flex flex-row gap-1 px-1 border-y border-[var(--select)]"
       style={{height: ySize->Int.toString ++ "px"}}>
       {hues
       ->Array.map(hue =>

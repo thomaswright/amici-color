@@ -24,7 +24,7 @@ let updateHueLineCanvas = (canvas, ctx) => {
   ()
 }
 
-let xSize = 300
+let xSize = 400
 let ySize = 20
 let xSizeScaled = (xSize->Int.toFloat *. devicePixelRatio)->Float.toInt
 let ySizeScaled = (ySize->Int.toFloat *. devicePixelRatio)->Float.toInt
@@ -115,7 +115,7 @@ let make = (~hues: array<hue>, ~selectedHue, ~setSelectedHue, ~onDragTo) => {
     )
   })
 
-  <div className="p-5">
+  <div className="h-16 flex flex-row items-center justify-center">
     <div className="w-fit rounded-sm" ref={ReactDOM.Ref.domRef(gamutEl)}>
       <div className="h-5 relative w-full">
         {hues

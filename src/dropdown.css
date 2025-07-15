@@ -89,7 +89,7 @@ button {
 }
 
 .IconButton {
-  @apply h-8 w-8 rounded-full flex flex-row items-center justify-center m-2;
+  @apply h-8 w-8 rounded-full flex flex-row items-center justify-center;
 }
 .IconButton:hover {
   background-color: var(--blue-3);

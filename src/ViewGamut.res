@@ -158,8 +158,8 @@ let make = (
     )
   }, [view])
 
-  <div className="p-3 ">
-    <div className=" relative">
+  <div className="p-3">
+    <div className=" relative border">
       <CanvasComp hueObj view />
       <div
         ref={ReactDOM.Ref.domRef(gamutEl)}

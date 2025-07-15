@@ -258,9 +258,9 @@ function ViewGamut(props) {
                             className: "absolute top-0 left-0 bg-transparent rounded-sm w-full h-full"
                           })
                     ],
-                    className: " relative"
+                    className: " relative border"
                   }),
-              className: "p-3 "
+              className: "p-3"
             });
 }
 

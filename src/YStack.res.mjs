@@ -67,102 +67,82 @@ function YStack(props) {
                     document.removeEventListener("mouseup", onMouseUp);
                   });
         }), [view]);
-  var tmp;
-  switch (view) {
-    case "View_LC" :
-        tmp = "chroma";
-        break;
-    case "View_SV" :
-    case "View_SL" :
-        tmp = "saturation";
-        break;
-    
-  }
-  return JsxRuntime.jsxs("div", {
-              children: [
-                JsxRuntime.jsx("div", {
-                      children: tmp,
-                      className: " w-5 font-medium text-center text-[var(--select)]",
-                      style: {
-                        writingMode: "vertical-lr"
-                      }
-                    }),
-                JsxRuntime.jsx("div", {
-                      children: props.hues.map(function (hue) {
-                            return JsxRuntime.jsx("div", {
-                                        children: hue.elements.map(function (e) {
-                                              var hex = Color.RGBToHex(Color.convert([
+  return JsxRuntime.jsx("div", {
+              children: JsxRuntime.jsx("div", {
+                    children: props.hues.map(function (hue) {
+                          return JsxRuntime.jsx("div", {
+                                      children: hue.elements.map(function (e) {
+                                            var hex = Color.RGBToHex(Color.convert([
+                                                      hue.value,
+                                                      e.saturation,
+                                                      e.lightness
+                                                    ], Color.OKHSL, Color.sRGB));
+                                            var percentage;
+                                            switch (view) {
+                                              case "View_LC" :
+                                                  var match = Color.convert([
                                                         hue.value,
                                                         e.saturation,
                                                         e.lightness
-                                                      ], Color.OKHSL, Color.sRGB));
-                                              var percentage;
-                                              switch (view) {
-                                                case "View_LC" :
-                                                    var match = Color.convert([
-                                                          hue.value,
-                                                          e.saturation,
-                                                          e.lightness
-                                                        ], Color.OKHSL, Color.OKLCH);
-                                                    percentage = match[1] / Common.chromaBound;
-                                                    break;
-                                                case "View_SV" :
-                                                    var match$1 = Color.convert([
-                                                          hue.value,
-                                                          e.saturation,
-                                                          e.lightness
-                                                        ], Color.OKHSL, Color.OKHSV);
-                                                    percentage = e.lightness === 0 ? e.saturation : match$1[1];
-                                                    break;
-                                                case "View_SL" :
-                                                    percentage = e.saturation;
-                                                    break;
-                                                
-                                              }
-                                              var isSelected = Core__Option.mapOr(selectedElement, false, (function (x) {
-                                                      return x === e.id;
-                                                    }));
-                                              return JsxRuntime.jsx("div", {
-                                                          children: isSelected ? "" : null,
-                                                          className: "absolute w-5 h-5 rounded-md border-2 border-[var(--bg)] \n              flex flex-col items-center justify-center cursor-pointer select-none",
-                                                          style: {
-                                                            backgroundColor: hex,
-                                                            borderColor: isSelected ? "var(--select)" : "var(--bg)",
-                                                            borderStyle: isSelected ? "dashed" : "solid",
-                                                            bottom: (percentage * 300 | 0).toString() + "px",
-                                                            color: isSelected ? "var(--select)" : "inherit",
-                                                            fontSize: "10px",
-                                                            transform: "translate(0, 50%)"
-                                                          },
-                                                          onMouseDown: (function (param) {
-                                                              isDragging.current = true;
-                                                              dragPos.current = undefined;
-                                                              dragId.current = e.id;
-                                                              setSelectedElement(function (param) {
-                                                                    return e.id;
-                                                                  });
-                                                              setSelectedHue(function (param) {
-                                                                    return hue.id;
-                                                                  });
-                                                            }),
-                                                          onTouchStart: (function (param) {
-                                                              isDragging.current = true;
-                                                              dragPos.current = undefined;
-                                                              dragId.current = e.id;
-                                                            })
-                                                        }, e.id);
-                                            }),
-                                        className: "relative w-5"
-                                      }, hue.id);
-                          }),
-                      ref: Caml_option.some(gamutEl),
-                      className: "flex flex-row gap-1 px-1  rounded",
-                      style: {
-                        height: (300).toString() + "px"
-                      }
-                    })
-              ],
-              className: "py-3 flex flex-row"
+                                                      ], Color.OKHSL, Color.OKLCH);
+                                                  percentage = match[1] / Common.chromaBound;
+                                                  break;
+                                              case "View_SV" :
+                                                  var match$1 = Color.convert([
+                                                        hue.value,
+                                                        e.saturation,
+                                                        e.lightness
+                                                      ], Color.OKHSL, Color.OKHSV);
+                                                  percentage = e.lightness === 0 ? e.saturation : match$1[1];
+                                                  break;
+                                              case "View_SL" :
+                                                  percentage = e.saturation;
+                                                  break;
+                                              
+                                            }
+                                            var isSelected = Core__Option.mapOr(selectedElement, false, (function (x) {
+                                                    return x === e.id;
+                                                  }));
+                                            return JsxRuntime.jsx("div", {
+                                                        children: isSelected ? "" : null,
+                                                        className: "absolute w-5 h-5 rounded-md border-2 border-[var(--bg)] \n              flex flex-col items-center justify-center cursor-pointer select-none",
+                                                        style: {
+                                                          backgroundColor: hex,
+                                                          borderColor: isSelected ? "var(--select)" : "var(--bg)",
+                                                          borderStyle: isSelected ? "dashed" : "solid",
+                                                          bottom: (percentage * 300 | 0).toString() + "px",
+                                                          color: isSelected ? "var(--select)" : "inherit",
+                                                          fontSize: "10px",
+                                                          transform: "translate(0, 50%)"
+                                                        },
+                                                        onMouseDown: (function (param) {
+                                                            isDragging.current = true;
+                                                            dragPos.current = undefined;
+                                                            dragId.current = e.id;
+                                                            setSelectedElement(function (param) {
+                                                                  return e.id;
+                                                                });
+                                                            setSelectedHue(function (param) {
+                                                                  return hue.id;
+                                                                });
+                                                          }),
+                                                        onTouchStart: (function (param) {
+                                                            isDragging.current = true;
+                                                            dragPos.current = undefined;
+                                                            dragId.current = e.id;
+                                                          })
+                                                      }, e.id);
+                                          }),
+                                      className: "relative w-5"
+                                    }, hue.id);
+                        }),
+                    ref: Caml_option.some(gamutEl),
+                    className: "flex flex-row gap-1 px-1 border-y border-[var(--select)]",
+                    style: {
+                      height: (300).toString() + "px"
+                    }
+                  }),
+              className: "py-3 flex flex-row -ml-3"
             });
 }
 

@@ -19,7 +19,7 @@ function updateHueLineCanvas(canvas, ctx) {
   }
 }
 
-var xSizeScaled = 300 * window.devicePixelRatio | 0;
+var xSizeScaled = 400 * window.devicePixelRatio | 0;
 
 var ySizeScaled = 20 * window.devicePixelRatio | 0;
 
@@ -55,8 +55,8 @@ function HueXLine(props) {
     }
     var gamutRect = match.getBoundingClientRect();
     var gamutX = gamutRect.left;
-    var x = Math.min(Math.max(clientX - gamutX | 0, 0), 300);
-    onDragTo(match$1, x / 300);
+    var x = Math.min(Math.max(clientX - gamutX | 0, 0), 400);
+    onDragTo(match$1, x / 400);
   };
   React.useEffect((function () {
           var onMouseMove = function ($$event) {
@@ -115,7 +115,7 @@ function HueXLine(props) {
                                                 borderColor: isSelected ? "var(--select)" : "var(--bg)",
                                                 borderStyle: "solid",
                                                 fontSize: "16px",
-                                                left: (hue.value / 360 * 300 | 0).toString() + "px",
+                                                left: (hue.value / 360 * 400 | 0).toString() + "px",
                                                 top: "0.25rem",
                                                 transform: "translate(-50%, 0)"
                                               },
@@ -140,18 +140,18 @@ function HueXLine(props) {
                             ref: Caml_option.some(canvasRef),
                             style: {
                               height: (20).toString() + "px",
-                              width: (300).toString() + "px"
+                              width: (400).toString() + "px"
                             }
                           })
                     ],
                     ref: Caml_option.some(gamutEl),
                     className: "w-fit rounded-sm"
                   }),
-              className: "p-5"
+              className: "h-16 flex flex-row items-center justify-center"
             });
 }
 
-var xSize = 300;
+var xSize = 400;
 
 var ySize = 20;
 

@@ -916,6 +916,28 @@ function App$Palette(props) {
                           });
               });
         }), []);
+  var tmp;
+  switch (view) {
+    case "View_SV" :
+        tmp = "value";
+        break;
+    case "View_LC" :
+    case "View_SL" :
+        tmp = "lightness";
+        break;
+    
+  }
+  var tmp$1;
+  switch (view) {
+    case "View_LC" :
+        tmp$1 = "chroma";
+        break;
+    case "View_SV" :
+    case "View_SL" :
+        tmp$1 = "saturation";
+        break;
+    
+  }
   return JsxRuntime.jsxs("div", {
               children: [
                 JsxRuntime.jsxs("div", {
@@ -938,64 +960,83 @@ function App$Palette(props) {
                                       setSelectedHue: setSelectedHue,
                                       onDragTo: onDragToHue
                                     }),
-                                JsxRuntime.jsx("div", {
-                                      children: [
-                                          "View_LC",
-                                          "View_SL",
-                                          "View_SV"
-                                        ].map(function (v) {
-                                            var isSelected = view === v;
-                                            return JsxRuntime.jsx("button", {
-                                                        children: viewName(v),
-                                                        className: [
-                                                            "px-2 rounded",
-                                                            isSelected ? "bg-blue-600 text-white" : "bg-blue-200"
-                                                          ].join(" "),
-                                                        onClick: (function (param) {
-                                                            setView(function (param) {
-                                                                  return v;
-                                                                });
-                                                          })
-                                                      }, viewName(v));
-                                          }),
-                                      className: "flex flex-row gap-2"
-                                    }),
                                 JsxRuntime.jsxs("div", {
                                       children: [
+                                        JsxRuntime.jsx("div", {
+                                              children: [
+                                                  "View_LC",
+                                                  "View_SL",
+                                                  "View_SV"
+                                                ].map(function (v) {
+                                                    var isSelected = view === v;
+                                                    return JsxRuntime.jsx("button", {
+                                                                children: viewName(v),
+                                                                className: [
+                                                                    "px-2 rounded",
+                                                                    isSelected ? "bg-neutral-700 text-white" : "bg-neutral-100"
+                                                                  ].join(" "),
+                                                                onClick: (function (param) {
+                                                                    setView(function (param) {
+                                                                          return v;
+                                                                        });
+                                                                  })
+                                                              }, viewName(v));
+                                                  }),
+                                              className: "flex flex-row gap-2 justify-center border-b border-[var(--select)] py-2"
+                                            }),
                                         JsxRuntime.jsxs("div", {
                                               children: [
-                                                JsxRuntime.jsx(ViewGamut.make, {
-                                                      hues: picks,
-                                                      selectedHue: selectedHue,
-                                                      selectedElement: selectedElement,
-                                                      view: view,
-                                                      setSelectedElement: setSelectedElement,
-                                                      onDragTo: onDragToGamut
+                                                JsxRuntime.jsx("div", {
+                                                      children: JsxRuntime.jsx("div", {
+                                                            children: tmp,
+                                                            className: "h-5 font-medium text-center text-[var(--select)] w-[300px] ml-5"
+                                                          })
                                                     }),
-                                                JsxRuntime.jsx(YStack.make, {
+                                                JsxRuntime.jsxs("div", {
+                                                      children: [
+                                                        JsxRuntime.jsx("div", {
+                                                              children: tmp$1,
+                                                              className: " w-5 font-medium text-center text-[var(--select)]",
+                                                              style: {
+                                                                writingMode: "sideways-lr"
+                                                              }
+                                                            }),
+                                                        JsxRuntime.jsx(ViewGamut.make, {
+                                                              hues: picks,
+                                                              selectedHue: selectedHue,
+                                                              selectedElement: selectedElement,
+                                                              view: view,
+                                                              setSelectedElement: setSelectedElement,
+                                                              onDragTo: onDragToGamut
+                                                            }),
+                                                        JsxRuntime.jsx(YStack.make, {
+                                                              hues: picks,
+                                                              selectedElement: selectedElement,
+                                                              view: view,
+                                                              setSelectedElement: setSelectedElement,
+                                                              setSelectedHue: setSelectedHue,
+                                                              selectedHue: selectedHue,
+                                                              onDragTo: onDragToY
+                                                            })
+                                                      ],
+                                                      className: "flex flex-row"
+                                                    }),
+                                                JsxRuntime.jsx(XStack.make, {
                                                       hues: picks,
                                                       selectedElement: selectedElement,
                                                       view: view,
                                                       setSelectedElement: setSelectedElement,
                                                       setSelectedHue: setSelectedHue,
-                                                      selectedHue: selectedHue,
-                                                      onDragTo: onDragToY
+                                                      onDragTo: onDragToX
                                                     })
                                               ],
-                                              className: "flex flex-row"
-                                            }),
-                                        JsxRuntime.jsx(XStack.make, {
-                                              hues: picks,
-                                              selectedElement: selectedElement,
-                                              view: view,
-                                              setSelectedElement: setSelectedElement,
-                                              setSelectedHue: setSelectedHue,
-                                              onDragTo: onDragToX
+                                              className: "flex flex-col pt-1 pl-1"
                                             })
                                       ],
-                                      className: "flex flex-col py-2"
+                                      className: "border rounded-xl border-[var(--select)]"
                                     })
-                              ]
+                              ],
+                              className: ""
                             }),
                         JsxRuntime.jsxs("div", {
                               children: [
@@ -1064,7 +1105,7 @@ function App$Palette(props) {
                                                                           })
                                                                       })
                                                                 ],
-                                                                className: "flex-row flex w-full justify-between items-center gap-2 h-full"
+                                                                className: "flex-row flex w-full justify-between items-center gap-1 h-full"
                                                               }),
                                                           JsxRuntime.jsx("div", {
                                                                 className: "flex flex-row justify-start gap-2 w-full"
@@ -1146,7 +1187,7 @@ function App$Palette(props) {
                                                                   })
                                                               })
                                                         ],
-                                                        className: " flex flex-col gap-2"
+                                                        className: " flex flex-col gap-1"
                                                       }, shade.id);
                                           }),
                                       className: "overflow-hidden",
@@ -1198,7 +1239,7 @@ function App$Palette(props) {
                                       }
                                     })
                               ],
-                              className: "py-6 w-fit h-fit",
+                              className: "pb-2 pt-1 pr-2 pl-1 w-fit h-fit border border-[var(--select)] rounded-xl mt-16 ml-2",
                               style: {
                                 display: "grid",
                                 gridTemplateColumns: "auto repeat(" + shadeLen.toString() + ", 3rem)",
@@ -1208,7 +1249,8 @@ function App$Palette(props) {
                       ],
                       className: "flex flex-row"
                     })
-              ]
+              ],
+              className: ""
             });
 }
 
