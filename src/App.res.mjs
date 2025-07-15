@@ -13,6 +13,7 @@ import * as Color from "@texel/color";
 import * as Core__Option from "@rescript/core/src/Core__Option.res.mjs";
 import DropdownJsx from "./Dropdown.jsx";
 import * as JsxRuntime from "react/jsx-runtime";
+import UseLocalStorageJs from "./useLocalStorage.js";
 import AmiciPrismSvgreact from "./assets/amici-prism.svg?react";
 
 var make = AmiciPrismSvgreact;
@@ -86,37 +87,24 @@ var defaultPicks = makeDefaultPicks([
     ], defaultShades);
 
 function App$Palette(props) {
-  var match = React.useState(function () {
-        return "BG_White";
-      });
+  var match = UseLocalStorageJs("bg", "BG_White");
   var setBg = match[1];
   var bg = match[0];
-  var match$1 = React.useState(function () {
-        return "View_LC";
-      });
+  var match$1 = UseLocalStorageJs("view", "View_LC");
   var setView = match$1[1];
   var view = match$1[0];
-  var match$2 = React.useState(function () {
-        return defaultPicks;
-      });
+  var match$2 = UseLocalStorageJs("picks", defaultPicks);
   var setPicks = match$2[1];
   var picks_ = match$2[0];
-  var match$3 = React.useState(function () {
-        return defaultShades;
-      });
+  var match$3 = UseLocalStorageJs("shades", defaultShades);
   var setShades = match$3[1];
   var shades = match$3[0];
-  var a = Core__Option.map(picks_[0], (function (v) {
-          return v.id;
-        }));
-  var match$4 = React.useState(function () {
-        return a;
-      });
+  var match$4 = UseLocalStorageJs("selectedHue", Core__Option.map(picks_[0], (function (v) {
+              return v.id;
+            })));
   var setSelectedHue = match$4[1];
   var selectedHue = match$4[0];
-  var match$5 = React.useState(function () {
-        
-      });
+  var match$5 = UseLocalStorageJs("selectedElement", undefined);
   var setSelectedElement = match$5[1];
   var selectedElement = match$5[0];
   var setBgWhite = function () {

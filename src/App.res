@@ -13,9 +13,8 @@ module DropdownMenu = {
   external make: (~items: array<(string, unit => unit)>) => React.element = "default"
 }
 
-// @module("@uidotdev/usehooks")
-// external useLocalStorage: (string, 'a) => ('a, ('a => 'a) => unit) = "useLocalStorage"
-let useLocalStorage = (_, a) => React.useState(() => a)
+@module("./useLocalStorage.js")
+external useLocalStorage: (string, 'a) => ('a, ('a => 'a) => unit, unit => 'a) = "default"
 
 let makeDefaultPicks = (hues, defaultShades: array<shade>) => {
   let yLenF = defaultShades->Array.length->Int.toFloat
@@ -82,16 +81,16 @@ module Palette = {
 
   @react.component
   let make = () => {
-    let (bg, setBg) = useLocalStorage("bg", BG_White)
-    let (view, setView) = useLocalStorage("View", View_LC)
+    let (bg, setBg, _) = useLocalStorage("bg", BG_White)
+    let (view, setView, _) = useLocalStorage("view", View_LC)
     // let (selectedMode, setSelectedMode) = React.useState(() => LCH_L)
-    let (picks_, setPicks) = useLocalStorage("picks", defaultPicks)
-    let (shades, setShades) = useLocalStorage("shades", defaultShades)
-    let (selectedHue, setSelectedHue) = useLocalStorage(
+    let (picks_, setPicks, _) = useLocalStorage("picks", defaultPicks)
+    let (shades, setShades, _) = useLocalStorage("shades", defaultShades)
+    let (selectedHue, setSelectedHue, _) = useLocalStorage(
       "selectedHue",
       picks_->Array.get(0)->Option.map(v => v.id),
     )
-    let (selectedElement, setSelectedElement) = useLocalStorage("selectedElement", None)
+    let (selectedElement, setSelectedElement, _) = useLocalStorage("selectedElement", None)
 
     let setBgWhite = () => {
       setProperty(documentElement, "--bg", "white")
