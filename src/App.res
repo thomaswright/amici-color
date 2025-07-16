@@ -18,6 +18,18 @@ module About = {
   external make: unit => React.element = "default"
 }
 
+module Attribution = {
+  @react.component
+  let make = () => {
+    <div className="text-xs py-6">
+      <span className={"font-normal text-gray-600"}> {"By "->React.string} </span>
+      <a className="font-bold text-blue-600" href={"https://github.com/thomaswright/amici-color"}>
+        {"Thomas Wright"->React.string}
+      </a>
+    </div>
+  }
+}
+
 @module("./useLocalStorage.js")
 external useLocalStorage: (string, 'a) => ('a, ('a => 'a) => unit, unit => 'a) = "default"
 
@@ -1201,6 +1213,7 @@ module Palette = {
           </div>
         </div>
       </div>
+      <Attribution />
     </div>
   }
 }

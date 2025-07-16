@@ -24,6 +24,23 @@ var make$1 = DropdownJsx;
 
 var make$2 = AboutJsx;
 
+function App$Attribution(props) {
+  return JsxRuntime.jsxs("div", {
+              children: [
+                JsxRuntime.jsx("span", {
+                      children: "By ",
+                      className: "font-normal text-gray-600"
+                    }),
+                JsxRuntime.jsx("a", {
+                      children: "Thomas Wright",
+                      className: "font-bold text-blue-600",
+                      href: "https://github.com/thomaswright/amici-color"
+                    })
+              ],
+              className: "text-xs py-6"
+            });
+}
+
 function makeDefaultPicks(hues, defaultShades) {
   var yLenF = defaultShades.length;
   return hues.map(function (hue) {
@@ -1354,7 +1371,8 @@ function App$Palette(props) {
                             })
                       ],
                       className: "flex flex-row"
-                    })
+                    }),
+                JsxRuntime.jsx(App$Attribution, {})
               ],
               className: ""
             });
