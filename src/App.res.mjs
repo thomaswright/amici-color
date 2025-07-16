@@ -9,6 +9,7 @@ import * as HueXLine from "./HueXLine.res.mjs";
 import * as ViewGamut from "./ViewGamut.res.mjs";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import AboutJsx from "./about.jsx";
+import * as OtherJsx from "./other.jsx";
 import * as Core__Array from "@rescript/core/src/Core__Array.res.mjs";
 import * as Color from "@texel/color";
 import * as Core__Option from "@rescript/core/src/Core__Option.res.mjs";
@@ -992,9 +993,17 @@ function App$Palette(props) {
                               ],
                               className: "font-black text-2xl flex flex-row items-center gap-2 pl-2 text-[var(--select)]"
                             }),
-                        JsxRuntime.jsx("div", {
-                              children: JsxRuntime.jsx(make$2, {}),
-                              className: "text-[var(--select)]"
+                        JsxRuntime.jsxs("div", {
+                              children: [
+                                JsxRuntime.jsx(make$2, {}),
+                                JsxRuntime.jsx("button", {
+                                      children: "Export Json",
+                                      onClick: (function (param) {
+                                          OtherJsx.exportJson(picks, shades);
+                                        })
+                                    })
+                              ],
+                              className: "text-[var(--select)] flex flex-row gap-2 items-center"
                             })
                       ],
                       className: "flex flex-row mb-4 items-center"

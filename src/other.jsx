@@ -1,6 +1,6 @@
 import * as texel from "@texel/color";
 import { useCallback, useEffect, useState, useRef } from "react";
-
+import { exportToJsonFile } from "./exportFunctions";
 // # Setup
 // const canvas = document.getElementById("canvas");
 // const ctx = canvas.getContext("2d");
@@ -524,6 +524,29 @@ export const Gamut = () => {
     </div>
   );
 };
+
+export function exportJson(picks, shades) {
+  let output = {};
+  picks.forEach((pick) => {
+    let h = pick.value;
+
+    let hueShades = {};
+
+    pick.elements.forEach((element, j) => {
+      let l = element.lightness;
+      let s = element.saturation;
+
+      let hex = texel.RGBToHex(
+        texel.convert([h, s, l], texel.OKHSL, texel.sRGB)
+      );
+
+      hueShades[shades[j].name] = hex;
+    });
+    output[pick.name] = hueShades;
+  });
+
+  exportToJsonFile(JSON.stringify(output));
+}
 
 // <div>
 // {layout === layouts.HSV || layout === layouts.HSL
