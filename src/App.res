@@ -24,6 +24,9 @@ external useLocalStorage: (string, 'a) => ('a, ('a => 'a) => unit, unit => 'a) =
 @module("./other.jsx")
 external exportJson: (array<hue>, array<shade>) => unit = "exportJson"
 
+@module("./other.jsx")
+external exportCss: (array<hue>, array<shade>) => unit = "exportCss"
+
 let makeDefaultPicks = (hues, defaultShades: array<shade>) => {
   let yLenF = defaultShades->Array.length->Int.toFloat
   hues->Array.map(hue => {
@@ -897,7 +900,7 @@ module Palette = {
     })
 
     <div className="">
-      <div className="flex flex-row mb-4 items-center">
+      <div className="flex flex-row mb-4 gap-4 items-center">
         <div
           className="font-black text-2xl flex flex-row items-center gap-2 pl-2 text-[var(--select)]">
           <div className="h-8 w-8">
@@ -907,7 +910,12 @@ module Palette = {
         </div>
         <div className={"text-[var(--select)] flex flex-row gap-2 items-center"}>
           <About />
-          <button onClick={_ => exportJson(picks, shades)}> {"Export Json"->React.string} </button>
+          <button className="px-2" onClick={_ => exportJson(picks, shades)}>
+            {"Export Json"->React.string}
+          </button>
+          <button className="px-2" onClick={_ => exportCss(picks, shades)}>
+            {"Export CSS"->React.string}
+          </button>
         </div>
       </div>
       <div className="flex flex-row">

@@ -21,6 +21,11 @@ export function exportToFile(fileContent) {
   downloadBlob(blob, ".txt");
 }
 
+export function exportToCssFile(fileContent) {
+  const blob = new Blob([fileContent], { type: "text/plain" });
+  downloadBlob(blob, ".css");
+}
+
 export function exportToJsonFile(fileContent) {
   const blob = new Blob([fileContent], { type: "application/json" });
   downloadBlob(blob, ".json");

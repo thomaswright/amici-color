@@ -1,6 +1,6 @@
 import * as texel from "@texel/color";
 import { useCallback, useEffect, useState, useRef } from "react";
-import { exportToJsonFile } from "./exportFunctions";
+import { exportToJsonFile, exportToCssFile } from "./exportFunctions";
 // # Setup
 // const canvas = document.getElementById("canvas");
 // const ctx = canvas.getContext("2d");
@@ -546,6 +546,31 @@ export function exportJson(picks, shades) {
   });
 
   exportToJsonFile(JSON.stringify(output));
+}
+
+export function exportCss(picks, shades) {
+  let output = "";
+  picks.forEach((pick, i) => {
+    let h = pick.value;
+
+    pick.elements.forEach((element, j) => {
+      let l = element.lightness;
+      let s = element.saturation;
+
+      let hex = texel.RGBToHex(
+        texel.convert([h, s, l], texel.OKHSL, texel.sRGB)
+      );
+
+      output = output + `  --color-${pick.name}-${shades[j].name}: ${hex};\n`;
+    });
+    if (i !== picks.length - 1) {
+      output = output + "\n";
+    }
+  });
+
+  output = `.amici {\n${output}}`;
+
+  exportToCssFile(output);
 }
 
 // <div>

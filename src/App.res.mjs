@@ -998,15 +998,23 @@ function App$Palette(props) {
                                 JsxRuntime.jsx(make$2, {}),
                                 JsxRuntime.jsx("button", {
                                       children: "Export Json",
+                                      className: "px-2",
                                       onClick: (function (param) {
                                           OtherJsx.exportJson(picks, shades);
+                                        })
+                                    }),
+                                JsxRuntime.jsx("button", {
+                                      children: "Export CSS",
+                                      className: "px-2",
+                                      onClick: (function (param) {
+                                          OtherJsx.exportCss(picks, shades);
                                         })
                                     })
                               ],
                               className: "text-[var(--select)] flex flex-row gap-2 items-center"
                             })
                       ],
-                      className: "flex flex-row mb-4 items-center"
+                      className: "flex flex-row mb-4 gap-4 items-center"
                     }),
                 JsxRuntime.jsxs("div", {
                       children: [
