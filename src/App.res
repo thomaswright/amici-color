@@ -105,6 +105,8 @@ module Palette = {
   @react.component
   let make = () => {
     let (bg, setBg, _) = useLocalStorage("bg", BG_White)
+    let (lineStyle, setLineStyle, _) = useLocalStorage("line-style", Line_hsv)
+
     let (view, setView, _) = useLocalStorage("view", View_LC)
     // let (selectedMode, setSelectedMode) = React.useState(() => LCH_L)
     let (picks_, setPicks, _) = useLocalStorage("picks", defaultPicks)
@@ -932,7 +934,27 @@ module Palette = {
       </div>
       <div className="flex flex-row">
         <div className="">
-          <HueXLine hues={picks} selectedHue setSelectedHue onDragTo={onDragToHue} />
+          <div className="flex flex-row justify-around items-center">
+            <HueXLine hues={picks} selectedHue setSelectedHue onDragTo={onDragToHue} lineStyle />
+            <div className="flex flex-col ">
+              <button
+                className={[
+                  "px-2 rounded-t w-2 flex flex-row items-center justify-center",
+                  lineStyle == Line_hsv ? "bg-neutral-700 text-white" : "bg-neutral-100",
+                ]->Array.join(" ")}
+                onClick={_ => setLineStyle(_ => Line_hsv)}>
+                {"^"->React.string}
+              </button>
+              <button
+                className={[
+                  "px-2 rounded-b w-2  flex flex-row items-center justify-center",
+                  lineStyle == Line_hsl ? "bg-neutral-700 text-white" : "bg-neutral-100",
+                ]->Array.join(" ")}
+                onClick={_ => setLineStyle(_ => Line_hsl)}>
+                {"-"->React.string}
+              </button>
+            </div>
+          </div>
           <div
             className="border rounded-xl border-[var(--complement)] border-opacity-10 shadow-xl overflow-hidden">
             <div

@@ -111,23 +111,26 @@ function App$Palette(props) {
   var match = UseLocalStorageJs("bg", "BG_White");
   var setBg = match[1];
   var bg = match[0];
-  var match$1 = UseLocalStorageJs("view", "View_LC");
-  var setView = match$1[1];
-  var view = match$1[0];
-  var match$2 = UseLocalStorageJs("picks", defaultPicks);
-  var setPicks = match$2[1];
-  var picks_ = match$2[0];
-  var match$3 = UseLocalStorageJs("shades", defaultShades);
-  var setShades = match$3[1];
-  var shades = match$3[0];
-  var match$4 = UseLocalStorageJs("selectedHue", Core__Option.map(picks_[0], (function (v) {
+  var match$1 = UseLocalStorageJs("line-style", "Line_hsv");
+  var setLineStyle = match$1[1];
+  var lineStyle = match$1[0];
+  var match$2 = UseLocalStorageJs("view", "View_LC");
+  var setView = match$2[1];
+  var view = match$2[0];
+  var match$3 = UseLocalStorageJs("picks", defaultPicks);
+  var setPicks = match$3[1];
+  var picks_ = match$3[0];
+  var match$4 = UseLocalStorageJs("shades", defaultShades);
+  var setShades = match$4[1];
+  var shades = match$4[0];
+  var match$5 = UseLocalStorageJs("selectedHue", Core__Option.map(picks_[0], (function (v) {
               return v.id;
             })));
-  var setSelectedHue = match$4[1];
-  var selectedHue = match$4[0];
-  var match$5 = UseLocalStorageJs("selectedElement", undefined);
-  var setSelectedElement = match$5[1];
-  var selectedElement = match$5[0];
+  var setSelectedHue = match$5[1];
+  var selectedHue = match$5[0];
+  var match$6 = UseLocalStorageJs("selectedElement", undefined);
+  var setSelectedElement = match$6[1];
+  var selectedElement = match$6[0];
   var setBgWhite = function () {
     document.documentElement.style.setProperty("--bg", "white");
     document.documentElement.style.setProperty("--select", "black");
@@ -1037,11 +1040,46 @@ function App$Palette(props) {
                       children: [
                         JsxRuntime.jsxs("div", {
                               children: [
-                                JsxRuntime.jsx(HueXLine.make, {
-                                      hues: picks,
-                                      selectedHue: selectedHue,
-                                      setSelectedHue: setSelectedHue,
-                                      onDragTo: onDragToHue
+                                JsxRuntime.jsxs("div", {
+                                      children: [
+                                        JsxRuntime.jsx(HueXLine.make, {
+                                              hues: picks,
+                                              selectedHue: selectedHue,
+                                              setSelectedHue: setSelectedHue,
+                                              onDragTo: onDragToHue,
+                                              lineStyle: lineStyle
+                                            }),
+                                        JsxRuntime.jsxs("div", {
+                                              children: [
+                                                JsxRuntime.jsx("button", {
+                                                      children: "^",
+                                                      className: [
+                                                          "px-2 rounded-t w-2 flex flex-row items-center justify-center",
+                                                          lineStyle === "Line_hsv" ? "bg-neutral-700 text-white" : "bg-neutral-100"
+                                                        ].join(" "),
+                                                      onClick: (function (param) {
+                                                          setLineStyle(function (param) {
+                                                                return "Line_hsv";
+                                                              });
+                                                        })
+                                                    }),
+                                                JsxRuntime.jsx("button", {
+                                                      children: "-",
+                                                      className: [
+                                                          "px-2 rounded-b w-2  flex flex-row items-center justify-center",
+                                                          lineStyle === "Line_hsl" ? "bg-neutral-700 text-white" : "bg-neutral-100"
+                                                        ].join(" "),
+                                                      onClick: (function (param) {
+                                                          setLineStyle(function (param) {
+                                                                return "Line_hsl";
+                                                              });
+                                                        })
+                                                    })
+                                              ],
+                                              className: "flex flex-col "
+                                            })
+                                      ],
+                                      className: "flex flex-row justify-around items-center"
                                     }),
                                 JsxRuntime.jsxs("div", {
                                       children: [

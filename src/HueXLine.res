@@ -1,17 +1,28 @@
 open Common
 open Types
 
-let updateHueLineCanvas = (canvas, ctx) => {
+let updateHueLineCanvas = (canvas, ctx, lineStyle) => {
   let xMax = canvas->Canvas.getWidth
   let _yMax = canvas->Canvas.getHeight
 
   for x in 0 to xMax {
-    let rgb = Texel.convert(
-      (x->Int.toFloat /. xMax->Int.toFloat *. 360., 1.0, 1.0),
-      Texel.okhsv,
-      Texel.srgb,
-    )
-    ctx->Canvas.setFillStyle(Texel.rgbToHex(rgb))
+    let hslHex =
+      Texel.convert(
+        (x->Int.toFloat /. xMax->Int.toFloat *. 360., 1.0, 0.7),
+        Texel.okhsl,
+        Texel.srgb,
+      )->Texel.rgbToHex
+    let hsvHex =
+      Texel.convert(
+        (x->Int.toFloat /. xMax->Int.toFloat *. 360., 1.0, 1.0),
+        Texel.okhsv,
+        Texel.srgb,
+      )->Texel.rgbToHex
+    let hex = switch lineStyle {
+    | Line_hsl => hslHex
+    | Line_hsv => hsvHex
+    }
+    ctx->Canvas.setFillStyle(hex)
     ctx->Canvas.fillRect(~x, ~y=0, ~w=1, ~h=xMax)
   }
 
@@ -30,10 +41,10 @@ let xSizeScaled = (xSize->Int.toFloat *. devicePixelRatio)->Float.toInt
 let ySizeScaled = (ySize->Int.toFloat *. devicePixelRatio)->Float.toInt
 
 @react.component
-let make = (~hues: array<hue>, ~selectedHue, ~setSelectedHue, ~onDragTo) => {
+let make = (~hues: array<hue>, ~selectedHue, ~setSelectedHue, ~onDragTo, ~lineStyle) => {
   let canvasRef = React.useRef(Nullable.null)
   // let huesComparison = hues->Array.reduce("", (a, c) => {a ++ c->Float.toString})
-  React.useEffect1(() => {
+  React.useEffect2(() => {
     switch canvasRef.current {
     | Value(canvasDom) => {
         let canvas = canvasDom->Obj.magic
@@ -41,13 +52,13 @@ let make = (~hues: array<hue>, ~selectedHue, ~setSelectedHue, ~onDragTo) => {
         context->Canvas.scale(1. /. devicePixelRatio, 1. /. devicePixelRatio)
         canvas->Canvas.setWidth(xSizeScaled)
         canvas->Canvas.setHeight(ySizeScaled)
-        updateHueLineCanvas(canvas, context)
+        updateHueLineCanvas(canvas, context, lineStyle)
       }
     | Null | Undefined => ()
     }
 
     None
-  }, [canvasRef.current])
+  }, (canvasRef.current, lineStyle))
 
   let isDragging = React.useRef(false)
   let dragPos = React.useRef(None)
@@ -120,7 +131,13 @@ let make = (~hues: array<hue>, ~selectedHue, ~setSelectedHue, ~onDragTo) => {
       <div className="h-5 relative w-full">
         {hues
         ->Array.map(hue => {
-          let hex = Texel.convert((hue.value, 1.0, 1.0), Texel.okhsv, Texel.srgb)->Texel.rgbToHex
+          let hslHex = Texel.convert((hue.value, 1.0, 0.7), Texel.okhsl, Texel.srgb)->Texel.rgbToHex
+          let hsvHex = Texel.convert((hue.value, 1.0, 1.0), Texel.okhsv, Texel.srgb)->Texel.rgbToHex
+          let hex = switch lineStyle {
+          | Line_hsl => hslHex
+          | Line_hsv => hsvHex
+          }
+
           let isSelected = selectedHue->Option.mapOr(false, s => s == hue.id)
 
           <div

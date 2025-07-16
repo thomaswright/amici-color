@@ -6,15 +6,22 @@ import * as Color from "@texel/color";
 import * as Core__Option from "@rescript/core/src/Core__Option.res.mjs";
 import * as JsxRuntime from "react/jsx-runtime";
 
-function updateHueLineCanvas(canvas, ctx) {
+function updateHueLineCanvas(canvas, ctx, lineStyle) {
   var xMax = canvas.width;
   for(var x = 0; x <= xMax; ++x){
-    var rgb = Color.convert([
-          x / xMax * 360,
-          1.0,
-          1.0
-        ], Color.OKHSV, Color.sRGB);
-    ctx.fillStyle = Color.RGBToHex(rgb);
+    var hslHex = Color.RGBToHex(Color.convert([
+              x / xMax * 360,
+              1.0,
+              0.7
+            ], Color.OKHSL, Color.sRGB));
+    var hsvHex = Color.RGBToHex(Color.convert([
+              x / xMax * 360,
+              1.0,
+              1.0
+            ], Color.OKHSV, Color.sRGB));
+    var hex;
+    hex = lineStyle === "Line_hsl" ? hslHex : hsvHex;
+    ctx.fillStyle = hex;
     ctx.fillRect(x, 0, 1, xMax);
   }
 }
@@ -24,6 +31,7 @@ var xSizeScaled = 400 * window.devicePixelRatio | 0;
 var ySizeScaled = 20 * window.devicePixelRatio | 0;
 
 function HueXLine(props) {
+  var lineStyle = props.lineStyle;
   var onDragTo = props.onDragTo;
   var setSelectedHue = props.setSelectedHue;
   var selectedHue = props.selectedHue;
@@ -37,9 +45,12 @@ function HueXLine(props) {
             context.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
             canvasDom.width = xSizeScaled;
             canvasDom.height = ySizeScaled;
-            updateHueLineCanvas(canvasDom, context);
+            updateHueLineCanvas(canvasDom, context, lineStyle);
           }
-        }), [canvasRef.current]);
+        }), [
+        canvasRef.current,
+        lineStyle
+      ]);
   var isDragging = React.useRef(false);
   var dragPos = React.useRef(undefined);
   var dragId = React.useRef(undefined);
@@ -99,11 +110,18 @@ function HueXLine(props) {
                     children: [
                       JsxRuntime.jsx("div", {
                             children: props.hues.map(function (hue) {
-                                  var hex = Color.RGBToHex(Color.convert([
+                                  var hslHex = Color.RGBToHex(Color.convert([
+                                            hue.value,
+                                            1.0,
+                                            0.7
+                                          ], Color.OKHSL, Color.sRGB));
+                                  var hsvHex = Color.RGBToHex(Color.convert([
                                             hue.value,
                                             1.0,
                                             1.0
                                           ], Color.OKHSV, Color.sRGB));
+                                  var hex;
+                                  hex = lineStyle === "Line_hsl" ? hslHex : hsvHex;
                                   var isSelected = Core__Option.mapOr(selectedHue, false, (function (s) {
                                           return s === hue.id;
                                         }));
