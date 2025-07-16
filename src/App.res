@@ -21,7 +21,7 @@ module About = {
 module Attribution = {
   @react.component
   let make = () => {
-    <div className="text-xs py-6">
+    <div className="text-xs py-6 pl-2">
       <span className={"font-normal text-gray-600"}> {"By "->React.string} </span>
       <a className="font-bold text-blue-600" href={"https://github.com/thomaswright/amici-color"}>
         {"Thomas Wright"->React.string}
@@ -118,13 +118,13 @@ module Palette = {
     let setBgWhite = () => {
       setProperty(documentElement, "--bg", "white")
       setProperty(documentElement, "--select", "black")
-      setProperty(documentElement, "--complement", "gray")
+      setProperty(documentElement, "--complement", "#ccc")
     }
 
     let setBgBlack = () => {
       setProperty(documentElement, "--bg", "black")
       setProperty(documentElement, "--select", "white")
-      setProperty(documentElement, "--complement", "gray")
+      setProperty(documentElement, "--complement", "#333")
     }
 
     let setBgSelect = () => {

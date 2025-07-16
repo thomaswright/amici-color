@@ -37,7 +37,7 @@ function App$Attribution(props) {
                       href: "https://github.com/thomaswright/amici-color"
                     })
               ],
-              className: "text-xs py-6"
+              className: "text-xs py-6 pl-2"
             });
 }
 
@@ -131,12 +131,12 @@ function App$Palette(props) {
   var setBgWhite = function () {
     document.documentElement.style.setProperty("--bg", "white");
     document.documentElement.style.setProperty("--select", "black");
-    document.documentElement.style.setProperty("--complement", "gray");
+    document.documentElement.style.setProperty("--complement", "#ccc");
   };
   var setBgBlack = function () {
     document.documentElement.style.setProperty("--bg", "black");
     document.documentElement.style.setProperty("--select", "white");
-    document.documentElement.style.setProperty("--complement", "gray");
+    document.documentElement.style.setProperty("--complement", "#333");
   };
   var setBgSelect = function () {
     if (selectedHue !== undefined && selectedElement !== undefined) {
