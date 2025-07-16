@@ -1346,7 +1346,7 @@ function App$Palette(props) {
 function App(props) {
   return JsxRuntime.jsx("div", {
               children: JsxRuntime.jsx(App$Palette, {}),
-              className: "p-6 pt-4 min-h-screen "
+              className: "p-6 pt-4 min-h-screen w-fit"
             });
 }
 

@@ -1195,7 +1195,7 @@ module Palette = {
 
 @react.component
 let make = () => {
-  <div className="p-6 pt-4 min-h-screen ">
+  <div className="p-6 pt-4 min-h-screen w-fit">
     <Palette />
     // <Gamut />
   </div>
