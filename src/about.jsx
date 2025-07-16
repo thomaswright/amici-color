@@ -8,32 +8,33 @@ const About = () => {
       id="about"
       className="overflow-y-scroll flex-1 flex flex-col gap-4 py-4"
     >
-      <p>Amici is a color palette picker with convenient constraints.</p>
+      <p>Amici is a color palette composer with convenient constraints.</p>
       <p>
         All hue rows have a fixed hue (as defined by the oklab color space). You
         can adjust the hue for the row, but individual colors within that row
         will all have that hue.
       </p>
       <p>
-        The hue rows are strictly order by their hue value. As you adjust them
-        across the spectrum, the ordering will naturally adjust. Similarly the
-        individual colors within a row will be sorted by lightness. If you
-        adjust one higher or lower that its neighbor, they will swap columns.
+        The hue rows are ordered by their hue value. As you adjust the hues
+        across the rainbow spectrum, the rows will adjust accordingly. Similarly
+        the individual colors within a row will be sorted by lightness. If you
+        adjust one higher or lower that its neighbor, the colors will swap
+        columns.
       </p>
       <p>
-        You can view the color in three different gamut panels: oklch, okhsl,
-        and okhsv. Only one hue will be mapped on the gamut graph, but adjacent
-        to each axis are the positions of the other hues, for convenient
-        comparison. Grab the color handles and move them about to adjust.
+        You can view the colors in three different gamut panels: oklch, okhsl,
+        and okhsv. Only one hue will be mapped on the gamut, but adjacent to
+        each axis are the positions of the colors in the other hues. Grab the
+        colors in either space to adjust.
+      </p>
+      <p>
+        The arrow keys can be used to adjust the selected color on the gamut
+        panel. Similarly, the following keys make large hue adjustments: 'u' &
+        'd' and small hue adjustments: 'j' & 'k'.
       </p>
       <p>
         Click on the dropdown arrows to add and delete rows or columns. The
         names of each can be adjusted too.
-      </p>
-      <p>
-        The arrow keys can be used to adjust the selected color on the gamut
-        panel. The following keys make large hue adjustments: 'u' & 'd' and
-        small hue adjustments: 'j' & 'k'.
       </p>
       <p>
         When you are happy with your palette, export to your preferred format.
